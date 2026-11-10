@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.7.0',
+  version: '0.8.0',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null };
+const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null };
 const STORAGE_KEY = 'us-two-web-session-v1';
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
@@ -90,7 +90,7 @@ async function showApp(){
   setTab('home');await syncAll();
 }
 function setTab(tab){
-  if(!['home','pair','dates','game','more'].includes(tab))return;
+  if(!['home','pair','dates','game','memories','more'].includes(tab))return;
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   window.scrollTo({top:0,behavior:'instant'});
@@ -103,7 +103,7 @@ async function syncAll({quiet=false}={}) {
     renderAll();if(!quiet)connection(true);
   }catch(e){if(!quiet)toast(failText(e),true)}finally{pollBusy=false}
 }
-function renderAll(){renderPair();renderDates();renderBoard();renderHome()}
+function renderAll(){renderPair();renderDates();renderCalendar();renderBoard();renderHome()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
 function renderHome(){
   const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];const b=state.board||{};
@@ -139,6 +139,53 @@ function renderDateIdeas(){
     return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
   }).join('');
   $('idea-results').innerHTML=rows+(filtered.length>3?'<button type="button" class="ghost-btn" data-action="more-ideas">Andere ideeën</button>':'');
+}
+function amsterdamDay(value){
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+ return parts.year+'-'+parts.month+'-'+parts.day;
+}
+function monthStep(delta){
+ const [year,month]=(state.calendarMonth||amsterdamDay(new Date()).slice(0,7)).split('-').map(Number);
+ const start=new Date(Date.UTC(year,month-1+delta,1));
+ state.calendarMonth=start.toISOString().slice(0,7);
+ state.calendarSelected=state.calendarMonth+'-01';
+ renderCalendar();
+}
+function renderCalendar(){
+ const today=amsterdamDay(new Date()),month=state.calendarMonth||today.slice(0,7);
+ const [year,m]=month.split('-').map(Number);
+ const start=new Date(Date.UTC(year,m-1,1));
+ if(!Number.isFinite(start.getTime()))return;
+ const monthLabel=new Intl.DateTimeFormat('nl-NL',{month:'long',year:'numeric',timeZone:'UTC'}).format(start);
+ $('calendar-month-label').textContent=monthLabel;
+ const first=(start.getUTCDay()+6)%7;
+ const days=new Date(Date.UTC(year,m,0)).getUTCDate();
+ const count=Math.ceil((first+days)/7)*7;
+ let html=['ma','di','wo','do','vr','za','zo'].map(x=>'<span class="calendar-weekday">'+x+'</span>').join('');
+ const scheduled=(state.dashboard?.dates||[]).filter(d=>d.status==='proposed'||d.status==='accepted');
+ const byDay=new Map();
+ scheduled.forEach(d=>{
+  const date=new Date(d.start_at);
+  if(!Number.isFinite(date.getTime()))return;
+  const key=amsterdamDay(date);
+  if(!byDay.has(key))byDay.set(key,[]);
+  byDay.get(key).push(d);
+ });
+ for(let i=0;i<count;i++){
+  const day=i-first+1;
+  if(day<1||day>days){html+='<span class="calendar-empty" aria-hidden="true"></span>';continue}
+  const key=month+'-'+String(day).padStart(2,'0');
+  const appointments=byDay.get(key)||[];
+  const isToday=key===today,selected=key===(state.calendarSelected||today);
+  html+=`<button type="button" class="calendar-day${isToday?' today':''}${selected?' selected':''}${appointments.length?' has-dates':''}" data-action="calendar-day" data-day="${key}" aria-pressed="${selected}" aria-label="${day} ${monthLabel}, ${appointments.length} afspraken"><span>${day}</span>${appointments.length?'<i class="calendar-dot" aria-hidden="true"></i>':''}</button>`;
+ }
+ $('calendar-grid').innerHTML=html;
+ const key=state.calendarSelected||today;
+ const events=(byDay.get(key)||[]).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
+ const label=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
+ $('calendar-day-detail').innerHTML='<h4>'+safe(label)+'</h4>'+(events.length?
+  events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.status==='accepted'?'Geaccepteerd':'Uitnodiging')+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
+  '<p class="muted">Geen geplande afspraken op deze dag.</p>');
 }
 function renderDates(){
   const list=state.dashboard?.dates||[];
@@ -335,7 +382,7 @@ function bind(){
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
   $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
   $('date-change-form').addEventListener('submit',async e=>{
     e.preventDefault();

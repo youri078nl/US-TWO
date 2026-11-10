@@ -1,4 +1,4 @@
-# US TWO webapp 0.5.1
+# US TWO webapp 0.6.0
 
 Gratis PWA voor iPhone, naast de bestaande native Android-app. Beide gebruiken Supabase project `vuigivzwkxelsisbjjlk`.
 
@@ -34,3 +34,14 @@ De Supabase publishable key is publiek en geschikt voor browsers. Deel **nooit**
 - Suggesties zijn lokaal in de webapp, geen claims over actuele plaatsinformatie, beschikbaarheid of echte prijzen.
 - Agenda- en borddata blijven in dezelfde Supabase-database; geen schema- of accountwijziging.
 - Getest: JavaScript-syntaxis, vier filterscenario's, aanwezigheid van HTML/CSS-elementen en geen RPC bij alleen het kiezen van een idee. Geen echte iPhone-apparaattest uitgevoerd voor deze release.
+
+## Wijzigingen 0.6.0 (10 november 2026)
+
+- Een bestaande **geaccepteerde toekomstige afspraak** kan een nieuw voorstel voor titel, datum, tijd of duur krijgen.
+- Voorstel maakt een aparte database-registratie; de bestaande afspraak verandert pas na expliciete acceptatie door de andere partner.
+- Alleen de andere gekoppelde partner kan accepteren of afwijzen. Bij afwijzing blijft de bestaande afspraak ongewijzigd.
+- Revisies, idempotentie en statusbewaking worden server-side gecontroleerd. Een dubbele klik of oude client kan geen dubbel of stilzwijgend resultaat afdwingen.
+- Extra RLS-tabel `us_date_changes` en RPC's `us_suggest_date_change` en `us_respond_date_change`. Replaybare SQL-patch staat in private repository `US-TWO.`, `supabase/patches/2026-11-10_date_change_requests.sql`.
+- `us_dashboard` blijft compatibel met oudere Android-clients: de nieuwe property `pending_change` is aanvullend, bestaande velden zijn behouden.
+- Getest: backend transactietests met twee partnerrollen en een onbevoegde derde in een teruggedraaide testtransactie; tien front-end controles op renderlogica, beveiligd tekstgebruik en synchronisatie.
+- Nog niet bevestigd: echte handmatige kliktest van de wijzigingsflow op Kims iPhone én een native Android-client die zelf voorstellen doet. Oudere Android-clients zien geaccepteerde wijzigingen gewoon na synchronisatie.

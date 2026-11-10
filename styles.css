@@ -38,3 +38,15 @@
 .ready-line.ready{color:#b2f5db;background:#1a3934;border-color:#3c6d5c}
 @media (prefers-reduced-motion: reduce){.prep-track span{transition:none}}
 @media(max-width:380px){.board-hero{padding:18px 10px}.board-route path{stroke-width:10}.map-cell{width:73%}.board-legend{font-size:10px;gap:8px}}
+
+
+/* 0.5.1 · Lokale datebibliotheek, zonder kosten of automatische verzending */
+.idea-filters{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+.idea-filters label{grid-row:1;font-size:12px;font-weight:800;color:#ece0ed;text-align:left}
+.idea-filters select{grid-row:2;min-width:0}
+.idea-card{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px;border:1px solid #665575;background:#2b233d;border-radius:17px;text-align:left}
+.idea-card>div{min-width:0;flex:1}
+.idea-card h4{margin:8px 0 5px;font-size:16px}
+.idea-card .muted{margin:0;font-size:13px}
+.idea-card button{flex:0 0 auto;padding:11px 12px;min-height:44px;font-size:13px}
+@media(max-width:440px){.idea-card{align-items:stretch;flex-direction:column}.idea-card button{width:100%}}

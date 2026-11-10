@@ -50,3 +50,15 @@
 .idea-card .muted{margin:0;font-size:13px}
 .idea-card button{flex:0 0 auto;padding:11px 12px;min-height:44px;font-size:13px}
 @media(max-width:440px){.idea-card{align-items:stretch;flex-direction:column}.idea-card button{width:100%}}
+
+
+/* US TWO 0.6.0 · Datewijzigingen tonen de originele afspraak en het voorstel afzonderlijk. */
+.date-change-notice{margin-top:13px;border:1px solid #8774a1;border-radius:16px;padding:16px;background:linear-gradient(135deg,#38294c,#261f3a)}
+.date-change-notice h4{font-size:17px;margin:10px 0 8px;color:#fff4e9}
+.date-change-notice .muted{margin:6px 0 10px}
+.date-change-notice .buttons{margin-top:12px}
+.date-change-open{width:100%;margin-top:14px}
+#date-change-editor{border-color:#9273ad;scroll-margin-top:25px}
+#date-change-editor p{margin:7px 0}
+#date-change-editor .buttons{margin-top:4px}
+@media(max-width:410px){#date-change-editor .buttons{display:grid}#date-change-editor .buttons button{width:100%}}

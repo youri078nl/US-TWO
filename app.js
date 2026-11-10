@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.5.1',
+  version: '0.6.0',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true };
+const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null };
 const STORAGE_KEY = 'us-two-web-session-v1';
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
@@ -24,7 +24,7 @@ function connection(ok) {
 function setBusy(v) { state.working=v; document.querySelectorAll('button[type=submit], button[data-action]').forEach(x=>x.disabled=v); }
 function failText(error) {
   const msg=String(error?.message||error||'Er ging iets mis.');
-  const known={ invalid_login_credentials:'E-mailadres of wachtwoord klopt niet.',email_not_confirmed:'Bevestig eerst je e-mailadres via de ontvangen e-mail.',user_already_exists:'Dit e-mailadres is al geregistreerd.',invalid_or_expired_pair_code:'De koppelcode is onjuist of verlopen. Laat een nieuwe maken.',profile_required:'Sla eerst je schermnaam op.',already_in_pair:'Je account is al gekoppeld.',pair_not_ready:'Koppel eerst jullie twee accounts.',pair_full:'Dit koppel heeft al twee leden.',round_already_active:'Er staat al een opdracht open.',preparation_time_remaining:'De voorbereidingstijd is nog niet voorbij.',both_players_must_be_ready:'Jullie moeten allebei klaar zijn.',revision_conflict:'De uitnodiging is gewijzigd. Ververs eerst de gegevens.',cannot_respond_to_own_date:'Je kunt je eigen uitnodiging niet beantwoorden.',network_error:'Geen verbinding. Probeer opnieuw als je internet hebt.'};
+  const known={ invalid_login_credentials:'E-mailadres of wachtwoord klopt niet.',email_not_confirmed:'Bevestig eerst je e-mailadres via de ontvangen e-mail.',user_already_exists:'Dit e-mailadres is al geregistreerd.',invalid_or_expired_pair_code:'De koppelcode is onjuist of verlopen. Laat een nieuwe maken.',profile_required:'Sla eerst je schermnaam op.',already_in_pair:'Je account is al gekoppeld.',pair_not_ready:'Koppel eerst jullie twee accounts.',pair_full:'Dit koppel heeft al twee leden.',round_already_active:'Er staat al een opdracht open.',preparation_time_remaining:'De voorbereidingstijd is nog niet voorbij.',both_players_must_be_ready:'Jullie moeten allebei klaar zijn.',revision_conflict:'De uitnodiging is gewijzigd. Ververs eerst de gegevens.',cannot_respond_to_own_date:'Je kunt je eigen uitnodiging niet beantwoorden.',invalid_change_request:'Controleer titel, datum en duur van het wijzigingsvoorstel.',change_already_pending:'Er wacht al een wijzigingsvoorstel op goedkeuring.',cannot_respond_to_own_change:'Je kunt je eigen voorstel niet accepteren.',date_not_changeable:'Deze afspraak kan niet meer worden gewijzigd.',change_already_handled:'Dit voorstel is al afgehandeld. Ververs de agenda.',no_change_detected:'Verander minstens één onderdeel van de afspraak.',proposed_date_expired:'De voorgestelde datum is inmiddels voorbij.',network_error:'Geen verbinding. Probeer opnieuw als je internet hebt.'};
   const entry=Object.entries(known).find(([k])=>msg.toLowerCase().includes(k));return entry?entry[1]:msg.slice(0,230);
 }
 async function request(url, opts={}) {
@@ -42,7 +42,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.pairCode='';localStorage.removeItem(STORAGE_KEY)}
+function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY)}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;
@@ -143,14 +143,51 @@ function renderDateIdeas(){
 function renderDates(){
   const list=state.dashboard?.dates||[];
   $('date-form').querySelectorAll('input,select,button').forEach(x=>x.disabled=!paired());
-  if(!paired()){$('dates-list').innerHTML='<div class="card"><p class="muted">Koppel eerst jullie twee accounts om een date te plannen.</p></div>';return}
-  if(!list.length){$('dates-list').innerHTML='<div class="card"><h3>De agenda is nog leeg</h3><p class="muted">Begin met een klein plan. De leukste afspraak hoeft niets te kosten.</p></div>';return}
+  if(state.dateEditId&&!list.some(d=>d.id===state.dateEditId&&d.status==='accepted'&&!d.pending_change&&new Date(d.start_at)>new Date())){
+    state.dateEditId=null;
+    $('date-change-editor').classList.add('hidden');
+  }
+  if(!paired()){
+    $('dates-list').innerHTML='<div class="card"><p class="muted">Koppel eerst jullie twee accounts om een date te plannen.</p></div>';
+    return;
+  }
+  if(!list.length){
+    $('dates-list').innerHTML='<div class="card"><h3>De agenda is nog leeg</h3><p class="muted">Begin met een klein plan. De leukste afspraak hoeft niets te kosten.</p></div>';
+    return;
+  }
   $('dates-list').innerHTML=list.map(d=>{
-    const own=d.proposer_id===state.session?.user?.id;
+    const me=state.session?.user?.id;
+    const own=d.proposer_id===me;
     const status=d.status==='accepted'?'<span class="tag active">Geaccepteerd</span>':d.status==='declined'?'<span class="tag declined">Afgewezen</span>':'<span class="tag pending">Voorstel</span>';
-    const actions=d.status==='proposed'&&!own?`<div class="buttons"><button class="primary-btn" data-action="respond-accept" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Accepteren</button><button class="ghost-btn" data-action="respond-decline" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`:d.status==='proposed'?'<p class="muted">Wacht op de reactie van je partner.</p>':'';
-    return `<article class="card">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}</article>`
+    let actions=d.status==='proposed'&&!own?`<div class="buttons"><button class="primary-btn" data-action="respond-accept" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Accepteren</button><button class="ghost-btn" data-action="respond-decline" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`:d.status==='proposed'?'<p class="muted">Wacht op de reactie van je partner.</p>':'';
+    const pending=d.pending_change;
+    const upcoming=new Date(d.start_at)>new Date();
+    if(d.status==='accepted'&&pending){
+      const isMine=pending.proposer_id===me;
+      const caption=`<div class="date-change-notice"><span class="eyebrow">VOORGESTELDE WIJZIGING</span><h4>${safe(pending.title)}</h4><p class="muted">Nieuw: ${timeFmt.format(new Date(pending.start_at))} · ${Number(pending.duration_minutes)} min</p><p class="muted">De oorspronkelijke afspraak blijft staan tot jullie de wijziging goedkeuren.</p>`;
+      const buttons=isMine?'<p class="muted">Jouw voorstel wacht op de reactie van je partner.</p>':`<div class="buttons"><button class="primary-btn" data-action="change-accept" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">Wijziging accepteren</button><button class="ghost-btn" data-action="change-decline" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`;
+      actions+=caption+buttons+'</div>';
+    }else if(d.status==='accepted'&&upcoming){
+      actions+=`<button class="secondary-btn date-change-open" data-action="edit-date" data-id="${safe(d.id)}">Wijziging voorstellen</button>`;
+    }
+    return `<article class="card">${status}<h3>${safe(d.title)}</h3><p class="meta">Huidige afspraak: ${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}</article>`;
   }).join('');
+}
+function openDateChangeEditor(id){
+  const d=(state.dashboard?.dates||[]).find(x=>x.id===id);
+  if(!d||d.status!=='accepted'||d.pending_change||new Date(d.start_at)<=new Date()){
+    toast('Deze afspraak kan momenteel niet worden gewijzigd.',true);
+    return;
+  }
+  state.dateEditId=id;
+  $('date-change-title').value=d.title;
+  const start=new Date(d.start_at);
+  const local=new Date(start.getTime()-start.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  $('date-change-when').value=local;
+  $('date-change-duration').value=String(d.duration_minutes);
+  $('date-change-original').textContent='Bestaand: '+timeFmt.format(start)+' · '+Number(d.duration_minutes)+' min. De afspraak wijzigt pas na goedkeuring.';
+  $('date-change-editor').classList.remove('hidden');
+  $('date-change-editor').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderBoard() {
   const board = state.board || {};
@@ -230,12 +267,14 @@ async function runAction(action,extra={}){
     'board-confirm':()=>rpc('us_board_confirm_start',{p_round_id:b.id}),
     'board-complete':()=>rpc('us_board_complete',{p_round_id:b.id}),
     'board-skip':()=>rpc('us_board_skip',{p_round_id:b.id}),
+    'change-accept':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'accept',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
+    'change-decline':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'decline',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'respond-accept':()=>rpc('us_respond_date',{p_date_id:id,p_action:'accept',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'respond-decline':()=>rpc('us_respond_date',{p_date_id:id,p_action:'decline',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'create-code':async()=>{const v=await rpc('us_create_pair');state.pairCode=v.code;return v;},
   };
   if(!operations[action])return;
-  if((action.startsWith('board-')&&!b&&action!=='board-begin')||(action.startsWith('respond-')&&!validUuid(id)))return;
+  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-'))&&!validUuid(id)))return;
   setBusy(true);
   try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':'Opgeslagen en gesynchroniseerd.');}
   catch(e){toast(failText(e),true)}finally{setBusy(false)}
@@ -287,7 +326,32 @@ function bind(){
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
+  $('date-change-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(state.working||!state.dateEditId)return;
+    const d=(state.dashboard?.dates||[]).find(x=>x.id===state.dateEditId);
+    if(!d||d.status!=='accepted'||d.pending_change){toast('Ververs de agenda. Deze afspraak is gewijzigd.',true);return}
+    const title=$('date-change-title').value.trim(),raw=$('date-change-when').value;
+    const start=new Date(raw),duration=Number($('date-change-duration').value);
+    if(!title||title.length>120||!raw||!Number.isFinite(start.getTime())||start<=new Date()
+      ||!Number.isInteger(duration)||duration<15||duration>1440){
+      toast('Kies een toekomstige datum, een titel en een duur tussen 15 en 1440 minuten.',true);return;
+    }
+    setBusy(true);
+    try{
+      await rpc('us_suggest_date_change',{
+        p_date_id:d.id,p_title:title,p_start_at:start.toISOString(),
+        p_duration_minutes:duration,p_expected_revision:Number(d.revision),
+        p_request_id:crypto.randomUUID()
+      });
+      state.dateEditId=null;$('date-change-editor').classList.add('hidden');
+      await syncAll({quiet:true});
+      toast('Wijziging voorgesteld. De afspraak blijft staan totdat je partner accepteert.');
+    }catch(err){toast(failText(err),true)}
+    finally{setBusy(false)}
+  });
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});

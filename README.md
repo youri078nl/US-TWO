@@ -1,4 +1,4 @@
-# US TWO webapp 0.6.0
+# US TWO webapp 0.7.0
 
 Gratis PWA voor iPhone, naast de bestaande native Android-app. Beide gebruiken Supabase project `vuigivzwkxelsisbjjlk`.
 
@@ -45,3 +45,15 @@ De Supabase publishable key is publiek en geschikt voor browsers. Deel **nooit**
 - `us_dashboard` blijft compatibel met oudere Android-clients: de nieuwe property `pending_change` is aanvullend, bestaande velden zijn behouden.
 - Getest: backend transactietests met twee partnerrollen en een onbevoegde derde in een teruggedraaide testtransactie; tien front-end controles op renderlogica, beveiligd tekstgebruik en synchronisatie.
 - Nog niet bevestigd: echte handmatige kliktest van de wijzigingsflow op Kims iPhone én een native Android-client die zelf voorstellen doet. Oudere Android-clients zien geaccepteerde wijzigingen gewoon na synchronisatie.
+
+## 0.7.0 · Annuleren en tegenvoorstellen
+
+- Ontvanger van een nieuwe uitnodiging kan een tegenvoorstel doen met titel, datum, tijd en duur; originele uitnodiging blijft onveranderd tot de organisator akkoord geeft.
+- Bij een open tegenvoorstel is de oorspronkelijke acceptatie uitgeschakeld totdat het tegenvoorstel is geaccepteerd of afgewezen.
+- Organisator kan eigen uitstaande uitnodiging intrekken; beide partners kunnen een toekomstige geaccepteerde afspraak annuleren.
+- Annuleren vraagt een expliciete tweede tik. Geen automatische annulering of wijziging bij het openen van een scherm.
+- Server controleert lidmaatschap, eigenaarschap, revisie, toekomstig tijdstip en dubbele verzoeken. Een derde account kan niet muteren.
+- Beveiligde RPC's `us_counter_date`, `us_cancel_date` en aanvullingen in `us_respond_date`/`us_respond_date_change`. De heruitvoerbare SQL staat in de **private** repository `US-TWO.`.
+- PWA UI: 14 lokaal uitgevoerde gerichte tests; PostgreSQL-transactietests met rollback voor tegenvoorstellen, annuleringen, toegang, duplicaten en afwijzing.
+- Geen extra persoonlijke data, abonnement, API-sleutel of databasegeheim toegevoegd.
+- Handmatige iPhone+Android-apparaattest nog niet uitgevoerd voor deze nieuwe versie.

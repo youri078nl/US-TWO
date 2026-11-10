@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.6.0',
+  version: '0.7.0',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -24,7 +24,7 @@ function connection(ok) {
 function setBusy(v) { state.working=v; document.querySelectorAll('button[type=submit], button[data-action]').forEach(x=>x.disabled=v); }
 function failText(error) {
   const msg=String(error?.message||error||'Er ging iets mis.');
-  const known={ invalid_login_credentials:'E-mailadres of wachtwoord klopt niet.',email_not_confirmed:'Bevestig eerst je e-mailadres via de ontvangen e-mail.',user_already_exists:'Dit e-mailadres is al geregistreerd.',invalid_or_expired_pair_code:'De koppelcode is onjuist of verlopen. Laat een nieuwe maken.',profile_required:'Sla eerst je schermnaam op.',already_in_pair:'Je account is al gekoppeld.',pair_not_ready:'Koppel eerst jullie twee accounts.',pair_full:'Dit koppel heeft al twee leden.',round_already_active:'Er staat al een opdracht open.',preparation_time_remaining:'De voorbereidingstijd is nog niet voorbij.',both_players_must_be_ready:'Jullie moeten allebei klaar zijn.',revision_conflict:'De uitnodiging is gewijzigd. Ververs eerst de gegevens.',cannot_respond_to_own_date:'Je kunt je eigen uitnodiging niet beantwoorden.',invalid_change_request:'Controleer titel, datum en duur van het wijzigingsvoorstel.',change_already_pending:'Er wacht al een wijzigingsvoorstel op goedkeuring.',cannot_respond_to_own_change:'Je kunt je eigen voorstel niet accepteren.',date_not_changeable:'Deze afspraak kan niet meer worden gewijzigd.',change_already_handled:'Dit voorstel is al afgehandeld. Ververs de agenda.',no_change_detected:'Verander minstens één onderdeel van de afspraak.',proposed_date_expired:'De voorgestelde datum is inmiddels voorbij.',network_error:'Geen verbinding. Probeer opnieuw als je internet hebt.'};
+  const known={ invalid_login_credentials:'E-mailadres of wachtwoord klopt niet.',email_not_confirmed:'Bevestig eerst je e-mailadres via de ontvangen e-mail.',user_already_exists:'Dit e-mailadres is al geregistreerd.',invalid_or_expired_pair_code:'De koppelcode is onjuist of verlopen. Laat een nieuwe maken.',profile_required:'Sla eerst je schermnaam op.',already_in_pair:'Je account is al gekoppeld.',pair_not_ready:'Koppel eerst jullie twee accounts.',pair_full:'Dit koppel heeft al twee leden.',round_already_active:'Er staat al een opdracht open.',preparation_time_remaining:'De voorbereidingstijd is nog niet voorbij.',both_players_must_be_ready:'Jullie moeten allebei klaar zijn.',revision_conflict:'De uitnodiging is gewijzigd. Ververs eerst de gegevens.',cannot_respond_to_own_date:'Je kunt je eigen uitnodiging niet beantwoorden.',invalid_change_request:'Controleer titel, datum en duur van het wijzigingsvoorstel.',change_already_pending:'Er wacht al een wijzigingsvoorstel op goedkeuring.',cannot_respond_to_own_change:'Je kunt je eigen voorstel niet accepteren.',date_not_changeable:'Deze afspraak kan niet meer worden gewijzigd.',change_already_handled:'Dit voorstel is al afgehandeld. Ververs de agenda.',no_change_detected:'Verander minstens één onderdeel van de afspraak.',proposed_date_expired:'De voorgestelde datum is inmiddels voorbij.',invalid_counteroffer:'Controleer de gegevens van je tegenvoorstel.',counteroffer_pending:'Er wacht al een tegenvoorstel. Behandel dit eerst.',cannot_counter_own_date:'Je kunt niet tegen jezelf bieden.',date_not_counterable:'Dit voorstel kan niet meer worden aangepast.',date_not_cancellable:'Deze afspraak kan niet meer worden geannuleerd.',cannot_cancel_partner_invitation:'Wijs de uitnodiging af in plaats van te annuleren.',invalid_cancellation:'Ongeldig annuleringverzoek.',network_error:'Geen verbinding. Probeer opnieuw als je internet hebt.'};
   const entry=Object.entries(known).find(([k])=>msg.toLowerCase().includes(k));return entry?entry[1]:msg.slice(0,230);
 }
 async function request(url, opts={}) {
@@ -109,7 +109,7 @@ function renderHome(){
   const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];const b=state.board||{};
   $('couple-banner').innerHTML=paired()?'<span class="dot"></span><span>Jullie zijn gekoppeld 💞</span>':`<span class="dot"></span><span>${m.length?'Wachten op jouw partner':'Koppel jullie accounts om te starten'}</span>`;
   $('welcome-note').textContent=paired()?'Een kleine verrassing kan een gewone dag bijzonder maken.':'Twee accounts, één avontuur. Nodig je partner uit om te beginnen.';
-  const next=[...list].filter(x=>x.status!=='declined'&&new Date(x.start_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at))[0];
+  const next=[...list].filter(x=>x.status!=='declined'&&x.status!=='cancelled'&&new Date(x.start_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at))[0];
   let cards='';
   if(!paired()){cards+=`<div class="card"><span class="eyebrow">EERSTE STAP</span><h3>Verbind jullie accounts</h3><p class="muted">Gebruik een koppelcode zodat jullie samen kunnen plannen en spelen.</p><button class="secondary-btn" data-action="open-pair">Naar koppelen</button></div>`}
   else {cards+=`<div class="card"><span class="eyebrow">VOLGENDE DATE</span><h3>${next?safe(next.title):'Tijd voor een nieuwe afspraak?'}</h3><p class="muted">${next?timeFmt.format(new Date(next.start_at)):'Plan iets leuks, ook als het maar een halfuurtje is.'}</p><button class="secondary-btn" data-action="open-dates">Bekijk agenda</button></div>`;
@@ -143,49 +143,57 @@ function renderDateIdeas(){
 function renderDates(){
   const list=state.dashboard?.dates||[];
   $('date-form').querySelectorAll('input,select,button').forEach(x=>x.disabled=!paired());
-  if(state.dateEditId&&!list.some(d=>d.id===state.dateEditId&&d.status==='accepted'&&!d.pending_change&&new Date(d.start_at)>new Date())){
-    state.dateEditId=null;
-    $('date-change-editor').classList.add('hidden');
+  const me=state.session?.user?.id;
+  if(state.dateEditId&&!list.some(d=>d.id===state.dateEditId&&!d.pending_change&&new Date(d.start_at)>new Date()&&(d.status==='accepted'||(d.status==='proposed'&&d.proposer_id!==me)))){
+    state.dateEditId=null;$('date-change-editor').classList.add('hidden');
   }
-  if(!paired()){
-    $('dates-list').innerHTML='<div class="card"><p class="muted">Koppel eerst jullie twee accounts om een date te plannen.</p></div>';
-    return;
-  }
-  if(!list.length){
-    $('dates-list').innerHTML='<div class="card"><h3>De agenda is nog leeg</h3><p class="muted">Begin met een klein plan. De leukste afspraak hoeft niets te kosten.</p></div>';
-    return;
-  }
+  if(!paired()){$('dates-list').innerHTML='<div class="card"><p class="muted">Koppel eerst jullie twee accounts om een date te plannen.</p></div>';return;}
+  if(!list.length){$('dates-list').innerHTML='<div class="card"><h3>De agenda is nog leeg</h3><p class="muted">Begin met een klein plan. De leukste afspraak hoeft niets te kosten.</p></div>';return;}
   $('dates-list').innerHTML=list.map(d=>{
-    const me=state.session?.user?.id;
     const own=d.proposer_id===me;
-    const status=d.status==='accepted'?'<span class="tag active">Geaccepteerd</span>':d.status==='declined'?'<span class="tag declined">Afgewezen</span>':'<span class="tag pending">Voorstel</span>';
-    let actions=d.status==='proposed'&&!own?`<div class="buttons"><button class="primary-btn" data-action="respond-accept" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Accepteren</button><button class="ghost-btn" data-action="respond-decline" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`:d.status==='proposed'?'<p class="muted">Wacht op de reactie van je partner.</p>':'';
-    const pending=d.pending_change;
     const upcoming=new Date(d.start_at)>new Date();
-    if(d.status==='accepted'&&pending){
+    const pending=d.pending_change;
+    const status=d.status==='accepted'?'<span class="tag active">Geaccepteerd</span>':
+      d.status==='declined'?'<span class="tag declined">Afgewezen</span>':
+      d.status==='cancelled'?'<span class="tag cancelled">Geannuleerd</span>':
+      '<span class="tag pending">Uitnodiging</span>';
+    let actions='';
+    if((d.status==='proposed'||d.status==='accepted')&&pending){
       const isMine=pending.proposer_id===me;
-      const caption=`<div class="date-change-notice"><span class="eyebrow">VOORGESTELDE WIJZIGING</span><h4>${safe(pending.title)}</h4><p class="muted">Nieuw: ${timeFmt.format(new Date(pending.start_at))} · ${Number(pending.duration_minutes)} min</p><p class="muted">De oorspronkelijke afspraak blijft staan tot jullie de wijziging goedkeuren.</p>`;
-      const buttons=isMine?'<p class="muted">Jouw voorstel wacht op de reactie van je partner.</p>':`<div class="buttons"><button class="primary-btn" data-action="change-accept" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">Wijziging accepteren</button><button class="ghost-btn" data-action="change-decline" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`;
-      actions+=caption+buttons+'</div>';
+      const isCounter=d.status==='proposed';
+      actions+=`<div class="date-change-notice"><span class="eyebrow">${isCounter?'TEGENVOORSTEL':'VOORGESTELDE WIJZIGING'}</span><h4>${safe(pending.title)}</h4><p class="muted">Nieuw: ${timeFmt.format(new Date(pending.start_at))} · ${Number(pending.duration_minutes)} min</p><p class="muted">De oorspronkelijke afspraak blijft staan tot er akkoord is.</p>`;
+      actions+=isMine?'<p class="muted">Jouw voorstel wacht op de reactie van je partner.</p>':
+        `<div class="buttons"><button class="primary-btn" data-action="change-accept" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">${isCounter?'Tegenvoorstel accepteren':'Wijziging accepteren'}</button><button class="ghost-btn" data-action="change-decline" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`;
+      actions+='</div>';
+    }else if(d.status==='proposed'&&!own&&upcoming){
+      actions+=`<div class="buttons"><button class="primary-btn" data-action="respond-accept" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Accepteren</button><button class="ghost-btn" data-action="respond-decline" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`;
+      actions+=`<button class="secondary-btn date-change-open" data-action="edit-date" data-id="${safe(d.id)}">Ander tijdstip voorstellen</button>`;
+    }else if(d.status==='proposed'&&own){
+      actions+='<p class="muted">Wachten op reactie van je partner.</p>';
     }else if(d.status==='accepted'&&upcoming){
       actions+=`<button class="secondary-btn date-change-open" data-action="edit-date" data-id="${safe(d.id)}">Wijziging voorstellen</button>`;
     }
-    return `<article class="card">${status}<h3>${safe(d.title)}</h3><p class="meta">Huidige afspraak: ${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}</article>`;
+    if(upcoming&&(d.status==='accepted'||(d.status==='proposed'&&own))){
+      actions+=`<details class="cancel-confirm"><summary>Afspraak annuleren</summary><p class="muted">Deze actie trekt de afspraak in voor jullie allebei. Dit kan niet ongedaan gemaakt worden.</p><button type="button" class="ghost-btn" data-action="date-cancel" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Ja, afspraak annuleren</button></details>`;
+    }
+    return `<article class="card">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}</article>`;
   }).join('');
 }
 function openDateChangeEditor(id){
   const d=(state.dashboard?.dates||[]).find(x=>x.id===id);
-  if(!d||d.status!=='accepted'||d.pending_change||new Date(d.start_at)<=new Date()){
-    toast('Deze afspraak kan momenteel niet worden gewijzigd.',true);
-    return;
+  const counter=d?.status==='proposed'&&d.proposer_id!==state.session?.user?.id;
+  const reschedule=d?.status==='accepted';
+  if(!d||(!counter&&!reschedule)||d.pending_change||new Date(d.start_at)<=new Date()){
+    toast('Dit voorstel kan momenteel niet worden aangepast.',true);return;
   }
   state.dateEditId=id;
+  $('date-change-heading').textContent=counter?'Doe een tegenvoorstel':'Wijziging voorstellen';
   $('date-change-title').value=d.title;
   const start=new Date(d.start_at);
   const local=new Date(start.getTime()-start.getTimezoneOffset()*60000).toISOString().slice(0,16);
   $('date-change-when').value=local;
   $('date-change-duration').value=String(d.duration_minutes);
-  $('date-change-original').textContent='Bestaand: '+timeFmt.format(start)+' · '+Number(d.duration_minutes)+' min. De afspraak wijzigt pas na goedkeuring.';
+  $('date-change-original').textContent='Bestaand voorstel: '+timeFmt.format(start)+' · '+Number(d.duration_minutes)+' min. Je partner beslist over jouw voorstel.';
   $('date-change-editor').classList.remove('hidden');
   $('date-change-editor').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -267,6 +275,7 @@ async function runAction(action,extra={}){
     'board-confirm':()=>rpc('us_board_confirm_start',{p_round_id:b.id}),
     'board-complete':()=>rpc('us_board_complete',{p_round_id:b.id}),
     'board-skip':()=>rpc('us_board_skip',{p_round_id:b.id}),
+    'date-cancel':()=>rpc('us_cancel_date',{p_date_id:id,p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'change-accept':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'accept',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'change-decline':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'decline',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'respond-accept':()=>rpc('us_respond_date',{p_date_id:id,p_action:'accept',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
@@ -274,9 +283,9 @@ async function runAction(action,extra={}){
     'create-code':async()=>{const v=await rpc('us_create_pair');state.pairCode=v.code;return v;},
   };
   if(!operations[action])return;
-  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-'))&&!validUuid(id)))return;
+  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel')&&!validUuid(id)))return;
   setBusy(true);
-  try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':'Opgeslagen en gesynchroniseerd.');}
+  try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Opgeslagen en gesynchroniseerd.');}
   catch(e){toast(failText(e),true)}finally{setBusy(false)}
 }
 function bind(){
@@ -332,7 +341,7 @@ function bind(){
     e.preventDefault();
     if(state.working||!state.dateEditId)return;
     const d=(state.dashboard?.dates||[]).find(x=>x.id===state.dateEditId);
-    if(!d||d.status!=='accepted'||d.pending_change){toast('Ververs de agenda. Deze afspraak is gewijzigd.',true);return}
+    if(!d||!(d.status==='accepted'||(d.status==='proposed'&&d.proposer_id!==state.session?.user?.id))||d.pending_change){toast('Ververs de agenda. Deze afspraak is gewijzigd.',true);return}
     const title=$('date-change-title').value.trim(),raw=$('date-change-when').value;
     const start=new Date(raw),duration=Number($('date-change-duration').value);
     if(!title||title.length>120||!raw||!Number.isFinite(start.getTime())||start<=new Date()
@@ -341,14 +350,14 @@ function bind(){
     }
     setBusy(true);
     try{
-      await rpc('us_suggest_date_change',{
+      await rpc(d.status==='proposed'?'us_counter_date':'us_suggest_date_change',{
         p_date_id:d.id,p_title:title,p_start_at:start.toISOString(),
         p_duration_minutes:duration,p_expected_revision:Number(d.revision),
         p_request_id:crypto.randomUUID()
       });
       state.dateEditId=null;$('date-change-editor').classList.add('hidden');
       await syncAll({quiet:true});
-      toast('Wijziging voorgesteld. De afspraak blijft staan totdat je partner accepteert.');
+      toast(d.status==='proposed'?'Tegenvoorstel verstuurd. Je partner kan het accepteren.':'Wijziging voorgesteld. De afspraak blijft staan totdat je partner accepteert.');
     }catch(err){toast(failText(err),true)}
     finally{setBusy(false)}
   });

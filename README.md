@@ -1,4 +1,4 @@
-# US TWO webapp 0.7.0
+# US TWO webapp 0.8.0
 
 Gratis PWA voor iPhone, naast de bestaande native Android-app. Beide gebruiken Supabase project `vuigivzwkxelsisbjjlk`.
 
@@ -57,3 +57,16 @@ De Supabase publishable key is publiek en geschikt voor browsers. Deel **nooit**
 - PWA UI: 14 lokaal uitgevoerde gerichte tests; PostgreSQL-transactietests met rollback voor tegenvoorstellen, annuleringen, toegang, duplicaten en afwijzing.
 - Geen extra persoonlijke data, abonnement, API-sleutel of databasegeheim toegevoegd.
 - Handmatige iPhone+Android-apparaattest nog niet uitgevoerd voor deze nieuwe versie.
+
+## US TWO 0.8.0 – Kalender + herinneringen
+
+- Nieuw maandoverzicht in Agenda met navigatie, selectie van een dag en zichtbare geplande dates.
+- Alle datums worden voor het kalenderoverzicht berekend in `Europe/Amsterdam`; zomertijd verandert geen dagen.
+- Herinneringenboek: titel, datum, tekst (max. 3000 tekens), **standaard privé** of expliciet gedeeld.
+- Alleen de maker kan een herinnering alsnog delen, terugzetten op privé en verwijderen. De partner ziet alleen gedeelde herinneringen.
+- `us_memories` is een RLS-enabled tabel zonder directe leestoegang; `us_memory_create`, `us_memory_list`, `us_memory_visibility` en `us_memory_delete` controleren alle rechten via het aangemelde account.
+- Bij uitloggen of fouten in het laden wordt de geheugenlijst op het toestel leeggemaakt, zodat gegevens van een vorige account niet in beeld blijven.
+- De bestaande agenda, het spelbord en de koppeling blijven behouden. Geen migratie van bestaande gebruikersgegevens nodig.
+- Er zijn 12 gerichte front-end weergave-, privacy- en kalendercontroles uitgevoerd en een teruggedraaide backend-transactietest voor privé, delen, intrekken, toegang door derde account en verwijderen.
+- Deze release bevat **nog geen foto/video-upload**: die vereist eerst private opslag, expliciete toegang, betrouwbare upload/verwijdering en tests op echte apparaten. Er is geen schijnbaar werkende fotofunctie aangezet.
+- De iPhone-webapp is gepubliceerd via GitHub Pages. Een echte iPhone/Android-gebruikersacceptatietest volgt gebundeld in de volgende testronde.

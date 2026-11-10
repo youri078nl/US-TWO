@@ -24,7 +24,7 @@ function connection(ok) {
 function setBusy(v) { state.working=v; document.querySelectorAll('button[type=submit], button[data-action]').forEach(x=>x.disabled=v); }
 function failText(error) {
   const msg=String(error?.message||error||'Er ging iets mis.');
-  const known={ invalid_login_credentials:'E-mailadres of wachtwoord klopt niet.',email_not_confirmed:'Bevestig eerst je e-mailadres via de ontvangen e-mail.',user_already_exists:'Dit e-mailadres is al geregistreerd.',invalid_or_expired_pair_code:'De koppelcode is onjuist of verlopen. Laat een nieuwe maken.',profile_required:'Sla eerst je schermnaam op.',already_in_pair:'Je account is al gekoppeld.',pair_not_ready:'Koppel eerst jullie twee accounts.',pair_full:'Dit koppel heeft al twee leden.',round_already_active:'Er staat al een opdracht open.',preparation_time_remaining:'De voorbereidingstijd is nog niet voorbij.',both_players_must_be_ready:'Jullie moeten allebei klaar zijn.',revision_conflict:'De uitnodiging is gewijzigd. Ververs eerst de gegevens.',cannot_respond_to_own_date:'Je kunt je eigen uitnodiging niet beantwoorden.',invalid_change_request:'Controleer titel, datum en duur van het wijzigingsvoorstel.',change_already_pending:'Er wacht al een wijzigingsvoorstel op goedkeuring.',cannot_respond_to_own_change:'Je kunt je eigen voorstel niet accepteren.',date_not_changeable:'Deze afspraak kan niet meer worden gewijzigd.',change_already_handled:'Dit voorstel is al afgehandeld. Ververs de agenda.',no_change_detected:'Verander minstens één onderdeel van de afspraak.',proposed_date_expired:'De voorgestelde datum is inmiddels voorbij.',invalid_counteroffer:'Controleer de gegevens van je tegenvoorstel.',counteroffer_pending:'Er wacht al een tegenvoorstel. Behandel dit eerst.',cannot_counter_own_date:'Je kunt niet tegen jezelf bieden.',date_not_counterable:'Dit voorstel kan niet meer worden aangepast.',date_not_cancellable:'Deze afspraak kan niet meer worden geannuleerd.',cannot_cancel_partner_invitation:'Wijs de uitnodiging af in plaats van te annuleren.',invalid_cancellation:'Ongeldig annuleringverzoek.',network_error:'Geen verbinding. Probeer opnieuw als je internet hebt.'};
+  const known={ invalid_login_credentials:'E-mailadres of wachtwoord klopt niet.',email_not_confirmed:'Bevestig eerst je e-mailadres via de ontvangen e-mail.',user_already_exists:'Dit e-mailadres is al geregistreerd.',invalid_or_expired_pair_code:'De koppelcode is onjuist of verlopen. Laat een nieuwe maken.',profile_required:'Sla eerst je schermnaam op.',already_in_pair:'Je account is al gekoppeld.',pair_not_ready:'Koppel eerst jullie twee accounts.',pair_full:'Dit koppel heeft al twee leden.',round_already_active:'Er staat al een opdracht open.',preparation_time_remaining:'De voorbereidingstijd is nog niet voorbij.',both_players_must_be_ready:'Jullie moeten allebei klaar zijn.',revision_conflict:'De uitnodiging is gewijzigd. Ververs eerst de gegevens.',cannot_respond_to_own_date:'Je kunt je eigen uitnodiging niet beantwoorden.',invalid_change_request:'Controleer titel, datum en duur van het wijzigingsvoorstel.',change_already_pending:'Er wacht al een wijzigingsvoorstel op goedkeuring.',cannot_respond_to_own_change:'Je kunt je eigen voorstel niet accepteren.',date_not_changeable:'Deze afspraak kan niet meer worden gewijzigd.',change_already_handled:'Dit voorstel is al afgehandeld. Ververs de agenda.',no_change_detected:'Verander minstens één onderdeel van de afspraak.',proposed_date_expired:'De voorgestelde datum is inmiddels voorbij.',invalid_counteroffer:'Controleer de gegevens van je tegenvoorstel.',counteroffer_pending:'Er wacht al een tegenvoorstel. Behandel dit eerst.',cannot_counter_own_date:'Je kunt niet tegen jezelf bieden.',date_not_counterable:'Dit voorstel kan niet meer worden aangepast.',date_not_cancellable:'Deze afspraak kan niet meer worden geannuleerd.',cannot_cancel_partner_invitation:'Wijs de uitnodiging af in plaats van te annuleren.',invalid_cancellation:'Ongeldig annuleringverzoek.',invalid_memory:'Controleer titel, datum, tekst en deelinstelling.',memory_not_found:'Herinnering niet gevonden of niet van jou.',invalid_visibility:'Ongeldige zichtbaarheid.',invalid_memory_delete:'Ongeldig verwijderverzoek.',network_error:'Geen verbinding. Probeer opnieuw als je internet hebt.'};
   const entry=Object.entries(known).find(([k])=>msg.toLowerCase().includes(k));return entry?entry[1]:msg.slice(0,230);
 }
 async function request(url, opts={}) {
@@ -98,12 +98,13 @@ function setTab(tab){
 async function syncAll({quiet=false}={}) {
   if(!state.session||pollBusy)return;pollBusy=true;
   try{
-    const [d,b]=await Promise.all([rpc('us_dashboard'),rpc('us_board_state')]);
+    const [d,b,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_board_state'),rpc('us_memory_list').catch(()=>null)]);
     state.dashboard=d;state.board=b;
+    if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else state.memoriesError=true;
     renderAll();if(!quiet)connection(true);
   }catch(e){if(!quiet)toast(failText(e),true)}finally{pollBusy=false}
 }
-function renderAll(){renderPair();renderDates();renderCalendar();renderBoard();renderHome()}
+function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderBoard();renderHome()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
 function renderHome(){
   const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];const b=state.board||{};
@@ -186,6 +187,28 @@ function renderCalendar(){
  $('calendar-day-detail').innerHTML='<h4>'+safe(label)+'</h4>'+(events.length?
   events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.status==='accepted'?'Geaccepteerd':'Uitnodiging')+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
   '<p class="muted">Geen geplande afspraken op deze dag.</p>');
+}
+function renderMemories(){
+ const list=state.memories||[];
+ $('memory-form').querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=!paired());
+ if(!paired()){
+  $('memories-list').innerHTML='<div class="card"><p class="muted">Koppel jullie accounts om herinneringen vast te leggen.</p></div>';return;
+ }
+ if(state.memoriesError){
+  $('memories-list').innerHTML='<div class="card"><p class="muted">Herinneringen kunnen nu niet worden geladen. Vernieuw de gegevens.</p></div>';return;
+ }
+ if(!list.length){
+  $('memories-list').innerHTML='<div class="card"><h3>Het herinneringenboek is nog leeg</h3><p class="muted">Begin met één klein moment. Jij kiest of je het privé houdt of samen deelt.</p></div>';return;
+ }
+ const me=state.session?.user?.id;
+ $('memories-list').innerHTML=list.map(item=>{
+  const own=item.author_id===me;
+  const shared=item.visibility==='shared';
+  const visibility=shared?'<span class="tag active">Samen gedeeld</span>':'<span class="tag pending">Alleen ik</span>';
+  const note=item.note?'<p class="memory-note">'+safe(item.note)+'</p>':'';
+  const actions=own?'<div class="buttons"><button type="button" class="secondary-btn" data-action="'+(shared?'mem-private':'mem-share')+'" data-id="'+safe(item.id)+'" data-revision="'+Number(item.revision)+'">'+(shared?'Weer privé maken':'Delen met partner')+'</button></div><details class="cancel-confirm"><summary>Herinnering verwijderen</summary><p class="muted">Dit verwijdert de tekst voor jullie allebei. Dit kun je niet ongedaan maken.</p><button type="button" class="ghost-btn" data-action="mem-delete" data-id="'+safe(item.id)+'" data-revision="'+Number(item.revision)+'">Ja, verwijderen</button></details>':'';
+  return '<article class="card memory-card">'+visibility+'<h3>'+safe(item.title)+'</h3><p class="meta">'+safe(item.happened_on)+' · '+(own?'Van jou':'Van '+safe(item.author_name||'je partner'))+'</p>'+note+actions+'</article>';
+ }).join('');
 }
 function renderDates(){
   const list=state.dashboard?.dates||[];
@@ -322,6 +345,9 @@ async function runAction(action,extra={}){
     'board-confirm':()=>rpc('us_board_confirm_start',{p_round_id:b.id}),
     'board-complete':()=>rpc('us_board_complete',{p_round_id:b.id}),
     'board-skip':()=>rpc('us_board_skip',{p_round_id:b.id}),
+    'mem-share':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'shared',p_expected_revision:Number(extra.revision)}),
+    'mem-private':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'private',p_expected_revision:Number(extra.revision)}),
+    'mem-delete':()=>rpc('us_memory_delete',{p_memory_id:id,p_expected_revision:Number(extra.revision)}),
     'date-cancel':()=>rpc('us_cancel_date',{p_date_id:id,p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'change-accept':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'accept',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'change-decline':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'decline',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
@@ -330,7 +356,7 @@ async function runAction(action,extra={}){
     'create-code':async()=>{const v=await rpc('us_create_pair');state.pairCode=v.code;return v;},
   };
   if(!operations[action])return;
-  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel')&&!validUuid(id)))return;
+  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id)))return;
   setBusy(true);
   try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Opgeslagen en gesynchroniseerd.');}
   catch(e){toast(failText(e),true)}finally{setBusy(false)}
@@ -408,6 +434,24 @@ function bind(){
     }catch(err){toast(failText(err),true)}
     finally{setBusy(false)}
   });
+  $('memory-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(state.working||!paired())return;
+    const title=$('memory-title').value.trim(),note=$('memory-note').value;
+    const occurred=$('memory-date').value,visibility=$('memory-visibility').value;
+    if(!title||title.length>100||note.length>3000||!/^\d{4}-\d{2}-\d{2}$/.test(occurred)||
+       occurred<'1900-01-01'||occurred>amsterdamDay(new Date())||!['private','shared'].includes(visibility)){
+      toast('Controleer titel, datum en tekst. De datum mag niet in de toekomst liggen.',true);return;
+    }
+    setBusy(true);
+    try{
+      await rpc('us_memory_create',{p_title:title,p_note:note,p_happened_on:occurred,p_visibility:visibility,p_request_id:crypto.randomUUID()});
+      $('memory-form').reset();
+      $('memory-date').value=amsterdamDay(new Date());
+      await syncAll({quiet:true});
+      toast(visibility==='private'?'Privéherinnering bewaard.':'Herinnering gedeeld met je partner.');
+    }catch(err){toast(failText(err),true)}finally{setBusy(false)}
+  });
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
@@ -421,7 +465,7 @@ function bind(){
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
-  bind();renderDateIdeas();$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
+  bind();renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
   try{
     const params=new URLSearchParams(location.hash.slice(1));
     const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');

@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.4.2',
+  version: '0.5.0',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -137,25 +137,73 @@ function renderDates(){
     return `<article class="card">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}</article>`
   }).join('');
 }
-function renderBoard(){
-  const b=state.board||{};const n=Number(b.position)||1;const round=b.round;
-  $('board-position').textContent=String(n);$('board-chapter').textContent='HOOFDSTUK '+(Number(b.chapter)||1);
-  const range=Array.from({length:9},(_,i)=>Math.max(1,n-3)+i);$('board-trail').innerHTML=range.map(v=>`<span class="trail-tile ${v===n?'current':''} ${v%20===0?'super':''}" title="Vakje ${v}${v%20===0?' · superopdracht':''}">${v%20===0?'✦':v}</span>`).join('');
-  $('board-next-note').textContent='Elke 20e stap wacht een speciale gezamenlijke uitdaging. Volgende: vakje '+(b.next_super_cell||20);
-  if(!paired()){$('round-detail').innerHTML='<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';return}
-  if(!round){$('round-detail').innerHTML='<h3>Klaar voor een nieuwe opdracht?</h3><p class="muted">Iedereen krijgt een eigen geheime voorbereiding. De gezamenlijke finale komt pas later tevoorschijn.</p><label for="prep-days">Voorbereidingstijd</label><select id="prep-days"><option value="1">1 dag</option><option value="2">2 dagen</option><option value="3" selected>3 dagen</option><option value="4">4 dagen</option><option value="5">5 dagen</option><option value="7">7 dagen</option></select><p class="muted">Bij superopdrachten is minimaal 3 dagen voorbereiding vereist.</p><button class="primary-btn" data-action="board-begin">Begin de volgende opdracht</button>';return}
-  const isPrep=round.status==='preparing',isActive=round.status==='active';let html=`<span class="tag ${round.is_super?'pending':'active'}">${round.is_super?'✦ Superopdracht':'Vakje '+Number(round.cell)}</span><h3>${safe(round.title)}</h3>`;
-  if(isPrep){html+=`<p class="muted">Geheime voorbereiding tot <strong class="countdown">${timeFmt.format(new Date(round.prep_until))}</strong>.</p><div class="task-box"><span class="eyebrow">ALLEEN VOOR JOU</span><p>${safe(round.my_assignment)}</p></div><p class="muted">${round.partner_ready?'Je partner is klaar.':'Je partner is nog aan het voorbereiden.'}</p>`;
-    html+=`<div class="buttons">${!round.my_ready?'<button class="primary-btn" data-action="board-ready">Ik ben voorbereid</button>':'<span class="tag active">Jij bent klaar ✓</span>'}${round.can_confirm_start&&!round.my_start_confirmed?'<button class="primary-btn" data-action="board-confirm">Ik wil starten</button>':''}</div>`;
-    if(round.my_start_confirmed)html+='<p class="muted">Je hebt starten bevestigd. Wachten op je partner.</p>';
-  } else if(isActive){html+=`<div class="task-box"><span class="eyebrow">DE GEZAMENLIJKE FINALE</span><p>${safe(round.shared_challenge)}</p></div>`;
-    if(round.my_completed)html+='<span class="tag active">Jij hebt de opdracht afgerond ✓</span>';
-    else html+='<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';
-    if(round.partner_completed)html+='<p class="muted">Je partner heeft bevestigd dat de opdracht klaar is.</p>';
+function renderBoard() {
+  const board = state.board || {};
+  const position = Math.max(1, Number(board.position) || 1);
+  const round = board.round || null;
+  const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
+  const first = Math.floor((position - 1) / 12) * 12 + 1;
+  const members = (state.dashboard?.members || []).slice(0, 2);
+  const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
+  const players = playerNames.map((name, i) =>
+    `<span class="board-pawn pawn-${i + 1}" title="${safe(name)}" aria-hidden="true">${safe(name.charAt(0).toLocaleUpperCase('nl-NL'))}</span>`
+  ).join('');
+  const path = Array.from({length: 12}, (_, slot) => {
+    const row = Math.floor(slot / 4);
+    const col = slot % 4;
+    const number = first + row * 4 + (row % 2 ? 3 - col : col);
+    const isCurrent = number === position;
+    const isTarget = number === activeCell;
+    const isSuper = number % 20 === 0;
+    const completed = number < position;
+    return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
+  }).join('');
+  $('board-position').textContent = String(position);
+  $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
+  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
+  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
+  $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
+
+  if (!paired()) {
+    $('round-detail').innerHTML = '<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';
+    return;
   }
-  if((isPrep||isActive)&&!round.my_skip_requested)html+='<button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
-  else if(round.my_skip_requested)html+='<p class="muted">Jij hebt overslaan gevraagd. Je partner moet dit ook bevestigen.</p>';
-  $('round-detail').innerHTML=html;
+  if (!round) {
+    $('round-detail').innerHTML = '<h3>Klaar voor de volgende opdracht?</h3><p class="muted">Jullie krijgen ieder een andere, geheime voorbereiding. De gezamenlijke opdracht verschijnt pas nadat de start is bevestigd.</p><label for="prep-days">Voorbereidingstijd</label><select id="prep-days"><option value="1">1 dag</option><option value="2">2 dagen</option><option value="3" selected>3 dagen</option><option value="4">4 dagen</option><option value="5">5 dagen</option><option value="7">7 dagen</option></select><p class="muted">Bij superopdrachten is minstens 3 dagen voorbereiding vereist.</p><button class="primary-btn" data-action="board-begin">Begin de volgende opdracht</button>';
+    return;
+  }
+  const isPreparing = round.status === 'preparing';
+  const isActive = round.status === 'active';
+  let html = `<span class="tag ${round.is_super ? 'pending' : 'active'}">${round.is_super ? '✦ Superopdracht' : 'Missie op vakje ' + Number(round.cell)}</span><h3>${safe(round.title)}</h3>`;
+  if (isPreparing) {
+    const bothReady = Boolean(round.my_ready && round.partner_ready);
+    const count = Number(Boolean(round.my_ready)) + Number(Boolean(round.partner_ready));
+    const startAt = new Date(round.prep_until);
+    const deadline = Number.isFinite(startAt.getTime()) ? timeFmt.format(startAt) : 'het afgesproken moment';
+    const countdownHours = Number.isFinite(startAt.getTime()) ? Math.max(0, Math.ceil((startAt.getTime() - Date.now()) / 3600000)) : null;
+    const untilText = countdownHours === null ? '' : countdownHours > 0 ? ` (nog ongeveer ${countdownHours} uur)` : ' (tijd bereikt, synchroniseren…)';
+    html += `<div class="prep-progress"><span class="eyebrow">VOORBEREIDING</span><strong>${count}/2 klaar</strong><div class="prep-track"><span style="width:${count * 50}%"></span></div><p class="muted">Startmoment: <strong class="countdown">${safe(deadline)}</strong>${untilText}</p></div>`;
+    html += `<div class="task-box"><span class="eyebrow">ALLEEN VOOR JOU</span><p>${safe(round.my_assignment)}</p></div>`;
+    html += `<div class="readiness"><span class="ready-line${round.my_ready ? ' ready' : ''}">${round.my_ready ? '✓' : '○'} Jij: ${round.my_ready ? 'klaar' : 'nog voorbereiden'}</span><span class="ready-line${round.partner_ready ? ' ready' : ''}">${round.partner_ready ? '✓' : '○'} Partner: ${round.partner_ready ? 'klaar' : 'nog voorbereiden'}</span></div>`;
+    if (!round.my_ready) html += '<button class="primary-btn" data-action="board-ready">Ik ben voorbereid</button>';
+    if (round.can_confirm_start && !round.my_start_confirmed) {
+      html += '<p class="muted">De voorbereidingstijd is voorbij. Jullie mogen nu allebei de start bevestigen.</p><button class="primary-btn" data-action="board-confirm">Ik wil starten</button>';
+    } else if (round.my_start_confirmed) {
+      html += '<p class="muted">Jij hebt de start bevestigd. De gezamenlijke missie verschijnt na de bevestiging van je partner.</p>';
+    } else if (bothReady) {
+      html += '<p class="muted">Jullie zijn allebei klaar! De knop ‘Ik wil starten’ verschijnt na het startmoment. Dat wordt door de server bewaakt.</p>';
+    } else {
+      html += '<p class="muted">Beiden moeten voorbereid zijn en de voorbereidingstijd moet verstreken zijn voordat jullie kunnen starten.</p>';
+    }
+  } else if (isActive) {
+    html += `<div class="task-box"><span class="eyebrow">DE GEZAMENLIJKE MISSIE</span><p>${safe(round.shared_challenge)}</p></div>`;
+    if (round.my_completed) html += '<span class="tag active">Jij hebt de opdracht afgerond ✓</span>';
+    else html += '<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';
+    if (round.partner_completed) html += '<p class="muted">Je partner heeft de opdracht al afgerond.</p>';
+  }
+  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
+  else if (round.my_skip_requested) html += '<p class="muted">Jij hebt voorgesteld om over te slaan. Je partner moet dat ook bevestigen.</p>';
+  $('round-detail').innerHTML = html;
 }
 async function runAction(action,extra={}){
   if(state.working)return;

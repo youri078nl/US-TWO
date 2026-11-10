@@ -76,6 +76,17 @@
 
         <section id="dates-panel" class="tab-panel hidden" aria-label="Agenda">
           <div class="section-heading"><div><span class="eyebrow">TIJD VOOR IETS LEUKS</span><h2>Onze dates</h2></div></div>
+
+          <div class="panel inset stack" id="calendar-panel">
+            <div class="calendar-toolbar">
+              <button type="button" class="icon-btn" data-action="calendar-prev" aria-label="Vorige maand">‹</button>
+              <h3 id="calendar-month-label">Maandoverzicht</h3>
+              <button type="button" class="icon-btn" data-action="calendar-next" aria-label="Volgende maand">›</button>
+            </div>
+            <div id="calendar-grid" class="calendar-grid" aria-label="Agenda per maand"></div>
+            <div id="calendar-day-detail" class="calendar-day-detail" aria-live="polite"></div>
+            <button type="button" class="ghost-btn" data-action="calendar-today">Ga naar vandaag</button>
+          </div>
           <div class="panel inset stack"><h3>Nodig elkaar uit</h3><p class="muted">Een voorstel blijft open totdat de ander reageert.</p>
             <form id="date-form">
               <label for="date-title">Wat gaan jullie doen?</label><input id="date-title" maxlength="120" required placeholder="Bijvoorbeeld een verrassingswandeling">
@@ -122,9 +133,35 @@
           <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
         </section>
 
+
+        <section id="memories-panel" class="tab-panel hidden" aria-label="Herinneringen">
+          <div class="section-heading"><div><span class="eyebrow">JULLIE MOMENTEN</span><h2>Herinneringenboek</h2></div></div>
+          <div class="panel inset stack">
+            <h3>Leg een moment vast</h3>
+            <p class="muted">Standaard privé. Je bepaalt zelf of een herinnering zichtbaar wordt voor je partner.</p>
+            <form id="memory-form">
+              <label for="memory-title">Titel van het moment</label>
+              <input id="memory-title" maxlength="100" required placeholder="Bijvoorbeeld samen langs het water">
+              <label for="memory-date">Wanneer was het?</label>
+              <input id="memory-date" type="date" required>
+              <label for="memory-note">Jouw verhaal (optioneel)</label>
+              <textarea id="memory-note" maxlength="3000" rows="4" placeholder="Wat wil je onthouden?"></textarea>
+              <label for="memory-visibility">Wie mag dit lezen?</label>
+              <select id="memory-visibility">
+                <option value="private" selected>Alleen ik (privé)</option>
+                <option value="shared">Samen delen</option>
+              </select>
+              <button class="primary-btn" type="submit">Herinnering bewaren</button>
+            </form>
+          </div>
+          <div class="section-heading slim"><h3>Jullie herinneringen</h3></div>
+          <div id="memories-list" class="stack" aria-live="polite"><p class="muted">Herinneringen laden…</p></div>
+          <p class="muted">Foto's en video's worden pas toegevoegd wanneer de privéopslag en toestelmachtigingen getest zijn.</p>
+        </section>
+
         <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
           <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
-          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.7.0</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
+          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.8.0</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button type="button" class="secondary-btn" data-action="open-pair">Account en koppeling</button><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
           <div class="panel inset install-tip"><h3>Zet US TWO op het beginscherm</h3><p>Open deze pagina in Safari, tik op <strong>Delen</strong> en kies <strong>Zet op beginscherm</strong>. Vink <strong>Open als webapp</strong> aan als die optie verschijnt.</p></div>
         </section>
       </div>
@@ -133,7 +170,7 @@
       <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
       <button type="button" data-tab="game"><span class="nav-icon">◇</span>Spel</button>
-      <button type="button" data-tab="pair"><span class="nav-icon">♡</span>Koppelen</button>
+      <button type="button" data-tab="memories"><span class="nav-icon">♡</span>Momenten</button>
       <button type="button" data-tab="more"><span class="nav-icon">☷</span>Meer</button>
     </nav>
   </div>

@@ -1,0 +1,17 @@
+{
+  "name": "US TWO - Samen op avontuur",
+  "short_name": "US TWO",
+  "description": "Jullie eigen plek voor dates, verrassingen en geheime uitdagingen.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#100e1b",
+  "theme_color": "#110f1f",
+  "lang": "nl",
+  "orientation": "portrait-primary",
+  "icons": [
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

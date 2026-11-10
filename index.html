@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#110f1f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="US TWO">
+  <meta name="description" content="Jullie eigen plek voor dates, verrassingen en geheime uitdagingen.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://vuigivzwkxelsisbjjlk.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>US TWO | Samen op avontuur</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="US TWO"><span class="brand-symbol" aria-hidden="true">✦</span><div class="brand-name">US <b>TWO</b><small>ALWAYS BETTER TOGETHER</small></div></div>
+      <div class="top-actions"><span class="status-pill" id="connection-status">Verbinden…</span><button id="refresh-btn" type="button" class="icon-btn hidden" aria-label="Vernieuw gegevens" title="Vernieuwen">↻</button></div>
+    </header>
+
+    <main id="main">
+      <section id="auth-view" class="auth-view panel">
+        <div class="auth-hero"><span class="hero-glyph" aria-hidden="true">♡</span><span class="eyebrow">JULLIE EIGEN AVONTUUR</span><h1>Een beetje meer <em>samen.</em></h1><p>Plan een date, verras elkaar en speel jullie verhaal verder.</p></div>
+        <div class="auth-tabs" role="group" aria-label="Account"><button id="login-tab" class="selected" type="button">Inloggen</button><button id="signup-tab" type="button">Account maken</button></div>
+        <form id="auth-form" autocomplete="on">
+          <label for="auth-email">E-mailadres</label><input id="auth-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="naam@voorbeeld.nl" required maxlength="254">
+          <label for="auth-password">Wachtwoord</label><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Minimaal 6 tekens">
+          <button class="primary-btn full" id="auth-submit" type="submit">Inloggen</button>
+        </form>
+        <p class="form-note" id="auth-note">Gebruik een eigen account. Je partner heeft een ander account.</p>
+        <p class="feedback" id="auth-feedback" role="status" aria-live="polite"></p>
+      </section>
+
+      <div id="app-view" class="hidden">
+        <section class="welcome panel">
+          <span class="eyebrow">OUR LITTLE UNIVERSE · <span id="date-today"></span></span>
+          <h1>Meer tijd voor <em>ons.</em></h1>
+          <p id="welcome-note">Jullie avontuur begint hier.</p>
+          <div class="couple-banner" id="couple-banner"><span class="dot"></span><span>Verbinden met jullie gezamenlijke ruimte…</span></div>
+        </section>
+
+        <section id="home-panel" class="tab-panel" aria-label="Vandaag">
+          <div class="section-heading"><div><span class="eyebrow">IN EEN OOGOPSLAG</span><h2>Jullie moment</h2></div><span class="mini-sparkle">✦</span></div>
+          <div id="home-cards" class="stack"><p class="muted">Gegevens laden…</p></div>
+        </section>
+
+        <section id="pair-panel" class="tab-panel hidden" aria-label="Koppelen">
+          <div class="section-heading"><div><span class="eyebrow">EERST JULLIE TWEE</span><h2>Samen verbinden</h2></div></div>
+          <div class="panel inset stack">
+            <h3>Jouw naam</h3><p class="muted">Zo ziet de ander jouw naam in US TWO.</p>
+            <form id="name-form"><label for="profile-name">Schermnaam</label><input id="profile-name" maxlength="50" required placeholder="Bijvoorbeeld Kim"><button class="secondary-btn" type="submit">Naam opslaan</button></form>
+          </div>
+          <div class="panel inset stack" id="pair-controls"><h3>Jullie verbinden</h3><p class="muted">Maak eerst je profiel aan.</p></div>
+        </section>
+
+        <section id="dates-panel" class="tab-panel hidden" aria-label="Agenda">
+          <div class="section-heading"><div><span class="eyebrow">TIJD VOOR IETS LEUKS</span><h2>Onze dates</h2></div></div>
+          <div class="panel inset stack"><h3>Nodig elkaar uit</h3><p class="muted">Een voorstel blijft open totdat de ander reageert.</p>
+            <form id="date-form">
+              <label for="date-title">Wat gaan jullie doen?</label><input id="date-title" maxlength="120" required placeholder="Bijvoorbeeld een verrassingswandeling">
+              <label for="date-when">Wanneer?</label><input id="date-when" type="datetime-local" required>
+              <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
+              <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
+            </form>
+          </div>
+          <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div><div id="dates-list" class="stack"></div>
+        </section>
+
+        <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
+          <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
+          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
+          <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
+        </section>
+
+        <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
+          <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
+          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.4.0</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
+          <div class="panel inset install-tip"><h3>Zet US TWO op het beginscherm</h3><p>Open deze pagina in Safari, tik op <strong>Delen</strong> en kies <strong>Zet op beginscherm</strong>. Vink <strong>Open als webapp</strong> aan als die optie verschijnt.</p></div>
+        </section>
+      </div>
+    </main>
+    <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
+      <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
+      <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
+      <button type="button" data-tab="game"><span class="nav-icon">◇</span>Spel</button>
+      <button type="button" data-tab="pair"><span class="nav-icon">♡</span>Koppelen</button>
+      <button type="button" data-tab="more"><span class="nav-icon">☷</span>Meer</button>
+    </nav>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="update-bar" class="update-bar hidden" role="status"><span>Een nieuwe versie van US TWO staat klaar.</span><button id="apply-update" type="button">Bijwerken</button></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

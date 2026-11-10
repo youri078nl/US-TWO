@@ -72,3 +72,30 @@
 .cancel-confirm p{margin:12px 0;font-size:13px}
 .cancel-confirm button{width:100%;background:#482d40}
 .date-change-notice .buttons button{min-width:125px}
+
+
+/* 0.8.0 Calendar and privacy-first memories */
+textarea{width:100%;resize:vertical;border:1px solid #625875;background:#131021;border-radius:12px;color:white;padding:13px 14px;min-height:108px;line-height:1.5;font:inherit}
+textarea:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+textarea::placeholder{color:#a89db7}
+.calendar-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.calendar-toolbar h3{text-align:center;font-size:19px;text-transform:capitalize}
+.calendar-toolbar button{border:1px solid #665376;border-radius:12px;background:#312640;color:#f4d1e7;font-size:29px;font-weight:700}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.calendar-weekday{min-width:0;padding:6px 1px;text-transform:uppercase;font-size:11px;font-weight:800;color:var(--muted);text-align:center}
+.calendar-day,.calendar-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;aspect-ratio:1;border:1px solid transparent;background:#282139;color:#f9eff9;border-radius:11px;font-size:13px;font-weight:750;padding:0}
+.calendar-day{min-height:39px}
+.calendar-day.today{border-color:#b79dff}
+.calendar-day.selected{background:linear-gradient(130deg,var(--peach),var(--coral));color:#261528}
+.calendar-day.has-dates{font-weight:900}
+.calendar-dot{height:5px;width:5px;border-radius:50%;background:var(--mint)}
+.calendar-day.selected .calendar-dot{background:#2b1c33}
+.calendar-day-detail{padding:12px 0 3px;border-top:1px solid #564561}
+.calendar-day-detail h4{margin:0 0 8px;font-size:15px;text-transform:capitalize}
+.calendar-event{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:9px 0;line-height:1.5;font-size:13px}
+.calendar-event .tag{padding:5px 8px}
+.memory-card h3{margin-top:10px;overflow-wrap:anywhere}
+.memory-note{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;margin:12px 0;padding:13px;background:#29243a;border-radius:12px}
+.memory-card .buttons button{width:100%}
+#memory-form .primary-btn{width:100%}
+@media(max-width:380px){.calendar-grid{gap:3px}.calendar-day{font-size:12px;min-height:36px}.calendar-toolbar h3{font-size:17px}}

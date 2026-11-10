@@ -25,11 +25,28 @@
     <main id="main">
       <section id="auth-view" class="auth-view panel">
         <div class="auth-hero"><span class="hero-glyph" aria-hidden="true">♡</span><span class="eyebrow">JULLIE EIGEN AVONTUUR</span><h1>Een beetje meer <em>samen.</em></h1><p>Plan een date, verras elkaar en speel jullie verhaal verder.</p></div>
-        <div class="auth-tabs" role="group" aria-label="Account"><button id="login-tab" class="selected" type="button">Inloggen</button><button id="signup-tab" type="button">Account maken</button></div>
+        <div class="auth-tabs" id="auth-tabs" role="group" aria-label="Account"><button id="login-tab" class="selected" type="button">Inloggen</button><button id="signup-tab" type="button">Account maken</button></div>
         <form id="auth-form" autocomplete="on">
           <label for="auth-email">E-mailadres</label><input id="auth-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="naam@voorbeeld.nl" required maxlength="254">
           <label for="auth-password">Wachtwoord</label><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Minimaal 6 tekens">
           <button class="primary-btn full" id="auth-submit" type="submit">Inloggen</button>
+        </form>
+        <button type="button" id="forgot-password" class="ghost-btn full">Wachtwoord vergeten?</button>
+        <form id="reset-request-form" class="hidden" autocomplete="on">
+          <h2>Wachtwoord herstellen</h2>
+          <p class="form-note">Vul het e-mailadres van je bestaande US TWO-account in. We sturen je een veilige herstellink.</p>
+          <label for="reset-email">E-mailadres</label>
+          <input id="reset-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required placeholder="naam@voorbeeld.nl">
+          <button type="submit" class="primary-btn full">Stuur herstellink</button>
+          <button type="button" class="ghost-btn full" id="reset-request-cancel">Terug naar inloggen</button>
+        </form>
+        <form id="reset-change-form" class="hidden" autocomplete="off">
+          <h2>Kies een nieuw wachtwoord</h2>
+          <label for="reset-new-password">Nieuw wachtwoord</label>
+          <input id="reset-new-password" name="new-password" type="password" autocomplete="new-password" minlength="8" required placeholder="Minimaal 8 tekens">
+          <label for="reset-repeat-password">Herhaal nieuw wachtwoord</label>
+          <input id="reset-repeat-password" name="repeat-password" type="password" autocomplete="new-password" minlength="8" required placeholder="Herhaal het wachtwoord">
+          <button type="submit" class="primary-btn full">Wachtwoord opslaan</button>
         </form>
         <p class="form-note" id="auth-note">Gebruik een eigen account. Je partner heeft een ander account.</p>
         <p class="feedback" id="auth-feedback" role="status" aria-live="polite"></p>

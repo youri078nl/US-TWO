@@ -80,9 +80,20 @@
             <form id="date-form">
               <label for="date-title">Wat gaan jullie doen?</label><input id="date-title" maxlength="120" required placeholder="Bijvoorbeeld een verrassingswandeling">
               <label for="date-when">Wanneer?</label><input id="date-when" type="datetime-local" required>
-              <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
+              <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="30">30 minuten</option><option value="45">45 minuten</option><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
               <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
             </form>
+          </div>
+          <div class="panel inset stack" id="date-ideas">
+            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
+            <div class="idea-filters">
+              <label for="idea-budget">Maximaal budget</label>
+              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
+              <label for="idea-place">Locatie</label>
+              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
+            </div>
+            <div id="idea-results" class="stack" aria-live="polite"></div>
+            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
           </div>
           <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div><div id="dates-list" class="stack"></div>
         </section>
@@ -95,7 +106,7 @@
 
         <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
           <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
-          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.5.0</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
+          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.5.1</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
           <div class="panel inset install-tip"><h3>Zet US TWO op het beginscherm</h3><p>Open deze pagina in Safari, tik op <strong>Delen</strong> en kies <strong>Zet op beginscherm</strong>. Vink <strong>Open als webapp</strong> aan als die optie verschijnt.</p></div>
         </section>
       </div>

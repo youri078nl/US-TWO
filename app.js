@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.5.0',
+  version: '0.5.1',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -10,6 +10,8 @@ const STORAGE_KEY = 'us-two-web-session-v1';
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
 const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'});
+const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spullen uit huis samen een piepklein dorp."],["Keukenlab voor twee",90,15,"thuis","Verzin een gerecht met ingrediënten die jullie kennen."],["Samen een filmtrailer maken",30,0,"thuis","Bedenk een titel en speel jullie eigen filmtrailer."],["Wandeling met drie vragen",60,0,"buiten","Kies een veilige route en stel elkaar drie gekke vragen."],["Onzinreclame maken",30,0,"thuis","Maak een reclamespot voor een nutteloos voorwerp."],["Tien gratis mini-avonturen",30,0,"beide","Bedenk ieder vijf kleine avonturen die niets kosten."],["Fotomissie: filmposter",60,0,"beide","Maak samen een foto alsof jullie in een film spelen."],["Picknick met een thema",90,15,"buiten","Neem iets lekkers mee naar een fijne plek."],["Muzikale herinneringen",45,0,"thuis","Vertel welk nummer bij een mooie herinnering hoort."],["Kaartspel met nieuwe regels",60,0,"thuis","Bedenk samen verrassende regels voor een bestaand spel."],["Speurtocht door huis",45,0,"thuis","Verstop aanwijzingen voor een kleine speurtocht."],["Samen sterren kijken",60,0,"buiten","Zoek bij geschikt weer een plek om naar de lucht te kijken."]]);
+let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
 
 function toast(message, error=false) {
@@ -124,6 +126,19 @@ function renderPair(){
   else {content=`<h3>Word onderdeel van een duo</h3><p class="muted">Heb je al een code van je partner? Voer die hieronder in. Anders kun je zelf een duo starten.</p><form id="join-form"><label for="pair-code">Koppelcode van je partner</label><input id="pair-code" spellcheck="false" autocapitalize="characters" autocomplete="off" placeholder="32 tekens" minlength="32" maxlength="48" required><button class="primary-btn" type="submit">Koppel onze accounts</button></form><p class="muted center">of</p><button class="secondary-btn" data-action="create-code">Maak een nieuwe koppelcode</button>`}
   if(state.pairCode) content+=`<div class="task-box"><h4>Jouw eenmalige koppelcode</h4><div class="code-block" id="issued-code">${safe(state.pairCode)}</div><div class="buttons"><button class="secondary-btn" data-action="copy-code">Kopieer code</button></div><p class="muted">24 uur geldig. Deel deze alleen rechtstreeks met je partner.</p></div>`;
   $('pair-controls').innerHTML=content;
+}
+function renderDateIdeas(){
+  const budget=$('idea-budget').value;
+  const place=$('idea-place').value;
+  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v})=>(budget==='all'||v[2]<=Number(budget))&&(place==='all'||v[3]==='beide'||v[3]===place));
+  if(!filtered.length){$('idea-results').innerHTML='<p class="muted">Geen ideeën gevonden. Kies een ander filter.</p>';return}
+  const count=Math.min(3,filtered.length);
+  const chosen=Array.from({length:count},(_,i)=>filtered[(ideaOffset+i)%filtered.length]);
+  const rows=chosen.map(({v,i})=>{
+    const cost=v[2]===0?'Gratis':'Budgetindicatie tot €'+v[2];
+    return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
+  }).join('');
+  $('idea-results').innerHTML=rows+(filtered.length>3?'<button type="button" class="ghost-btn" data-action="more-ideas">Andere ideeën</button>':'');
 }
 function renderDates(){
   const list=state.dashboard?.dates||[];
@@ -272,7 +287,9 @@ function bind(){
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
+  $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
   $('refresh-btn').addEventListener('click',()=>syncAll());
   $('logout-btn').addEventListener('click',async()=>{if(state.session){try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch{}}clearSession();showAuth();toast('Uitgelogd.')});
@@ -284,7 +301,7 @@ function bind(){
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
-  bind();$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
+  bind();renderDateIdeas();$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
   try{
     const params=new URLSearchParams(location.hash.slice(1));
     const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');

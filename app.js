@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.4.0',
+  version: '0.4.1',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -57,7 +57,7 @@ async function rpc(name,body={},retry=true) {
   catch(e){if(retry&&e.status===401){await freshToken();return rpc(name,body,false)}throw e}
 }
 async function authorize(email,password,signUp){
-  const url=signUp?'/auth/v1/signup':'/auth/v1/token?grant_type=password';
+  const url=signUp?'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname):'/auth/v1/token?grant_type=password';
   const data=await request(url,{method:'POST',body:JSON.stringify({email,password})});
   if(!data?.access_token){$('auth-feedback').classList.remove('error');$('auth-feedback').textContent='Account aangemaakt. Controleer je e-mail voor de bevestigingslink en log daarna in.';return}
   saveSession(data);$('auth-password').value='';await showApp();
@@ -180,8 +180,38 @@ function bind(){
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
   bind();$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
-  try{const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(stored?.access_token&&stored?.refresh_token){state.session=stored;if(stored.expires_at<Date.now()/1000+80)await freshToken();await showApp()}else showAuth()}
-  catch(e){if(state.session){clearSession();showAuth()}toast(failText(e),true)}
+  try{
+    const params=new URLSearchParams(location.hash.slice(1));
+    const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');
+    if(isCallback){
+      // Tokens never belong in browser history or copied links.
+      history.replaceState(null,'',location.pathname+location.search);
+      if(params.has('error')||params.has('error_code')){
+        showAuth();$('auth-feedback').classList.add('error');
+        $('auth-feedback').textContent='Bevestiging mislukt: '+(params.get('error_description')||params.get('error')||'onbekende fout');
+      }else if(params.get('access_token')&&params.get('refresh_token')){
+        saveSession({
+          access_token:params.get('access_token'),
+          refresh_token:params.get('refresh_token'),
+          expires_in:Number(params.get('expires_in'))||3600,
+        });
+        try{
+          const user=await request('/auth/v1/user',{headers:{Authorization:'Bearer '+state.session.access_token}});
+          state.session.user=user;
+          localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
+        }catch(_error){ /* Login session stays valid; normal sync will report errors. */ }
+        await showApp();
+        toast('E-mailadres bevestigd. Je bent ingelogd.');
+      }else{showAuth();}
+    }else{
+      const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+      if(stored?.access_token&&stored?.refresh_token){
+        state.session=stored;
+        if(stored.expires_at<Date.now()/1000+80)await freshToken();
+        await showApp();
+      }else showAuth();
+    }
+  }catch(e){if(state.session){clearSession();showAuth()}toast(failText(e),true)}
   if('serviceWorker'in navigator&&location.protocol==='https:') {
     navigator.serviceWorker.register('./service-worker.js').then(reg=>{
       const update=worker=>{waitingWorker=worker;$('update-bar').classList.remove('hidden')};

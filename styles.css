@@ -62,3 +62,13 @@
 #date-change-editor p{margin:7px 0}
 #date-change-editor .buttons{margin-top:4px}
 @media(max-width:410px){#date-change-editor .buttons{display:grid}#date-change-editor .buttons button{width:100%}}
+
+
+/* US TWO 0.7.0: bevestigde annulering en tegenvoorstellen */
+.tag.cancelled{background:#353346;color:#c5c2d4}
+.cancel-confirm{margin-top:13px;padding:12px 15px;border:1px solid #65516e;background:#241c32;border-radius:14px}
+.cancel-confirm summary{cursor:pointer;min-height:32px;font-size:13px;font-weight:800;color:#ffc9cd;list-style-position:inside}
+.cancel-confirm summary:focus-visible{outline:3px solid var(--violet);border-radius:8px}
+.cancel-confirm p{margin:12px 0;font-size:13px}
+.cancel-confirm button{width:100%;background:#482d40}
+.date-change-notice .buttons button{min-width:125px}

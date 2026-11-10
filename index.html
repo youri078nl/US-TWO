@@ -95,7 +95,25 @@
             <div id="idea-results" class="stack" aria-live="polite"></div>
             <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
           </div>
-          <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div><div id="dates-list" class="stack"></div>
+          <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div>
+          <div class="panel inset stack hidden" id="date-change-editor" aria-labelledby="date-change-heading">
+            <h3 id="date-change-heading">Wijziging voorstellen</h3>
+            <p class="muted" id="date-change-original">De bestaande afspraak blijft staan totdat de ander instemt.</p>
+            <form id="date-change-form">
+              <label for="date-change-title">Nieuwe titel</label>
+              <input id="date-change-title" maxlength="120" required placeholder="Naam van de activiteit">
+              <label for="date-change-when">Nieuwe datum en tijd</label>
+              <input id="date-change-when" type="datetime-local" required>
+              <label for="date-change-duration">Nieuwe duur (minuten)</label>
+              <input id="date-change-duration" type="number" inputmode="numeric" min="15" max="1440" step="1" required>
+              <p class="muted">Dit is een voorstel. De datum verandert pas wanneer je partner accepteert.</p>
+              <div class="buttons">
+                <button class="primary-btn" type="submit">Voorstel versturen</button>
+                <button class="ghost-btn" type="button" id="date-change-cancel">Annuleren</button>
+              </div>
+            </form>
+          </div>
+          <div id="dates-list" class="stack"></div>
         </section>
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
@@ -106,7 +124,7 @@
 
         <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
           <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
-          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.5.1</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
+          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.6.0</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
           <div class="panel inset install-tip"><h3>Zet US TWO op het beginscherm</h3><p>Open deze pagina in Safari, tik op <strong>Delen</strong> en kies <strong>Zet op beginscherm</strong>. Vink <strong>Open als webapp</strong> aan als die optie verschijnt.</p></div>
         </section>
       </div>

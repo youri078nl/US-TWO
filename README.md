@@ -1,4 +1,4 @@
-# US TWO webapp 0.5.0
+# US TWO webapp 0.5.1
 
 Gratis PWA voor iPhone, naast de bestaande native Android-app. Beide gebruiken Supabase project `vuigivzwkxelsisbjjlk`.
 
@@ -25,3 +25,12 @@ De Supabase publishable key is publiek en geschikt voor browsers. Deel **nooit**
 - Weergave hoeveel spelers de geheime voorbereiding hebben afgerond (0/2, 1/2, 2/2), met duidelijk startmoment en uitleg waarom de knop voor starten nog niet beschikbaar kan zijn.
 - Geen databasewijzigingen. Alle tijdsloten en toestemming om te starten blijven servergestuurd. Android is niet aangepast door deze PWA-update.
 - Tests: JS-parse en vijf gerichte, met gemockte serverdata uitgevoerde weergavetests; geen echte toestellen of volledige browserregressie in deze release.
+
+## Wijzigingen 0.5.1 (10 november 2026)
+
+- Twaalf redactioneel gekozen date-ideeën zonder AI-dienst of abonnement.
+- Filter op maximaal budget en thuis/buiten; steeds maximaal drie opties tegelijk.
+- Een idee invullen is **geen** uitnodiging versturen: datum en tijd zijn verplicht en de gebruiker bevestigt expliciet met de bestaande verzendknop.
+- Suggesties zijn lokaal in de webapp, geen claims over actuele plaatsinformatie, beschikbaarheid of echte prijzen.
+- Agenda- en borddata blijven in dezelfde Supabase-database; geen schema- of accountwijziging.
+- Getest: JavaScript-syntaxis, vier filterscenario's, aanwezigheid van HTML/CSS-elementen en geen RPC bij alleen het kiezen van een idee. Geen echte iPhone-apparaattest uitgevoerd voor deze release.

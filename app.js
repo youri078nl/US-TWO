@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.4.1',
+  version: '0.4.2',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -64,6 +64,23 @@ async function authorize(email,password,signUp){
 }
 function showAuth() {
   $('auth-view').classList.remove('hidden');$('app-view').classList.add('hidden');$('bottom-nav').classList.add('hidden');$('refresh-btn').classList.add('hidden');
+  $('auth-tabs').classList.remove('hidden');
+  $('auth-form').classList.remove('hidden');
+  $('forgot-password').classList.remove('hidden');
+  $('auth-note').classList.remove('hidden');
+  $('reset-request-form').classList.add('hidden');
+  $('reset-change-form').classList.add('hidden');
+}
+function showRecovery(kind) {
+  showAuth();
+  $('auth-tabs').classList.add('hidden');
+  $('auth-form').classList.add('hidden');
+  $('forgot-password').classList.add('hidden');
+  $('auth-note').classList.add('hidden');
+  $(kind === 'change' ? 'reset-change-form' : 'reset-request-form').classList.remove('hidden');
+  $('auth-feedback').textContent='';
+  $('auth-feedback').classList.remove('error');
+  if(kind==='request')$('reset-email').value=$('auth-email').value.trim();
 }
 async function showApp(){
   $('auth-view').classList.add('hidden');$('app-view').classList.remove('hidden');$('bottom-nav').classList.remove('hidden');$('refresh-btn').classList.remove('hidden');
@@ -163,6 +180,46 @@ async function runAction(action,extra={}){
 function bind(){
   $('login-tab').addEventListener('click',()=>changeMode('login'));
   $('signup-tab').addEventListener('click',()=>changeMode('signup'));
+  $('forgot-password').addEventListener('click',()=>showRecovery('request'));
+  $('reset-request-cancel').addEventListener('click',()=>{showAuth();changeMode('login');});
+  $('reset-request-form').addEventListener('submit',async e=>{
+    e.preventDefault();if(state.working)return;
+    const email=$('reset-email').value.trim();if(!email)return;
+    setBusy(true);$('auth-feedback').textContent='';
+    try{
+      await request('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+location.pathname),{method:'POST',body:JSON.stringify({email})});
+      $('auth-feedback').classList.remove('error');
+      $('auth-feedback').textContent='Als dit e-mailadres bij een account hoort, ontvang je een herstellink. Controleer ook je spam.';
+    }catch(err){
+      $('auth-feedback').classList.add('error');
+      $('auth-feedback').textContent=failText(err);
+    }finally{setBusy(false);}
+  });
+  $('reset-change-form').addEventListener('submit',async e=>{
+    e.preventDefault();if(state.working)return;
+    const password=$('reset-new-password').value,repeat=$('reset-repeat-password').value;
+    if(password.length<8||password!==repeat){
+      $('auth-feedback').classList.add('error');
+      $('auth-feedback').textContent='Gebruik minstens 8 tekens en vul tweemaal hetzelfde wachtwoord in.';
+      return;
+    }
+    if(!state.session?.access_token){
+      showAuth();toast('Herstellink verlopen. Vraag een nieuwe aan.',true);return;
+    }
+    setBusy(true);
+    try{
+      if(state.session.expires_at<Date.now()/1000+80)await freshToken();
+      await request('/auth/v1/user',{method:'PUT',headers:{Authorization:'Bearer '+state.session.access_token},body:JSON.stringify({password})});
+      $('reset-new-password').value='';$('reset-repeat-password').value='';
+      try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch(_e){}
+      clearSession();showAuth();changeMode('login');
+      $('auth-feedback').classList.remove('error');
+      $('auth-feedback').textContent='Wachtwoord gewijzigd. Log nu in met je nieuwe wachtwoord.';
+    }catch(err){
+      $('auth-feedback').classList.add('error');
+      $('auth-feedback').textContent=failText(err);
+    }finally{setBusy(false);}
+  });
   $('auth-form').addEventListener('submit',async e=>{e.preventDefault();if(state.working)return;setBusy(true);$('auth-feedback').textContent='';try{await authorize($('auth-email').value.trim(),$('auth-password').value,state.mode==='signup')}catch(err){$('auth-feedback').classList.add('error');$('auth-feedback').textContent=failText(err)}finally{setBusy(false)}});
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
@@ -200,8 +257,13 @@ async function boot(){
           state.session.user=user;
           localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
         }catch(_error){ /* Login session stays valid; normal sync will report errors. */ }
-        await showApp();
-        toast('E-mailadres bevestigd. Je bent ingelogd.');
+        if(params.get('type')==='recovery'){
+          showRecovery('change');
+          toast('Herstellink geopend. Kies een nieuw wachtwoord.');
+        }else{
+          await showApp();
+          toast('E-mailadres bevestigd. Je bent ingelogd.');
+        }
       }else{showAuth();}
     }else{
       const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');

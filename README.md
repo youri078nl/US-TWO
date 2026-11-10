@@ -1,4 +1,4 @@
-# US TWO webapp 0.4.0
+# US TWO webapp 0.5.0
 
 Gratis PWA voor iPhone, naast de bestaande native Android-app. Beide gebruiken Supabase project `vuigivzwkxelsisbjjlk`.
 
@@ -17,3 +17,11 @@ Bij elke wijziging verhoog je de versie in `app.js` en de CACHE-string in `servi
 ## Beveiliging en beperkingen
 
 De Supabase publishable key is publiek en geschikt voor browsers. Deel **nooit** een Supabase secret of service_role key via GitHub. Alle RPC's gebruiken het accounttoken en server-side gebruikerschecks. Dit is een online MVP: aanmelden, koppelen, agenda, geheim opdrachtbord en updates. Zonder internet werkt de shell eventueel wel, maar geen synchronisatie. Geen pushmeldingen of AI-dateplanner in deze versie. Handmatige synchronisatie elke 20 seconden tijdens gebruik en bij terugkeren in de app.
+
+## Wijzigingen 0.5.0 (10 november 2026)
+
+- Visueel slingerpad met telkens 12 zichtbare vakjes, twee benoemde pionnen op de gezamenlijke serverpositie en een gemarkeerde huidige missie.
+- Extra herkenning voor elk 20e vakje (superopdracht); het bestaande serverhoofdstuk van 20 en de doorlopende voortgang blijven ongewijzigd.
+- Weergave hoeveel spelers de geheime voorbereiding hebben afgerond (0/2, 1/2, 2/2), met duidelijk startmoment en uitleg waarom de knop voor starten nog niet beschikbaar kan zijn.
+- Geen databasewijzigingen. Alle tijdsloten en toestemming om te starten blijven servergestuurd. Android is niet aangepast door deze PWA-update.
+- Tests: JS-parse en vijf gerichte, met gemockte serverdata uitgevoerde weergavetests; geen echte toestellen of volledige browserregressie in deze release.

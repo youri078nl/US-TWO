@@ -20,9 +20,10 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
+ elements['quest-pilot-budget'].value='0';
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
  const events={};
  const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
@@ -253,6 +254,34 @@ async function main(){
  await fallback.click('quest-pilot-refresh');
  assert.match(fallback.elements['quest-pilot-instructions'].textContent,/Maak samen iets/);
  console.log('PASS existing brief is readable when detailed instructions are missing');passed++;
- console.log('Web pilot checks:',passed+'/22 passed');
+ const budgets=setup('budget-filter');
+ const cards=[
+  {id:'free1',title:'Gratis wandeling',world:0,category:'Buiten',together:true,estimated_cost_eur:0},
+  {id:'free2',title:'Gratis tekenen',world:0,category:'Creatief',together:true,estimated_cost_eur:0},
+  {id:'paid10',title:'Picknick',world:0,category:'Buiten',together:true,estimated_cost_eur:10},
+  {id:'paid40',title:'Workshop',world:0,category:'Creatief',together:true,estimated_cost_eur:40},
+  {id:'paid100',title:'Dagtrip',world:0,category:'Avontuur',together:true,estimated_cost_eur:100}
+ ];
+ for(const limit of [0,10,20,40,60,100,'max']){
+   const result=budgets.ctx.USTwoQuestCatalog.chooseOptions(cards,{world:0,mode:'samen',position:0,budget:limit,limit:3});
+   assert.ok(result.some(c=>c.estimated_cost_eur===0),'Gratis activiteiten ontbreken bij '+limit);
+   assert.ok(result.every(c=>limit==='max'||c.estimated_cost_eur<=limit),'Budgetoverschrijding bij '+limit);
+ }
+ console.log('PASS all budget tiers retain free suggestions and enforce maximum');passed++;
+ assert.equal(budgets.ctx.USTwoQuestCatalog.chooseOptions(cards,{world:0,mode:'samen',position:0,budget:0}).filter(x=>x.estimated_cost_eur>0).length,0);
+ console.log('PASS zero-euro budget never shows paid dates');passed++;
+ budgets.setServer({paired:true,initialized:true,revision:8,position:0,world_index:0,phase:'choose',turn_user:myId});
+ budgets.setCatalog(cards);
+ await budgets.click('quest-pilot-refresh');
+ await budgets.click('quest-pilot-load-catalog');
+ assert.match(budgets.elements['quest-pilot-option-0'].textContent,/gratis/);
+ budgets.elements['quest-pilot-budget'].value='10';
+ budgets.elements['quest-pilot-budget'].handlers.change();
+ assert.equal(budgets.elements['quest-pilot-option-0'].disabled,true);
+ await budgets.click('quest-pilot-load-catalog');
+ assert.ok(budgets.elements['quest-pilot-option-0'].textContent.includes('gratis'));
+ assert.equal(budgets.calls.length,0);
+ console.log('PASS changing date budget invalidates stale choices without mutations');passed++;
+ console.log('Web pilot checks:',passed+'/25 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

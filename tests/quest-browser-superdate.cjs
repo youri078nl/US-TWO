@@ -37,6 +37,8 @@ async function install(page,user){
     return {data:stateFor(user),error:null};
   });
   await page.evaluate(({user,COUPLE})=>{
+    // Deterministic confirmation for the protocol flow; cancellation is tested separately.
+    window.confirm=()=>true;
     window.USTwoQuestPilotBridge={
       identity:()=>({paired:true,userId:user,coupleId:COUPLE}),
       read:async()=>({paired:true,initialized:true,position:20,revision:1,phase:'choose',world_index:0,turn_user:user}),
@@ -47,7 +49,7 @@ async function install(page,user){
     document.querySelector('#app-view').classList.remove('hidden');
     document.querySelector('#game-panel').classList.remove('hidden');
   },{user,COUPLE});
-  page.on('dialog',d=>d.accept());
+
 }
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});

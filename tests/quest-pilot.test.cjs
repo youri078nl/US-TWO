@@ -363,8 +363,8 @@ async function main(){
  cancelled.ctx.confirm=()=>false;
  await cancelled.click('quest-pilot-super-reveal');
  assert.equal(cancelled.calls.length,0);
- assert.equal(cancelled.elements['quest-pilot-super-reveal'].disabled,false);
- console.log('PASS cancelled superdate consent does not send an RPC or queue a mutation');passed++;
+ assert.match(cancelled.elements['quest-pilot-super-finale'].textContent,/verborgen/i);
+ console.log('PASS cancelled superdate consent does not send an RPC or reveal the finale');passed++;
  console.log('Web pilot checks:',passed+'/33 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

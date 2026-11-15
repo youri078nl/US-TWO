@@ -64,3 +64,11 @@ Voortgangspercentage in het private acceptatieregister blijft **14,54%**. De pro
 - Geen productieacceptatie, beveiligingsaudit, herstelproef of volledige native release.
 
 **De officiële gewogen voortgang blijft 14,54%.** Technische testuitbreidingen worden niet automatisch als voltooide masterplaneisen meegeteld.
+
+## Budgetfilter voor dates (15 november 2026)
+
+- Instelbaar maximum **gratis (€0), €10, €20, €40, €60, €100 of onbeperkt**. Dit betreft het **gezamenlijke totale** datebudget en is nooit een minimumbesteding.
+- Bestaande activiteiten blijven beschikbaar als gratis uitvoering met al aanwezige spullen. Wanneer toekomstige activiteiten een expliciete `estimated_cost_eur` hebben, verwijdert het filter alle suggesties boven het gekozen plafond. Ontbrekende kosten gelden voor de bestaande gratis opdrachten als €0; dit is geen actuele winkelprijsclaim.
+- Bij een betaalbudget en voldoende aanbod kiest het algoritme standaard **twee gratis en één betaalde opdracht**. Bij €0 uitsluitend gratis. Als er geen passende betaalde opdrachten bestaan, mogen alle drie gratis zijn.
+- Dit is voorlopig een browserproef. De bestaande Supabase-catalogus heeft nog geen kostencolom of nieuwe betaalde opdrachtkaarten. De daadwerkelijke uitwerking van prijsklassen voor meerdere werelden en financieel gecontroleerde richtprijzen blijft een afzonderlijke release-eis. Niet suggereren dat er al echte betaalde opdrachten live beschikbaar zijn.
+- Het wijzigen van de budgetselectie maakt verouderde voorstellen ongeldig. Serveracties blijven onderworpen aan aparte partneracceptatie en revisiecontrole.

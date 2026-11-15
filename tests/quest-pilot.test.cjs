@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
-const {indexedDB}=require('fake-indexeddb');
+const {IDBFactory}=require('fake-indexeddb');
 const html=fs.readFileSync('index.html','utf8');
 const app=fs.readFileSync('app.js','utf8');
 const sw=fs.readFileSync('service-worker.js','utf8');
@@ -26,7 +26,7 @@ function setup(name) {
  elements['quest-pilot-budget'].value='0';
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
  const events={};
- const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
+ const ctx={console,document:doc,indexedDB:new IDBFactory(),crypto:require('node:crypto').webcrypto};
  ctx.addEventListener=(name,fn)=>{events[name]=fn;};
  ctx.globalThis=ctx;ctx.window=ctx;
  ctx.navigator={onLine:true,locks:{request:async(_key,_options,fn)=>fn()}};

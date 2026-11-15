@@ -28,7 +28,18 @@ function chooseOptions(rows,{world,mode,position,history=[],limit=3,budget='max'
     .map(h=>typeof h==='string'?h:h?.id).filter(Boolean));
   const start=position%pool.length;
   const ordered=[...pool.slice(start),...pool.slice(0,start)];
-  return [...ordered.filter(x=>!recent.has(x.id)),...ordered.filter(x=>recent.has(x.id))].slice(0,limit);
+  const ranked=[...ordered.filter(x=>!recent.has(x.id)),...ordered.filter(x=>recent.has(x.id))];
+  const free=ranked.filter(c=>c.estimated_cost_eur===0);
+  const paid=ranked.filter(c=>c.estimated_cost_eur>0);
+  // Prefer two zero-cost dates and one paid alternative when both exist.
+  // The full choice remains available when there are fewer free options.
+  const chosen=free.slice(0,Math.min(free.length,Math.min(2,limit)));
+  if(paid.length&&chosen.length<limit)chosen.push(paid[0]);
+  for(const c of ranked) {
+    if(chosen.length>=limit)break;
+    if(!chosen.some(x=>x.id===c.id))chosen.push(c);
+  }
+  return chosen.slice(0,limit);
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={chooseOptions};
 if(typeof globalThis!=='undefined')globalThis.USTwoQuestCatalog=Object.freeze({chooseOptions});

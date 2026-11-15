@@ -6,8 +6,12 @@ const {chromium}=require('playwright');
 const URL='http://127.0.0.1:8765/';
 const uid='00000000-0000-4000-8000-000000000021';
 const couple='00000000-0000-4000-8000-000000000022';
+const exposedPages=new WeakSet();
 async function install(page, handler) {
-  await page.exposeFunction('testQuestRpc', handler);
+  if(!exposedPages.has(page)){
+    await page.exposeFunction('testQuestRpc', handler);
+    exposedPages.add(page);
+  }
   await page.evaluate(({uid,couple})=>{
     let state={paired:true,initialized:true,revision:8,position:13,world_index:0,
       phase:'active',my_done:false,my_skip:false,partner_skip:false};

@@ -10,6 +10,7 @@ on:
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
       - 'tests/quest-browser-offline.cjs'
+      - 'tests/quest-browser-superdate.cjs'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -49,3 +50,5 @@ jobs:
           node tests/quest-browser-smoke.cjs
       - name: Test durable offline replay in two real Chromium tabs
         run: node tests/quest-browser-offline.cjs
+      - name: Verify two-browser superdate consent and private preparation
+        run: node tests/quest-browser-superdate.cjs

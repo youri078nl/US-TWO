@@ -376,7 +376,7 @@ async function main(){
  const schedule=setup('schedule');
  schedule.setServer({paired:true,initialized:true,revision:12,position:4,phase:'active',schedule:null});
  await schedule.click('quest-pilot-refresh');
- assert.equal(schedule.elements['quest-pilot-schedule-propose'].disabled,false);
+ assert.equal(schedule.elements['quest-pilot-schedule-propose'].disabled,false, 'status='+schedule.elements['quest-pilot-message'].textContent+'; schedule='+schedule.elements['quest-pilot-schedule-status'].textContent);
  assert.equal(schedule.elements['quest-pilot-schedule-accept'].disabled,true);
  schedule.elements['quest-pilot-schedule-time'].value='2020-01-01T12:00';
  await schedule.click('quest-pilot-schedule-propose');

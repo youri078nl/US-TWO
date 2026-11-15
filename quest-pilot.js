@@ -5,6 +5,8 @@
   const $=id=>document.getElementById(id);
   let queue=null, queueFor='', loading=false, latest=null;
   const TASK_ACTIONS=['accept','reject','cancel','complete','skip'];
+  const SUPER_ACTIONS=['ready','reveal','done','skip'];
+  let currentSuper=null;
   const text=(id,value)=>{const el=$(id);if(el)el.textContent=String(value);};
   function identity() {
     const b=window.USTwoQuestPilotBridge;
@@ -50,15 +52,47 @@
         +' · '+Number(d.steps||0)+' stappen · '+(state.phase||'')
       : 'Geen actieve opdracht in de nieuwe serverreis.');
   }
+  function showSuper(all, pending, blocked) {
+    const items=Array.isArray(all)?all:[];
+    currentSuper=items.find(x=>x&&(x.status==='preparing'||x.status==='revealed'))||items[0]||null;
+    const v=currentSuper;
+    for(const a of SUPER_ACTIONS)$('quest-pilot-super-'+a).disabled=true;
+    if(!v) {
+      text('quest-pilot-super-status','Nog geen superdate ontgrendeld.');
+      text('quest-pilot-super-prep','Alleen jouw voorbereiding wordt hier weergegeven.');
+      text('quest-pilot-super-finale','De finale blijft verborgen totdat beide spelers akkoord geven.');
+      return;
+    }
+    text('quest-pilot-super-status','Vak '+v.cell+' · '+String(v.title||'Superdate')+
+      ' · status '+String(v.status)+' · revisie '+v.revision+
+      ' · voorbereiding tot '+String(v.prep_until||'onbekend')+
+      ' · jij klaar: '+(v.my_ready?'ja':'nee')+' · partner klaar: '+(v.partner_ready?'ja':'nee'));
+    // NEVER display prep_a or prep_b. RPC only exposes the authenticated user's my_prep.
+    text('quest-pilot-super-prep','Jouw voorbereiding: '+String(v.my_prep||'nog niet beschikbaar'));
+    const revealed=v.status==='revealed'||v.status==='completed';
+    text('quest-pilot-super-finale',revealed
+      ? 'Finale samen: '+String(v.finale_together||'')+' · op afstand: '+String(v.finale_remote||'')
+      : 'Finale verborgen tot twee afzonderlijke onthullingsakkoorden.');
+    const readyToAct=!pending&&!blocked&&Number.isSafeInteger(v.revision)&&Number.isSafeInteger(v.cell);
+    const open=v.status==='preparing'||v.status==='revealed';
+    $('quest-pilot-super-ready').disabled=!readyToAct||v.status!=='preparing'||!!v.my_ready||!!v.my_skip||!!v.partner_skip;
+    $('quest-pilot-super-reveal').disabled=!readyToAct||!v.can_reveal||!!v.my_reveal||!!v.my_skip||!!v.partner_skip;
+    $('quest-pilot-super-done').disabled=!readyToAct||v.status!=='revealed'||!!v.my_done||!!v.my_skip||!!v.partner_skip;
+    $('quest-pilot-super-skip').disabled=!readyToAct||!open||!!v.my_skip;
+  }
   async function refresh() {
     const q=await ensureQueue();
-    const [server,local]=await Promise.all([window.USTwoQuestPilotBridge.read(),q.state()]);
+    const [server,local,superdates]=await Promise.all([
+      window.USTwoQuestPilotBridge.read(),q.state(),
+      window.USTwoQuestPilotBridge.readSuper()
+    ]);
     latest=server;
     status(server,local.items,local.blocked);
+    showSuper(superdates,local.items.length>0,local.blocked);
   }
   async function operation(fn) {
     if(loading)return;loading=true;
-    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync',...TASK_ACTIONS.map(x=>'quest-pilot-'+x)])$(id).disabled=true;
+    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync',...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
     catch(e){
       // The server may be offline: show durable local queue state without another network call.
@@ -67,6 +101,8 @@
         text('quest-pilot-pending',`Wachtende acties: ${local.items.length}${local.blocked?' · geblokkeerd: '+local.blocked:''}`);
         $('quest-pilot-sync').disabled=local.items.length===0||Boolean(local.blocked);
         $('quest-pilot-start').disabled=true;
+        for(const a of TASK_ACTIONS)$('quest-pilot-'+a).disabled=true;
+        for(const a of SUPER_ACTIONS)$('quest-pilot-super-'+a).disabled=true;
       }catch(_storageError){}
       text('quest-pilot-message',String(e?.message||e));
     }
@@ -111,6 +147,35 @@
           type:'quest_action',requestId:crypto.randomUUID(),
           expectedRevision:state.revision,payload:{action}
         });
+        handleSync(await q.sync());
+      }));
+    }
+    for(const action of SUPER_ACTIONS) {
+      $('quest-pilot-super-'+action).addEventListener('click',()=>operation(async()=>{
+        identity();
+        const q=await ensureQueue();
+        const pending=await q.state();
+        if(pending.blocked||pending.items.length)throw Error('Los eerst de bewaarde wachtrij op.');
+        // Always re-read canonical server values rather than trust the rendered button.
+        const all=await window.USTwoQuestPilotBridge.readSuper();
+        const v=Array.isArray(all)?all.find(x=>x&&x.cell===currentSuper?.cell):null;
+        if(!v||!Number.isSafeInteger(v.cell)||v.cell<=0||v.cell%20!==0||
+           !Number.isSafeInteger(v.revision))throw Error('Ongeldige of verouderde superdate.');
+        const open=v.status==='preparing'||v.status==='revealed';
+        const allowed=action==='ready'?v.status==='preparing'&&!v.my_ready&&!v.my_skip&&!v.partner_skip
+          :action==='reveal'?v.status==='preparing'&&!!v.can_reveal&&!v.my_reveal&&!v.my_skip&&!v.partner_skip
+          :action==='done'?v.status==='revealed'&&!v.my_done&&!v.my_skip&&!v.partner_skip
+          :action==='skip'?open&&!v.my_skip:false;
+        if(!allowed)throw Error('Deze superdateactie is nog niet toegestaan.');
+        const message={
+          ready:'Bevestig dat jouw eigen voorbereiding klaar is. Die blijft verborgen voor je partner.',
+          reveal:'Geef toestemming voor het openen van de gezamenlijke finale? Beide spelers moeten akkoord geven.',
+          done:'Bevestig jouw voltooiing van deze superdate. Bonusstappen volgen pas na twee bevestigingen.',
+          skip:'Deze superdate samen overslaan? Er worden geen bonusstappen toegekend.'
+        };
+        if(!window.confirm(message[action]))return;
+        await q.enqueue({type:'super_action',requestId:crypto.randomUUID(),
+          expectedRevision:v.revision,payload:{cell:v.cell,action}});
         handleSync(await q.sync());
       }));
     }

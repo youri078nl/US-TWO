@@ -165,8 +165,18 @@
     const old=queue;queue=null;queueFor='';
     if(old)old.close().catch(()=>{});
   }
+  function showNetworkStatus() {
+    // navigator.onLine is advisory; a successful server response is the real proof.
+    const connected=typeof navigator==='undefined'||navigator.onLine!==false;
+    text('quest-pilot-network',connected
+      ? 'Netwerk beschikbaar volgens toestel. Bij wachtende acties: tik op opnieuw versturen.'
+      : 'Offline: acties blijven lokaal bewaard. Herstel internet en tik op opnieuw versturen.');
+  }
   function init() {
     if(!$('quest-pilot-refresh'))return;
+    showNetworkStatus();
+    window.addEventListener?.('online',showNetworkStatus);
+    window.addEventListener?.('offline',showNetworkStatus);
     window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
     $('quest-pilot-budget').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;

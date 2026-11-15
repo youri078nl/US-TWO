@@ -183,7 +183,7 @@ async function main(){
  await chooser.click('quest-pilot-refresh');
  assert.equal(chooser.elements['quest-pilot-load-catalog'].disabled,false);
  await chooser.click('quest-pilot-load-catalog');
- assert.match(chooser.elements['quest-pilot-option-0'].textContent,/Schilderen/);
+ assert.match(chooser.elements['quest-pilot-option-0'].textContent,/Schilderen/,chooser.elements['quest-pilot-message'].textContent);
  assert.match(chooser.elements['quest-pilot-option-2'].textContent,/Koken/);
  assert.doesNotMatch(chooser.elements['quest-pilot-option-2'].textContent,/Verboden/);
  await chooser.click('quest-pilot-option-0');

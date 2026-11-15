@@ -41,6 +41,12 @@
     text('quest-pilot-pending',`Wachtende acties: ${items.length}${blocked?' · geblokkeerd: '+blocked:''}`);
     $('quest-pilot-start').disabled=Boolean(state.initialized)||items.length>0||Boolean(blocked);
     $('quest-pilot-sync').disabled=items.length===0||Boolean(blocked);
+    const conflict=blocked==='revision_conflict';
+    text('quest-pilot-conflict', conflict
+      ? 'Serverstand gewijzigd terwijl jouw actie onderweg was. Controleer de nieuwe spelstand voordat je een vastgelopen actie annuleert.'
+      : blocked ? 'Synchronisatie is geblokkeerd: '+blocked+'. Annuleren is niet toegestaan zonder veilige controle.'
+        : 'Geen synchronisatieconflict vastgesteld.');
+    $('quest-pilot-resolve').disabled=!conflict||items.length!==1||items[0]?.type!=='quest_action';
     const canChoose=state.initialized&&state.phase==='choose'&&state.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId&&!items.length&&!blocked;
     $('quest-pilot-load-catalog').disabled=!canChoose;
     for(let i=0;i<3;i++)$('quest-pilot-option-'+i).disabled=!canChoose||!catalogChoices[i]||state.world_index!==catalogWorld||$('quest-pilot-mode').value!==catalogMode||$('quest-pilot-budget').value!==catalogBudget;
@@ -125,6 +131,14 @@
         for(const a of TASK_ACTIONS)$('quest-pilot-'+a).disabled=true;
         for(const a of SUPER_ACTIONS)$('quest-pilot-super-'+a).disabled=true;
       }catch(_storageError){}
+      try{
+        const state=await (await ensureQueue()).state();
+        const conflict=state.blocked==='revision_conflict';
+        text('quest-pilot-conflict', conflict
+          ? 'Serverstand is veranderd. Haal eerst de actuele stand op om veilig te herstellen.'
+          : state.blocked ? 'Blokkade: '+state.blocked+'. Neem geen automatische herstelactie.' : 'Geen synchronisatieconflict vastgesteld.');
+        $('quest-pilot-resolve').disabled=!conflict||state.items.length!==1||state.items[0]?.type!=='quest_action';
+      }catch(_readError){}
       text('quest-pilot-message',String(e?.message||e));
     }
     finally{loading=false;$('quest-pilot-refresh').disabled=false;}
@@ -141,9 +155,10 @@
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
     text('quest-pilot-instructions','Opdrachtinstructies verborgen.');
     text('quest-pilot-super-status','Geen superdategegevens geladen.');
+    text('quest-pilot-conflict','Geen synchronisatieconflict vastgesteld.');
     text('quest-pilot-super-prep','Geheime voorbereiding verborgen.');
     text('quest-pilot-super-finale','Geheime finale verborgen.');
-    for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',
+    for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
       ...TASK_ACTIONS.map(x=>'quest-pilot-'+x),
       ...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
@@ -207,6 +222,30 @@
     $('quest-pilot-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-sync').addEventListener('click',()=>operation(async()=>{
       const q=await ensureQueue();handleSync(await q.sync());
+    }));
+    $('quest-pilot-resolve').addEventListener('click',()=>operation(async()=>{
+      const who=identity();
+      const q=await ensureQueue();
+      const local=await q.state();
+      if(local.blocked!=='revision_conflict'||local.items.length!==1||
+         local.items[0].type!=='quest_action')
+        throw Error('Alleen één geblokkeerde spelactie kan hier veilig geannuleerd worden.');
+      const action=local.items[0];
+      const server=await window.USTwoQuestPilotBridge.read();
+      if(!server?.paired||!server.initialized||!Number.isSafeInteger(server.revision)||
+         server.revision<=action.expectedRevision||!who.paired)
+        throw Error('De actuele serverstand is niet betrouwbaar gecontroleerd. De actie blijft bewaard.');
+      if(!window.confirm('Er staat een geblokkeerde actie ('+String(action.payload.action)+') met revisie '+
+        action.expectedRevision+'. De server staat inmiddels op revisie '+server.revision+
+        '. Annuleren verwijdert ALLEEN deze lokale actie en maakt geen stappen ongedaan. Eerst controleren op beide telefoons. Verdergaan?'))return;
+      const updated=await window.USTwoQuestPilotBridge.read();
+      const still=await q.state();
+      if(updated.revision!==server.revision||still.blocked!=='revision_conflict'||
+        still.items.length!==1||still.items[0].requestId!==action.requestId)
+        throw Error('De stand is opnieuw gewijzigd. Annuleren geweigerd; ververs de spelstand.');
+      if(!window.confirm('Definitief deze éne lokale actie annuleren? De actie wordt NIET opnieuw verzonden.'))return;
+      await q.discardAfterReconciliation(true);
+      text('quest-pilot-message','De vastgelopen lokale actie is geannuleerd. De serverstand blijft behouden.');
     }));
     for(const action of TASK_ACTIONS) {
       $('quest-pilot-'+action).addEventListener('click',()=>operation(async()=>{

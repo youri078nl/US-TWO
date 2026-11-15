@@ -46,3 +46,21 @@ Voortgangspercentage in het private acceptatieregister blijft **14,54%**. De pro
 - De mock-integratietests dekken nu 14 scenario's. De tests bewijzen geen echte HTTP/JWT-authenticatie, niet dat een Android/iPhone tegelijk gekoppeld zijn en geen live servermutaties.
 
 **Vrijgavebeleid:** concept-PR blijft open. Geen wijziging aan `main` en geen nieuwe claim van mobiele eindacceptatie. De bewezen projectscore blijft 14,54%.
+
+## Geverifieerde catalogus- en browseruitbreiding
+
+- Live Supabase-catalogusstructuur gecontroleerd: 67 bestaande opdrachten in werelden 0 t/m 5. De huidige catalogus is dus **nog geen** vereiste bibliotheek van 240 unieke activiteiten.
+- Catalogus wordt voor een aangemeld, gekoppeld account via de bestaande authenticatielaag en de RLS-beveiligde catalogustabel opgehaald. Filters: huidige wereld, afstand/samen, uitgesloten `Flirt`-categorie (de server weigert die categorie bij `propose`).
+- De spelende partner ziet maximaal drie unieke voorstellen. `quest-catalog.js` sorteert en roteert deterministisch op de serverpositie en geeft voorrang aan nog niet recent gebruikte opdrachten; deze selectie is **advies**, de server blijft de beslissende autoriteit.
+- Voorstel verzenden is alleen toegestaan bij fase `choose`, juiste `turn_user`, passende wereld en een lege, niet-geblokkeerde wachtrij. De API krijgt de serverrevisie, bestaande opdracht-ID en expliciete speelvorm.
+- Uitloggen maakt getoonde persoonlijke voorbereidingen en finales direct onzichtbaar. De accountgebonden wachtrij blijft duurzaam bewaard om acties niet kwijt te raken.
+- GitHub CI voert nu twintig gerichte script-/domeinchecks en een **echte headless Chromium-bedieningstest** uit. Die browserproef gebruikt gesimuleerde Supabase-antwoorden, niet de persoonlijke accounts of echte servermutaties.
+- Het proefproject blijft een draft-PR, niet de standaard GitHub Pages-versie en niet de native Android/iOS-app.
+
+### Releaseblokkades
+- Geen tweetelefoon-acceptatie of daadwerkelijke iOS/Android-synchronisatie met elk een eigen account.
+- Geen volledige catalogus van 240 oorspronkelijke, voldoende onderscheiden activiteiten of 60 gecontroleerde animatieclips.
+- Geen bewezen offline herstel in echte Safari/Chrome na langdurige offline periode.
+- Geen productieacceptatie, beveiligingsaudit, herstelproef of volledige native release.
+
+**De officiële gewogen voortgang blijft 14,54%.** Technische testuitbreidingen worden niet automatisch als voltooide masterplaneisen meegeteld.

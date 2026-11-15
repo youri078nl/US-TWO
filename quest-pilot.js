@@ -7,6 +7,7 @@
   const TASK_ACTIONS=['accept','reject','cancel','complete','skip'];
   const SUPER_ACTIONS=['ready','reveal','done','skip'];
   let currentSuper=null;
+  let catalogChoices=[];let catalogWorld=null;let catalogMode=null;
   const text=(id,value)=>{const el=$(id);if(el)el.textContent=String(value);};
   function identity() {
     const b=window.USTwoQuestPilotBridge;
@@ -40,6 +41,9 @@
     text('quest-pilot-pending',`Wachtende acties: ${items.length}${blocked?' · geblokkeerd: '+blocked:''}`);
     $('quest-pilot-start').disabled=Boolean(state.initialized)||items.length>0||Boolean(blocked);
     $('quest-pilot-sync').disabled=items.length===0||Boolean(blocked);
+    const canChoose=state.initialized&&state.phase==='choose'&&state.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId&&!items.length&&!blocked;
+    $('quest-pilot-load-catalog').disabled=!canChoose;
+    for(let i=0;i<3;i++)$('quest-pilot-option-'+i).disabled=!canChoose||!catalogChoices[i]||state.world_index!==catalogWorld||$('quest-pilot-mode').value!==catalogMode;
     const who=window.USTwoQuestPilotBridge?.identity();
     const active=Boolean(state.initialized)&&items.length===0&&!blocked;
     const partnerProposal=active&&state.phase==='approval'&&state.proposer_id!==who?.userId;
@@ -90,6 +94,7 @@
       window.USTwoQuestPilotBridge.read(),q.state()
     ]);
     latest=server;
+    if(server.world_index!==catalogWorld||server.phase!=='choose') {catalogChoices=[];catalogWorld=null;}
     status(server,local.items,local.blocked);
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
@@ -101,7 +106,7 @@
   }
   async function operation(fn) {
     if(loading)return;loading=true;
-    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync',...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
+    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
     catch(e){
       showSuper([],true,'read_failed');
@@ -125,6 +130,48 @@
   }
   function init() {
     if(!$('quest-pilot-refresh'))return;
+    $('quest-pilot-mode').addEventListener('change',()=>{
+      catalogChoices=[];catalogWorld=null;catalogMode=null;
+      for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}
+      if(latest&&latest.initialized&&latest.phase==='choose'&&latest.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId)
+        $('quest-pilot-load-catalog').disabled=false;
+    });
+    $('quest-pilot-load-catalog').addEventListener('click',()=>operation(async()=>{
+      identity();
+      const fresh=await window.USTwoQuestPilotBridge.read();
+      const local=await (await ensureQueue()).state();
+      if(!fresh.initialized||fresh.phase!=='choose'||fresh.turn_user!==identity().userId||local.items.length||local.blocked)
+        throw Error('Je bent niet aan de beurt of er staat nog een actie open.');
+      if(!Number.isInteger(fresh.world_index)||fresh.world_index<0||fresh.world_index>5)throw Error('Ongeldige wereld.');
+      const mode=$('quest-pilot-mode').value;
+      if(!['samen','afstand'].includes(mode))throw Error('Ongeldige speelvorm.');
+      const candidates=await window.USTwoQuestPilotBridge.catalog(fresh.world_index,mode);
+      if(!Array.isArray(candidates))throw Error('De opdrachtencatalogus gaf geen lijst terug.');
+      const field=mode==='samen'?'together':'remote';
+      const eligible=candidates.filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&
+        c.world===fresh.world_index&&c.category!=='Flirt'&&c[field]===true);
+      const unique=[...new Map(eligible.map(c=>[c.id,c])).values()];
+      catalogChoices=unique.slice(0,3);catalogWorld=fresh.world_index;catalogMode=mode;
+      for(let i=0;i<3;i++){
+        const c=catalogChoices[i];
+        text('quest-pilot-option-'+i,c?c.title+' · '+Number(c.reward_steps||0)+' stappen · '+Number(c.minutes||0)+' minuten':'Geen voorstel');
+        $('quest-pilot-option-'+i).disabled=!c;
+      }
+      text('quest-pilot-message',catalogChoices.length? 'Kies één van de serveropdrachten. Je partner moet goedkeuren.':'Geen beschikbare opdrachten voor deze speelvorm.');
+    }));
+    for(let i=0;i<3;i++){
+      $('quest-pilot-option-'+i).addEventListener('click',()=>operation(async()=>{
+        const c=catalogChoices[i];const mode=$('quest-pilot-mode').value;
+        const state=await window.USTwoQuestPilotBridge.read();const q=await ensureQueue();const pending=await q.state();
+        if(!c||!state.initialized||state.phase!=='choose'||state.turn_user!==identity().userId||
+           state.world_index!==catalogWorld||catalogMode!==mode||pending.items.length||pending.blocked||
+           !Number.isSafeInteger(state.revision))throw Error('Voorstel is verouderd. Laad opnieuw.');
+        if(!window.confirm('Stel de opdracht "'+c.title+'" voor aan je partner?'))return;
+        await q.enqueue({type:'quest_action',requestId:crypto.randomUUID(),expectedRevision:state.revision,
+          payload:{action:'propose',dateId:c.id,mode}});
+        handleSync(await q.sync());
+      }));
+    }
     $('quest-pilot-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-sync').addEventListener('click',()=>operation(async()=>{
       const q=await ensureQueue();handleSync(await q.sync());

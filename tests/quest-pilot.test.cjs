@@ -20,7 +20,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2','quest-pilot-schedule-status','quest-pilot-schedule-time','quest-pilot-schedule-propose','quest-pilot-schedule-accept','quest-pilot-schedule-reject','quest-pilot-schedule-cancel'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  elements['quest-pilot-budget'].value='0';
@@ -53,6 +53,14 @@ function setup(name) {
          ...(args.p_action==='done'?{my_done:true}:{}),
          ...(args.p_action==='skip'?{my_skip:true}:{})
        }:x);
+     }
+     if(name==='us_quest_schedule_action'){
+       const old=server.schedule||{status:'unscheduled'};
+       const next=args.p_action==='propose'
+         ?{...old,pending_at:args.p_time,pending_by:v.userId}
+         :args.p_action==='accept'?{status:'confirmed',confirmed_at:old.pending_at,pending_at:null,pending_by:null}
+         :{...old,pending_at:null,pending_by:null};
+       server={...server,revision:server.revision+1,schedule:next};
      }
      if(name==='us_quest_action'&&args.p_action!=='start')
        server={...server,revision:server.revision+1,
@@ -365,6 +373,71 @@ async function main(){
  assert.equal(cancelled.calls.length,0);
  assert.match(cancelled.elements['quest-pilot-super-finale'].textContent,/verborgen/i);
  console.log('PASS cancelled superdate consent does not send an RPC or reveal the finale');passed++;
- console.log('Web pilot checks:',passed+'/33 passed');
+ const schedule=setup('schedule');
+ schedule.setServer({paired:true,initialized:true,revision:12,position:4,phase:'active',schedule:null});
+ await schedule.click('quest-pilot-refresh');
+ assert.equal(schedule.elements['quest-pilot-schedule-propose'].disabled,false);
+ assert.equal(schedule.elements['quest-pilot-schedule-accept'].disabled,true);
+ schedule.elements['quest-pilot-schedule-time'].value='2020-01-01T12:00';
+ await schedule.click('quest-pilot-schedule-propose');
+ assert.equal(schedule.calls.length,0);
+ assert.match(schedule.elements['quest-pilot-message'].textContent,/geldige toekomstige datum/);
+ console.log('PASS date planner rejects past dates before RPC');passed++;
+ const date=new Date(Date.now()+72*3600*1000);
+ const pad=x=>String(x).padStart(2,'0');
+ schedule.elements['quest-pilot-schedule-time'].value=date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate())+
+   'T'+pad(date.getHours())+':'+pad(date.getMinutes());
+ await schedule.click('quest-pilot-schedule-propose');
+ assert.equal(schedule.calls.length,1);
+ assert.equal(schedule.calls[0].name,'us_quest_schedule_action');
+ assert.equal(schedule.calls[0].args.p_action,'propose');
+ assert.equal(schedule.calls[0].args.p_expected_revision,12);
+ assert.ok(Date.parse(schedule.calls[0].args.p_time)>Date.now());
+ assert.equal(schedule.elements['quest-pilot-schedule-accept'].disabled,true);
+ assert.equal(schedule.elements['quest-pilot-schedule-cancel'].disabled,false);
+ console.log('PASS date proposal uses durable schedule RPC and proposer cannot self-accept');passed++;
+ await schedule.click('quest-pilot-schedule-accept');
+ assert.equal(schedule.calls.length,1);
+ assert.match(schedule.elements['quest-pilot-message'].textContent,/Alleen je partner/);
+ await schedule.click('quest-pilot-schedule-cancel');
+ assert.equal(schedule.calls[1].args.p_action,'cancel');
+ assert.equal(schedule.elements['quest-pilot-schedule-cancel'].disabled,true);
+ console.log('PASS proposer is blocked from approval and can withdraw own proposal');passed++;
+ const partner=setup('partner-schedule');
+ partner.setServer({paired:true,initialized:true,revision:7,phase:'active',position:3,
+   schedule:{pending_at:new Date(Date.now()+86400000).toISOString(),
+      pending_by:otherId,status:'unscheduled'}});
+ await partner.click('quest-pilot-refresh');
+ assert.equal(partner.elements['quest-pilot-schedule-accept'].disabled,false);
+ assert.equal(partner.elements['quest-pilot-schedule-propose'].disabled,true);
+ assert.match(partner.elements['quest-pilot-schedule-status'].textContent,/partner/);
+ await partner.click('quest-pilot-schedule-accept');
+ assert.equal(partner.calls[0].args.p_action,'accept');
+ assert.equal(partner.calls[0].args.p_expected_revision,7);
+ assert.match(partner.elements['quest-pilot-schedule-status'].textContent,/Bevestigde datum/);
+ console.log('PASS partner accepts proposed date and sees confirmed date');passed++;
+ const reject=setup('reject-schedule');
+ reject.setServer({paired:true,initialized:true,revision:4,phase:'active',
+   schedule:{pending_at:new Date(Date.now()+86400000).toISOString(),pending_by:otherId}});
+ await reject.click('quest-pilot-refresh');
+ await reject.click('quest-pilot-schedule-reject');
+ assert.equal(reject.calls[0].args.p_action,'reject');
+ assert.equal(reject.elements['quest-pilot-schedule-reject'].disabled,true);
+ console.log('PASS partner rejection clears pending proposal');passed++;
+ const offlineDate=setup('offline-schedule');
+ offlineDate.setServer({paired:true,initialized:true,revision:6,phase:'active',
+   schedule:{pending_at:new Date(Date.now()+86400000).toISOString(),pending_by:otherId}});
+ await offlineDate.click('quest-pilot-refresh');
+ offlineDate.setError(true);
+ await offlineDate.click('quest-pilot-schedule-accept');
+ assert.equal(offlineDate.calls.length,1);
+ assert.match(offlineDate.elements['quest-pilot-pending'].textContent,/Wachtende acties: 1/);
+ const savedId=offlineDate.calls[0].args.p_request_id;
+ offlineDate.setError(false);
+ await offlineDate.click('quest-pilot-sync');
+ assert.equal(offlineDate.calls[1].args.p_request_id,savedId);
+ assert.match(offlineDate.elements['quest-pilot-pending'].textContent,/Wachtende acties: 0/);
+ console.log('PASS offline date approval retries once with unchanged request ID');passed++;
+ console.log('Web pilot checks:',passed+'/39 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

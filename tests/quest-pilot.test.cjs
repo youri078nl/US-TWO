@@ -19,8 +19,9 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
+ elements['quest-pilot-mode'].value='samen';
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
  const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
  ctx.globalThis=ctx;ctx.window=ctx;
@@ -28,11 +29,12 @@ function setup(name) {
  ctx.confirm=()=>true;
  const v={paired:true,userId:'00000000-0000-4000-8000-000000000001',coupleId:'00000000-0000-4000-8000-000000000002'};
  let server={paired:true,initialized:false,revision:0,position:0,phase:'choose'};
- let error=false,calls=[],superdates=[];
+ let error=false,calls=[],superdates=[],catalog=[];
  ctx.USTwoQuestPilotBridge={
    identity:()=>v,
    read:async()=>({...server}),
    readSuper:async()=>superdates.map(x=>({...x})),
+   catalog:async()=>catalog.map(x=>({...x})),
    call:async(name,args)=>{
      calls.push({name,args});
      if(error)return {data:null,error:{code:'',message:'network_error'}};
@@ -50,6 +52,7 @@ function setup(name) {
      if(name==='us_quest_action'&&args.p_action!=='start')
        server={...server,revision:server.revision+1,
          ...(args.p_action==='accept'?{phase:'active'}:{}),
+         ...(args.p_action==='propose'?{phase:'approval',proposer_id:v.userId}:{}),
          ...(args.p_action==='reject'||args.p_action==='cancel'?{phase:'choose'}:{}),
          ...(args.p_action==='complete'?{my_done:true}:{}),
          ...(args.p_action==='skip'?{my_skip:true}:{})};
@@ -58,7 +61,7 @@ function setup(name) {
  };
  vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(pilot,ctx);
  return {elements,v,ctx,calls,setError:x=>error=x,setServer:x=>server=x,
-   click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x};
+   click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x};
 }
 async function main(){
  const demo=setup('one');
@@ -166,6 +169,45 @@ async function main(){
  assert.equal(end.calls[0].args.p_action,'done');
  assert.equal(end.elements['quest-pilot-super-done'].disabled,true);
  console.log('PASS released finale and single completion confirmation');passed++;
- console.log('Web pilot checks:',passed+'/14 passed');
+ const chooser=setup('catalog');
+ chooser.setServer({paired:true,initialized:true,revision:4,position:12,world_index:0,
+   phase:'choose',turn_user:myId});
+ chooser.setCatalog([
+   {id:'A',title:'Schilderen',world:0,category:'Creatief',together:true,reward_steps:3,minutes:40},
+   {id:'B',title:'Dansen',world:0,category:'Romantisch',together:true,reward_steps:2,minutes:20},
+   {id:'BAD',title:'Verkeerde wereld',world:1,category:'Creatief',together:true},
+   {id:'C',title:'Koken',world:0,category:'Creatief',together:true,reward_steps:3,minutes:50},
+   {id:'SECRET',title:'Verboden kaart',world:0,category:'Flirt',together:true}
+ ]);
+ await chooser.click('quest-pilot-refresh');
+ assert.equal(chooser.elements['quest-pilot-load-catalog'].disabled,false);
+ await chooser.click('quest-pilot-load-catalog');
+ assert.match(chooser.elements['quest-pilot-option-0'].textContent,/Schilderen/);
+ assert.match(chooser.elements['quest-pilot-option-2'].textContent,/Koken/);
+ assert.doesNotMatch(chooser.elements['quest-pilot-option-2'].textContent,/Verboden/);
+ await chooser.click('quest-pilot-option-0');
+ assert.equal(chooser.calls[0].args.p_action,'propose');
+ assert.equal(chooser.calls[0].args.p_date_id,'A');
+ assert.equal(chooser.calls[0].args.p_mode,'samen');
+ assert.equal(chooser.calls[0].args.p_expected_revision,4);
+ console.log('PASS catalog filters world and category then proposes with server revision');passed++;
+ const notTurn=setup('notturn');
+ notTurn.setServer({paired:true,initialized:true,revision:4,position:12,world_index:0,
+   phase:'choose',turn_user:otherId});
+ await notTurn.click('quest-pilot-refresh');
+ assert.equal(notTurn.elements['quest-pilot-load-catalog'].disabled,true);
+ await notTurn.click('quest-pilot-load-catalog');
+ assert.equal(notTurn.calls.length,0);
+ assert.match(notTurn.elements['quest-pilot-message'].textContent,/niet aan de beurt/);
+ console.log('PASS partner cannot propose outside turn');passed++;
+ const unavailable=setup('unavailable');
+ unavailable.setServer({paired:true,initialized:true,revision:6,position:88,world_index:2,
+   phase:'choose',turn_user:myId});
+ unavailable.setCatalog([{id:'WRONG',title:'Anders',world:3,category:'Creatief',together:true}]);
+ await unavailable.click('quest-pilot-load-catalog');
+ assert.equal(unavailable.elements['quest-pilot-option-0'].disabled,true);
+ assert.equal(unavailable.calls.length,0);
+ console.log('PASS wrong-world results cannot be proposed');passed++;
+ console.log('Web pilot checks:',passed+'/17 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

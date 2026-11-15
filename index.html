@@ -131,6 +131,18 @@
           <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
           <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
           <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
+          <section class="panel inset stack" id="quest-pilot" aria-labelledby="quest-pilot-heading">
+            <h3 id="quest-pilot-heading">Nieuwe spelreis · experimentele synchronisatie</h3>
+            <p class="muted">Dit onderdeel is een aparte proef. Het bestaande speelbord hierboven verandert niet. Alleen de knop 'Nieuwe spelreis starten' kan de nieuwe gezamenlijke serverstand aanmaken.</p>
+            <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
+            <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
+            <div class="stack">
+              <button id="quest-pilot-refresh" type="button" class="secondary-btn">Serverstatus ophalen</button>
+              <button id="quest-pilot-sync" type="button" class="secondary-btn" disabled>Wachtende acties opnieuw versturen</button>
+              <button id="quest-pilot-start" type="button" class="ghost-btn" disabled>Nieuwe spelreis starten (test)</button>
+            </div>
+            <p id="quest-pilot-message" class="muted" role="status" aria-live="polite">Niet voor productie vrijgegeven.</p>
+          </section>
         </section>
 
 
@@ -176,6 +188,8 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="update-bar" class="update-bar hidden" role="status"><span>Een nieuwe versie van US TWO staat klaar.</span><button id="apply-update" type="button">Bijwerken</button></div>
-  <script type="module" src="./app.js"></script>
+  <script src="./us-two-offline.js" defer></script>
+   <script type="module" src="./app.js"></script>
+   <script src="./quest-pilot.js" defer></script>
 </body>
 </html>

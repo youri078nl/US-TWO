@@ -282,6 +282,10 @@ async function main(){
  assert.ok(budgets.elements['quest-pilot-option-0'].textContent.includes('gratis'));
  assert.equal(budgets.calls.length,0);
  console.log('PASS changing date budget invalidates stale choices without mutations');passed++;
- console.log('Web pilot checks:',passed+'/25 passed');
+ const mixed=budgets.ctx.USTwoQuestCatalog.chooseOptions(cards,{world:0,mode:'samen',position:0,budget:40,limit:3});
+ assert.equal(mixed.filter(c=>c.estimated_cost_eur===0).length,2);
+ assert.equal(mixed.filter(c=>c.estimated_cost_eur>0).length,1);
+ console.log('PASS higher budget prioritizes two free dates and one paid option');passed++;
+ console.log('Web pilot checks:',passed+'/26 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

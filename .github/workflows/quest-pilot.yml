@@ -1,0 +1,36 @@
+name: Quest offline pilot tests
+on:
+  push:
+    branches:
+      - feature/quest-offline-pilot-20261115
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'quest-pilot.js'
+      - 'us-two-offline.js'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'tests/quest-pilot.test.cjs'
+      - '.github/workflows/quest-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check script syntax
+        run: |
+          node --check app.js
+          node --check quest-pilot.js
+          node --check us-two-offline.js
+          node --check service-worker.js
+      - name: Install isolated browser-storage test dependency
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
+      - name: Exercise offline browser integration
+        run: node tests/quest-pilot.test.cjs

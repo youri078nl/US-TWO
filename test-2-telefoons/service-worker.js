@@ -1,5 +1,5 @@
 // Updates: bump CACHE when changing assets. Network first keeps updates fresh.
-const CACHE = 'us-two-two-phones-test-v3';
+const CACHE = 'us-two-two-phones-test-v4';
 const SHELL = ['./','./index.html','./styles.css','./app.js','./us-two-offline.js','./quest-catalog.js','./quest-pilot.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('us-two-two-phones-test-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));

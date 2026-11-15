@@ -81,12 +81,33 @@
       text('quest-pilot-super-status','Nog geen superdate ontgrendeld.');
       text('quest-pilot-super-prep','Alleen jouw voorbereiding wordt hier weergegeven.');
       text('quest-pilot-super-finale','De finale blijft verborgen totdat beide spelers akkoord geven.');
+      text('quest-pilot-super-consent','Nog geen superdate om toestemming voor te geven.');
+      text('quest-pilot-super-timing','De voorbereidingstijd verschijnt zodra een superdate is ontgrendeld.');
       return;
     }
     text('quest-pilot-super-status','Vak '+v.cell+' · '+String(v.title||'Superdate')+
       ' · status '+String(v.status)+' · revisie '+v.revision+
       ' · voorbereiding tot '+String(v.prep_until||'onbekend')+
       ' · jij klaar: '+(v.my_ready?'ja':'nee')+' · partner klaar: '+(v.partner_ready?'ja':'nee'));
+    const consentCount=Number(Boolean(v.my_reveal))+Number(Boolean(v.partner_reveal));
+    const readyCount=Number(Boolean(v.my_ready))+Number(Boolean(v.partner_ready));
+    const doneCount=Number(Boolean(v.my_done))+Number(Boolean(v.partner_done));
+    text('quest-pilot-super-consent',
+      'Voorbereiding: '+readyCount+'/2 klaar · toestemming finale: '+consentCount+
+      '/2 · voltooiing: '+doneCount+'/2'+
+      (v.my_reveal&&v.status==='preparing'?' · jouw toestemming is opgeslagen, wacht op je partner':''));
+    const deadline=typeof v.prep_until==='string'?Date.parse(v.prep_until):NaN;
+    const remaining=Number.isFinite(deadline)?deadline-Date.now():NaN;
+    text('quest-pilot-super-timing',
+      v.status==='preparing'
+      ? !Number.isFinite(remaining)
+        ? 'Voorbereidingstijd niet bevestigd: finale blijft gesloten.'
+        : remaining>0
+          ? 'Voorbereiding nog '+Math.ceil(remaining/3600000)+' uur. Daarna zijn twee afzonderlijke toestemmingen nodig.'
+          : 'De voorbereidingstijd is verstreken. Beide spelers moeten klaar zijn en afzonderlijk toestemming geven.'
+      : v.status==='revealed'?'De finale is door beide spelers ontgrendeld.'
+      : v.status==='completed'?'Deze superdate is afgerond.'
+      : 'Deze superdate is gesloten.');
     // NEVER display prep_a or prep_b. RPC only exposes the authenticated user's my_prep.
     text('quest-pilot-super-prep','Jouw voorbereiding: '+String(v.my_prep||'nog niet beschikbaar'));
     const revealed=v.status==='revealed'||v.status==='completed';
@@ -155,6 +176,8 @@
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
     text('quest-pilot-instructions','Opdrachtinstructies verborgen.');
     text('quest-pilot-super-status','Geen superdategegevens geladen.');
+    text('quest-pilot-super-consent','Toestemmingsstatus verborgen.');
+    text('quest-pilot-super-timing','Voorbereidingstijd verborgen.');
     text('quest-pilot-conflict','Geen synchronisatieconflict vastgesteld.');
     text('quest-pilot-super-prep','Geheime voorbereiding verborgen.');
     text('quest-pilot-super-finale','Geheime finale verborgen.');

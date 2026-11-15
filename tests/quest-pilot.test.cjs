@@ -19,7 +19,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
  const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
@@ -28,15 +28,25 @@ function setup(name) {
  ctx.confirm=()=>true;
  const v={paired:true,userId:'00000000-0000-4000-8000-000000000001',coupleId:'00000000-0000-4000-8000-000000000002'};
  let server={paired:true,initialized:false,revision:0,position:0,phase:'choose'};
- let error=false,calls=[];
+ let error=false,calls=[],superdates=[];
  ctx.USTwoQuestPilotBridge={
    identity:()=>v,
    read:async()=>({...server}),
+   readSuper:async()=>superdates.map(x=>({...x})),
    call:async(name,args)=>{
      calls.push({name,args});
      if(error)return {data:null,error:{code:'',message:'network_error'}};
      if(name==='us_quest_action'&&args.p_action==='start'&&!server.initialized)
        server={...server,initialized:true};
+     if(name==='us_quest_super_action') {
+       superdates=superdates.map(x=>x.cell===args.p_cell?{
+         ...x,revision:x.revision+1,
+         ...(args.p_action==='ready'?{my_ready:true}:{}),
+         ...(args.p_action==='reveal'?{my_reveal:true}:{}),
+         ...(args.p_action==='done'?{my_done:true}:{}),
+         ...(args.p_action==='skip'?{my_skip:true}:{})
+       }:x);
+     }
      if(name==='us_quest_action'&&args.p_action!=='start')
        server={...server,revision:server.revision+1,
          ...(args.p_action==='accept'?{phase:'active'}:{}),
@@ -48,7 +58,7 @@ function setup(name) {
  };
  vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(pilot,ctx);
  return {elements,v,ctx,calls,setError:x=>error=x,setServer:x=>server=x,
-   click:async id=>elements[id].handlers.click()};
+   click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x};
 }
 async function main(){
  const demo=setup('one');
@@ -121,6 +131,41 @@ async function main(){
  assert.equal(skip.elements['quest-pilot-skip'].disabled,true);
  assert.equal(skip.elements['quest-pilot-complete'].disabled,true);
  console.log('PASS skip disables incompatible completion');passed++;
- console.log('Web pilot checks:',passed+'/10 passed');
+ const superTest=setup('super');
+ superTest.setSuper([{cell:20,title:'Geheime superdate',revision:2,status:'preparing',
+   my_prep:'Mijn eigen geheime opdracht',partner_ready:false,my_ready:false,can_reveal:false,
+   prep_a:'NIET TONEN PARTNER',prep_b:'OOK NIET TONEN',finale_remote:'VERBODEN FINALE'}]);
+ await superTest.click('quest-pilot-refresh');
+ assert.match(superTest.elements['quest-pilot-super-prep'].textContent,/Mijn eigen geheime opdracht/);
+ assert.doesNotMatch(superTest.elements['quest-pilot-super-prep'].textContent,/NIET TONEN/);
+ assert.doesNotMatch(superTest.elements['quest-pilot-super-finale'].textContent,/VERBODEN FINALE/);
+ assert.equal(superTest.elements['quest-pilot-super-reveal'].disabled,true);
+ console.log('PASS show own preparation without leaking partner prep or locked finale');passed++;
+ await superTest.click('quest-pilot-super-ready');
+ assert.equal(superTest.calls[0].name,'us_quest_super_action');
+ assert.equal(superTest.calls[0].args.p_cell,20);
+ assert.equal(superTest.calls[0].args.p_expected_revision,2);
+ assert.equal(superTest.elements['quest-pilot-super-ready'].disabled,true);
+ console.log('PASS ready action uses independent superdate revision');passed++;
+ const reveal=setup('reveal');
+ reveal.setSuper([{cell:40,title:'Samen',revision:5,status:'preparing',my_ready:true,partner_ready:true,
+   my_reveal:false,can_reveal:true,my_skip:false,partner_skip:false,finale_together:'NIET OPEN'}]);
+ await reveal.click('quest-pilot-refresh');
+ assert.equal(reveal.elements['quest-pilot-super-reveal'].disabled,false);
+ await reveal.click('quest-pilot-super-reveal');
+ assert.equal(reveal.calls[0].args.p_action,'reveal');
+ assert.doesNotMatch(reveal.elements['quest-pilot-super-finale'].textContent,/NIET OPEN/);
+ console.log('PASS reveal requires and records explicit consent while finale is hidden');passed++;
+ const end=setup('superdone');
+ end.setSuper([{cell:60,title:'Finale',revision:8,status:'revealed',
+   my_ready:true,partner_ready:true,my_done:false,partner_done:false,my_skip:false,partner_skip:false,
+   finale_together:'Veilige finale',finale_remote:'Veilige afstandsversie'}]);
+ await end.click('quest-pilot-refresh');
+ assert.match(end.elements['quest-pilot-super-finale'].textContent,/Veilige finale/);
+ await end.click('quest-pilot-super-done');
+ assert.equal(end.calls[0].args.p_action,'done');
+ assert.equal(end.elements['quest-pilot-super-done'].disabled,true);
+ console.log('PASS released finale and single completion confirmation');passed++;
+ console.log('Web pilot checks:',passed+'/14 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

@@ -188,6 +188,7 @@
           : state.blocked ? 'Blokkade: '+state.blocked+'. Neem geen automatische herstelactie.' : 'Geen synchronisatieconflict vastgesteld.');
         $('quest-pilot-resolve').disabled=!conflict||state.items.length!==1||state.items[0]?.type!=='quest_action';
       }catch(_readError){}
+      try{await refresh();}catch(_retryReadError){}
       text('quest-pilot-message',String(e?.message||e));
     }
     finally{loading=false;$('quest-pilot-refresh').disabled=false;}
@@ -388,7 +389,7 @@
         if(action==='propose') {
           if(partner)throw Error('Beantwoord eerst het voorstel van je partner.');
           const raw=$('quest-pilot-schedule-time').value;
-          const date=/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(raw)?new Date(raw):null;
+          const date=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)?new Date(raw):null;
           const diff=date?.getTime()-Date.now();
           if(!Number.isFinite(diff)||diff<=0||diff>365*24*3600*1000)
             throw Error('Kies een geldige toekomstige datum binnen één jaar.');

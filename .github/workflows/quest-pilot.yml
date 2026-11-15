@@ -11,6 +11,7 @@ on:
       - 'tests/quest-browser-smoke.cjs'
       - 'tests/quest-browser-offline.cjs'
       - 'tests/quest-browser-superdate.cjs'
+      - 'tests/quest-browser-schedule.cjs'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -52,3 +53,5 @@ jobs:
         run: node tests/quest-browser-offline.cjs
       - name: Verify two-browser superdate consent and private preparation
         run: node tests/quest-browser-superdate.cjs
+      - name: Verify two-browser shared date planning and partner acceptance
+        run: node tests/quest-browser-schedule.cjs

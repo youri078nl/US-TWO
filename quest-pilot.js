@@ -7,7 +7,7 @@
   const TASK_ACTIONS=['accept','reject','cancel','complete','skip'];
   const SUPER_ACTIONS=['ready','reveal','done','skip'];
   let currentSuper=null;
-  let catalogChoices=[];let catalogWorld=null;let catalogMode=null;
+  let catalogChoices=[];let catalogWorld=null;let catalogMode=null;let catalogBudget=null;
   const text=(id,value)=>{const el=$(id);if(el)el.textContent=String(value);};
   function identity() {
     const b=window.USTwoQuestPilotBridge;
@@ -43,7 +43,7 @@
     $('quest-pilot-sync').disabled=items.length===0||Boolean(blocked);
     const canChoose=state.initialized&&state.phase==='choose'&&state.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId&&!items.length&&!blocked;
     $('quest-pilot-load-catalog').disabled=!canChoose;
-    for(let i=0;i<3;i++)$('quest-pilot-option-'+i).disabled=!canChoose||!catalogChoices[i]||state.world_index!==catalogWorld||$('quest-pilot-mode').value!==catalogMode;
+    for(let i=0;i<3;i++)$('quest-pilot-option-'+i).disabled=!canChoose||!catalogChoices[i]||state.world_index!==catalogWorld||$('quest-pilot-mode').value!==catalogMode||$('quest-pilot-budget').value!==catalogBudget;
     const who=window.USTwoQuestPilotBridge?.identity();
     const active=Boolean(state.initialized)&&items.length===0&&!blocked;
     const partnerProposal=active&&state.phase==='approval'&&state.proposer_id!==who?.userId;
@@ -135,7 +135,7 @@
     if(result.status==='busy')throw Error('Synchronisatie is al bezig in een ander venster.');
   }
   function clearPrivateScreen() {
-    latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;
+    latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
     text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
     text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
@@ -153,6 +153,12 @@
   function init() {
     if(!$('quest-pilot-refresh'))return;
     window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
+    $('quest-pilot-budget').addEventListener('change',()=>{
+      catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
+      for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}
+      if(latest?.initialized&&latest.phase==='choose'&&latest.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId)
+        $('quest-pilot-load-catalog').disabled=false;
+    });
     $('quest-pilot-mode').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;
       for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}
@@ -171,14 +177,16 @@
       const candidates=await window.USTwoQuestPilotBridge.catalog(fresh.world_index,mode);
       if(!Array.isArray(candidates))throw Error('De opdrachtencatalogus gaf geen lijst terug.');
       if(!window.USTwoQuestCatalog?.chooseOptions)throw Error('Opdrachtfilter niet beschikbaar.');
+      const budgetRaw=$('quest-pilot-budget').value;
+      const budget=budgetRaw==='max'?'max':Number(budgetRaw);
       catalogChoices=window.USTwoQuestCatalog.chooseOptions(candidates,{
         world:fresh.world_index,mode,position:fresh.position,
-        history:fresh.history,limit:3
+        history:fresh.history,limit:3,budget
       });
-      catalogWorld=fresh.world_index;catalogMode=mode;
+      catalogWorld=fresh.world_index;catalogMode=mode;catalogBudget=budgetRaw;
       for(let i=0;i<3;i++){
         const c=catalogChoices[i];
-        text('quest-pilot-option-'+i,c?c.title+' · '+Number(c.reward_steps||0)+' stappen · '+Number(c.minutes||0)+' minuten':'Geen voorstel');
+        text('quest-pilot-option-'+i,c?c.title+' · '+(c.estimated_cost_eur===0?'gratis':('circa €'+c.estimated_cost_eur))+' · '+Number(c.reward_steps||0)+' stappen · '+Number(c.minutes||0)+' minuten':'Geen voorstel');
         $('quest-pilot-option-'+i).disabled=!c;
       }
       text('quest-pilot-message',catalogChoices.length? 'Kies één van de serveropdrachten. Je partner moet goedkeuren.':'Geen beschikbare opdrachten voor deze speelvorm.');
@@ -188,7 +196,7 @@
         const c=catalogChoices[i];const mode=$('quest-pilot-mode').value;
         const state=await window.USTwoQuestPilotBridge.read();const q=await ensureQueue();const pending=await q.state();
         if(!c||!state.initialized||state.phase!=='choose'||state.turn_user!==identity().userId||
-           state.world_index!==catalogWorld||catalogMode!==mode||pending.items.length||pending.blocked||
+           state.world_index!==catalogWorld||catalogMode!==mode||catalogBudget!==$('quest-pilot-budget').value||pending.items.length||pending.blocked||
            !Number.isSafeInteger(state.revision))throw Error('Voorstel is verouderd. Laad opnieuw.');
         if(!window.confirm('Opdracht: '+c.title+'\\n'+String(c.brief||'')+'\\n\\nStel deze opdracht voor aan je partner?'))return;
         await q.enqueue({type:'quest_action',requestId:crypto.randomUUID(),expectedRevision:state.revision,

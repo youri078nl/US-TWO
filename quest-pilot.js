@@ -4,6 +4,7 @@
   'use strict';
   const $=id=>document.getElementById(id);
   let queue=null, queueFor='', loading=false, latest=null;
+  const TASK_ACTIONS=['accept','reject','cancel','complete','skip'];
   const text=(id,value)=>{const el=$(id);if(el)el.textContent=String(value);};
   function identity() {
     const b=window.USTwoQuestPilotBridge;
@@ -33,6 +34,21 @@
     text('quest-pilot-pending',`Wachtende acties: ${items.length}${blocked?' · geblokkeerd: '+blocked:''}`);
     $('quest-pilot-start').disabled=Boolean(state.initialized)||items.length>0||Boolean(blocked);
     $('quest-pilot-sync').disabled=items.length===0||Boolean(blocked);
+    const who=window.USTwoQuestPilotBridge?.identity();
+    const active=Boolean(state.initialized)&&items.length===0&&!blocked;
+    const partnerProposal=active&&state.phase==='approval'&&state.proposer_id!==who?.userId;
+    const ownProposal=active&&state.phase==='approval'&&state.proposer_id===who?.userId;
+    const activeTask=active&&state.phase==='active';
+    $('quest-pilot-accept').disabled=!partnerProposal;
+    $('quest-pilot-reject').disabled=!partnerProposal;
+    $('quest-pilot-cancel').disabled=!ownProposal;
+    $('quest-pilot-complete').disabled=!activeTask||Boolean(state.my_done)||Boolean(state.my_skip)||Boolean(state.partner_skip);
+    $('quest-pilot-skip').disabled=!activeTask||Boolean(state.my_skip);
+    const d=state.date;
+    text('quest-pilot-task',d&&typeof d.title==='string'
+      ? 'Opdracht: '+d.title+' · '+(state.mode==='afstand'?'op afstand':'samen')
+        +' · '+Number(d.steps||0)+' stappen · '+(state.phase||'')
+      : 'Geen actieve opdracht in de nieuwe serverreis.');
   }
   async function refresh() {
     const q=await ensureQueue();
@@ -42,7 +58,7 @@
   }
   async function operation(fn) {
     if(loading)return;loading=true;
-    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync'])$(id).disabled=true;
+    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync',...TASK_ACTIONS.map(x=>'quest-pilot-'+x)])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
     catch(e){
       // The server may be offline: show durable local queue state without another network call.
@@ -67,6 +83,37 @@
     $('quest-pilot-sync').addEventListener('click',()=>operation(async()=>{
       const q=await ensureQueue();handleSync(await q.sync());
     }));
+    for(const action of TASK_ACTIONS) {
+      $('quest-pilot-'+action).addEventListener('click',()=>operation(async()=>{
+        const state=await window.USTwoQuestPilotBridge.read();
+        const who=identity();
+        const q=await ensureQueue();
+        const pending=await q.state();
+        if(pending.blocked||pending.items.length)throw Error('Los eerst de bewaarde wachtrij op.');
+        if(!state.initialized||!Number.isSafeInteger(state.revision))throw Error('Geen geldige serverrevisie.');
+        const proposal=state.phase==='approval';
+        const active=state.phase==='active';
+        const proposer=state.proposer_id===who.userId;
+        const valid=(action==='accept'||action==='reject')?proposal&&!proposer
+          :action==='cancel'?proposal&&proposer
+          :action==='complete'?active&&!state.my_done&&!state.my_skip&&!state.partner_skip
+          :action==='skip'?active&&!state.my_skip:false;
+        if(!valid)throw Error('Deze actie is niet toegestaan in de huidige spelstatus.');
+        const messages={
+          accept:'Het voorstel accepteren voor jullie gezamenlijke spel?',
+          reject:'Het voorstel afwijzen?',
+          cancel:'Je eigen voorstel intrekken?',
+          complete:'Bevestig dat jij deze opdracht hebt afgerond. Stappen worden pas toegekend na beide bevestigingen.',
+          skip:'Wil je deze opdracht overslaan? Dit levert geen stappen op en vereist ook de bevestiging van je partner.'
+        };
+        if(!window.confirm(messages[action]))return;
+        await q.enqueue({
+          type:'quest_action',requestId:crypto.randomUUID(),
+          expectedRevision:state.revision,payload:{action}
+        });
+        handleSync(await q.sync());
+      }));
+    }
     $('quest-pilot-start').addEventListener('click',()=>operation(async()=>{
       const q=await ensureQueue();
       const state=await window.USTwoQuestPilotBridge.read();

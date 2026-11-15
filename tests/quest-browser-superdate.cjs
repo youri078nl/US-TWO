@@ -64,7 +64,7 @@ async function install(page,user){
   assert.doesNotMatch(await bob.locator('#quest-pilot-super-prep').textContent(),/GEHEIM VAN A/);
   assert.doesNotMatch(await alice.locator('#quest-pilot-super-finale').textContent(),/SAMEN FINALE/);
   await alice.locator('#quest-pilot-super-reveal').click();
-  assert.equal(db.reveal.size,1,await alice.locator('#quest-pilot-message').textContent());
+  assert.equal(db.reveal.size,1,'calls='+JSON.stringify(calls)+'; UI='+await alice.locator('#quest-pilot-message').textContent()+'; queued='+await alice.locator('#quest-pilot-pending').textContent()+'; disabled='+await alice.locator('#quest-pilot-super-reveal').isDisabled());
   assert.match(await alice.locator('#quest-pilot-super-consent').textContent(),/toestemming finale: 1\/2/);
   assert.doesNotMatch(await alice.locator('#quest-pilot-super-finale').textContent(),/SAMEN FINALE/);
   assert.equal(await alice.locator('#quest-pilot-super-reveal').isDisabled(),true);

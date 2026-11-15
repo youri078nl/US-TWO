@@ -45,7 +45,7 @@
     for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync'])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
     catch(e){text('quest-pilot-message',String(e?.message||e));}
-    finally{loading=false;}
+    finally{loading=false;$('quest-pilot-refresh').disabled=false;}
   }
   function handleSync(result) {
     if(result.status==='blocked')throw Error('De actie is geblokkeerd ('+result.reason+'). Ververs de serverstatus; verwijder geen gegevens zonder herstelcontrole.');

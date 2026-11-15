@@ -20,7 +20,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
@@ -240,6 +240,19 @@ async function main(){
  assert.doesNotMatch(privacy.elements['quest-pilot-super-finale'].textContent,/GEHEIME FINALE/);
  assert.equal(privacy.elements['quest-pilot-super-reveal'].disabled,true);
  console.log('PASS logout clears private preparation and finale from staged UI');passed++;
- console.log('Web pilot checks:',passed+'/20 passed');
+ const explanation=setup('mode-text');
+ explanation.setServer({paired:true,initialized:true,position:6,revision:1,phase:'active',
+   mode:'afstand',date:{title:'Koken',remoteText:'Bel tijdens het koken.',togetherText:'Kook samen aan tafel.',brief:'Maak samen iets.'}});
+ await explanation.click('quest-pilot-refresh');
+ assert.match(explanation.elements['quest-pilot-instructions'].textContent,/Bel tijdens het koken/);
+ assert.doesNotMatch(explanation.elements['quest-pilot-instructions'].textContent,/Kook samen aan tafel/);
+ console.log('PASS only selected play-mode instructions are shown');passed++;
+ const fallback=setup('fallback-text');
+ fallback.setServer({paired:true,initialized:true,position:6,revision:1,phase:'active',
+   mode:'samen',date:{title:'Koken',remoteText:'',togetherText:'',brief:'Maak samen iets.'}});
+ await fallback.click('quest-pilot-refresh');
+ assert.match(fallback.elements['quest-pilot-instructions'].textContent,/Maak samen iets/);
+ console.log('PASS existing brief is readable when detailed instructions are missing');passed++;
+ console.log('Web pilot checks:',passed+'/22 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

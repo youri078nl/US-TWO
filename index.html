@@ -136,6 +136,14 @@
             <p class="muted">Dit onderdeel is een aparte proef. Het bestaande speelbord hierboven verandert niet. Alleen de knop 'Nieuwe spelreis starten' kan de nieuwe gezamenlijke serverstand aanmaken.</p>
             <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
             <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
+            <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
+            <div class="stack" id="quest-pilot-actions" aria-label="Opdrachtacties">
+              <button id="quest-pilot-accept" type="button" class="secondary-btn" disabled>Voorstel accepteren</button>
+              <button id="quest-pilot-reject" type="button" class="ghost-btn" disabled>Voorstel afwijzen</button>
+              <button id="quest-pilot-cancel" type="button" class="ghost-btn" disabled>Eigen voorstel intrekken</button>
+              <button id="quest-pilot-complete" type="button" class="secondary-btn" disabled>Mijn voltooiing bevestigen</button>
+              <button id="quest-pilot-skip" type="button" class="ghost-btn" disabled>Opdracht samen overslaan</button>
+            </div>
             <div class="stack">
               <button id="quest-pilot-refresh" type="button" class="secondary-btn">Serverstatus ophalen</button>
               <button id="quest-pilot-sync" type="button" class="secondary-btn" disabled>Wachtende acties opnieuw versturen</button>

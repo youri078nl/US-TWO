@@ -19,7 +19,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
  const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
@@ -37,6 +37,12 @@ function setup(name) {
      if(error)return {data:null,error:{code:'',message:'network_error'}};
      if(name==='us_quest_action'&&args.p_action==='start'&&!server.initialized)
        server={...server,initialized:true};
+     if(name==='us_quest_action'&&args.p_action!=='start')
+       server={...server,revision:server.revision+1,
+         ...(args.p_action==='accept'?{phase:'active'}:{}),
+         ...(args.p_action==='reject'||args.p_action==='cancel'?{phase:'choose'}:{}),
+         ...(args.p_action==='complete'?{my_done:true}:{}),
+         ...(args.p_action==='skip'?{my_skip:true}:{})};
      return {data:{...server},error:null};
    }
  };
@@ -75,6 +81,46 @@ async function main(){
  assert.equal(unpaired.elements['quest-pilot-refresh'].disabled,false);
  assert.equal(unpaired.calls.length,0);
  console.log('PASS unpaired client cannot send mutations');passed++;
- console.log('Web pilot checks:',passed+'/6 passed');
+ const myId='00000000-0000-4000-8000-000000000001';
+ const otherId='00000000-0000-4000-8000-000000000003';
+ const accepted=setup('accepted');
+ accepted.setServer({paired:true,initialized:true,revision:7,position:12,phase:'approval',proposer_id:otherId,date:{title:'Wandeling',steps:3},mode:'samen'});
+ await accepted.click('quest-pilot-refresh');
+ assert.equal(accepted.elements['quest-pilot-accept'].disabled,false);
+ assert.equal(accepted.elements['quest-pilot-cancel'].disabled,true);
+ assert.match(accepted.elements['quest-pilot-task'].textContent,/Wandeling/);
+ await accepted.click('quest-pilot-accept');
+ assert.equal(accepted.calls[0].args.p_action,'accept');
+ assert.equal(accepted.calls[0].args.p_expected_revision,7);
+ assert.equal(accepted.elements['quest-pilot-complete'].disabled,false);
+ console.log('PASS partner accepts proposal using canonical revision');passed++;
+ const own=setup('own');
+ own.setServer({paired:true,initialized:true,revision:3,position:6,phase:'approval',proposer_id:myId});
+ await own.click('quest-pilot-refresh');
+ assert.equal(own.elements['quest-pilot-accept'].disabled,true);
+ assert.equal(own.elements['quest-pilot-cancel'].disabled,false);
+ await own.click('quest-pilot-accept');
+ assert.equal(own.calls.length,0);
+ assert.match(own.elements['quest-pilot-message'].textContent,/niet toegestaan/);
+ console.log('PASS proposer cannot accept own proposal');passed++;
+ const finished=setup('finished');
+ finished.setServer({paired:true,initialized:true,revision:9,position:8,phase:'active',my_done:false,my_skip:false,partner_skip:false,date:{title:'Koken',steps:4}});
+ await finished.click('quest-pilot-refresh');
+ await finished.click('quest-pilot-complete');
+ assert.equal(finished.calls.length,1);
+ assert.equal(finished.calls[0].args.p_action,'complete');
+ assert.equal(finished.elements['quest-pilot-complete'].disabled,true);
+ await finished.click('quest-pilot-complete');
+ assert.equal(finished.calls.length,1);
+ console.log('PASS completion confirmation cannot be sent twice');passed++;
+ const skip=setup('skip');
+ skip.setServer({paired:true,initialized:true,revision:11,position:8,phase:'active',my_done:false,my_skip:false,partner_skip:false});
+ await skip.click('quest-pilot-refresh');
+ await skip.click('quest-pilot-skip');
+ assert.equal(skip.calls[0].args.p_action,'skip');
+ assert.equal(skip.elements['quest-pilot-skip'].disabled,true);
+ assert.equal(skip.elements['quest-pilot-complete'].disabled,true);
+ console.log('PASS skip disables incompatible completion');passed++;
+ console.log('Web pilot checks:',passed+'/10 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

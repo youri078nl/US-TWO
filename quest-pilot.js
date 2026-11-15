@@ -160,7 +160,7 @@
         $('quest-pilot-load-catalog').disabled=false;
     });
     $('quest-pilot-mode').addEventListener('change',()=>{
-      catalogChoices=[];catalogWorld=null;catalogMode=null;
+      catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
       for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}
       if(latest&&latest.initialized&&latest.phase==='choose'&&latest.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId)
         $('quest-pilot-load-catalog').disabled=false;

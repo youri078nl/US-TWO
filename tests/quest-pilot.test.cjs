@@ -7,7 +7,7 @@ const app=fs.readFileSync('app.js','utf8');
 const sw=fs.readFileSync('service-worker.js','utf8');
 const bundle=fs.readFileSync('us-two-offline.js','utf8');
 const pilot=fs.readFileSync('quest-pilot.js','utf8');
-const catalog=fs.readFileSync('quest-catalog.js','utf8');
+const catalogScript=fs.readFileSync('quest-catalog.js','utf8');
 let passed=0;const check=(name,fn)=>{fn();console.log('PASS',name);passed++;};
 check('staging markup and scripts are referenced',()=>{
  assert.match(html,/id="quest-pilot"/);
@@ -60,7 +60,7 @@ function setup(name) {
      return {data:{...server},error:null};
    }
  };
- vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(catalog,ctx);vm.runInContext(pilot,ctx);
+ vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(catalogScript,ctx);vm.runInContext(pilot,ctx);
  return {elements,v,ctx,calls,setError:x=>error=x,setServer:x=>server=x,
    click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x};
 }

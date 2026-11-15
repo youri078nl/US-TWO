@@ -147,11 +147,12 @@
       if(!['samen','afstand'].includes(mode))throw Error('Ongeldige speelvorm.');
       const candidates=await window.USTwoQuestPilotBridge.catalog(fresh.world_index,mode);
       if(!Array.isArray(candidates))throw Error('De opdrachtencatalogus gaf geen lijst terug.');
-      const field=mode==='samen'?'together':'remote';
-      const eligible=candidates.filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&
-        c.world===fresh.world_index&&c.category!=='Flirt'&&c[field]===true);
-      const unique=[...new Map(eligible.map(c=>[c.id,c])).values()];
-      catalogChoices=unique.slice(0,3);catalogWorld=fresh.world_index;catalogMode=mode;
+      if(!window.USTwoQuestCatalog?.chooseOptions)throw Error('Opdrachtfilter niet beschikbaar.');
+      catalogChoices=window.USTwoQuestCatalog.chooseOptions(candidates,{
+        world:fresh.world_index,mode,position:fresh.position,
+        history:fresh.history,limit:3
+      });
+      catalogWorld=fresh.world_index;catalogMode=mode;
       for(let i=0;i<3;i++){
         const c=catalogChoices[i];
         text('quest-pilot-option-'+i,c?c.title+' · '+Number(c.reward_steps||0)+' stappen · '+Number(c.minutes||0)+' minuten':'Geen voorstel');

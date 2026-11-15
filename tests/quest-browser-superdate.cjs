@@ -57,6 +57,7 @@ async function install(page,user){
   await Promise.all([alice.goto(URL,{waitUntil:'networkidle'}),bob.goto(URL,{waitUntil:'networkidle'})]);
   await Promise.all([install(alice,USERS[0]),install(bob,USERS[1])]);
   await Promise.all([alice.locator('#quest-pilot-refresh').click(),bob.locator('#quest-pilot-refresh').click()]);
+  await alice.locator('#quest-pilot-super-prep').getByText(/GEHEIM VAN A/).waitFor({timeout:6000}).catch(async e=>{throw Error('Alice state: '+await alice.locator('#quest-pilot-message').textContent()+' | '+await alice.locator('#quest-pilot-super-status').textContent()+' | '+e.message)});
   assert.match(await alice.locator('#quest-pilot-super-prep').textContent(),/GEHEIM VAN A/);
   assert.doesNotMatch(await alice.locator('#quest-pilot-super-prep').textContent(),/GEHEIM VAN B/);
   assert.match(await bob.locator('#quest-pilot-super-prep').textContent(),/GEHEIM VAN B/);

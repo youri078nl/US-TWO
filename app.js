@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.0',
+  version: '0.8.1-pilot',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -512,4 +512,18 @@ async function boot(){
     }).catch(()=>{});
   }
 }
+/* Staging-only bridge: the pilot reuses the existing token-refreshing RPC client.
+ * Never copy access tokens into offline storage or expose them to the pilot. */
+window.USTwoQuestPilotBridge = Object.freeze({
+  identity: () => ({
+    userId: state.session?.user?.id || '',
+    coupleId: state.dashboard?.couple_id || '',
+    paired: paired()
+  }),
+  read: () => rpc('us_quest_state'),
+  call: async (name, args) => {
+    try { return {data:await rpc(name,args),error:null}; }
+    catch(e) { return {data:null,error:{code:String(e?.code??e?.status??''),message:String(e?.message||e)}}; }
+  }
+});
 boot();

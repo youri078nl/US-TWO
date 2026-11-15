@@ -20,7 +20,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  elements['quest-pilot-budget'].value='0';
@@ -29,7 +29,7 @@ function setup(name) {
  const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
  ctx.addEventListener=(name,fn)=>{events[name]=fn;};
  ctx.globalThis=ctx;ctx.window=ctx;
- ctx.navigator={locks:{request:async(_key,_options,fn)=>fn()}};
+ ctx.navigator={onLine:true,locks:{request:async(_key,_options,fn)=>fn()}};
  ctx.confirm=()=>true;
  const v={paired:true,userId:'00000000-0000-4000-8000-000000000001',coupleId:'00000000-0000-4000-8000-000000000002'};
  let server={paired:true,initialized:false,revision:0,position:0,phase:'choose'};
@@ -67,7 +67,7 @@ function setup(name) {
  vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(catalogScript,ctx);vm.runInContext(pilot,ctx);
  return {elements,v,ctx,calls,setError:x=>error=x,setConflict:x=>conflict=x,setServer:x=>server=x,
    click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x,
-   emit:name=>events[name]?.()};
+   emit:name=>events[name]?.(),setOnline:online=>{ctx.navigator.onLine=online;events[online?'online':'offline']?.();}};
 }
 async function main(){
  const demo=setup('one');
@@ -315,6 +315,14 @@ async function main(){
  assert.match(guard.elements['quest-pilot-pending'].textContent,/Wachtende acties: 1/);
  assert.equal(guard.calls.length,1);
  console.log('PASS conflict recovery refuses cancellation without newer server revision');passed++;
- console.log('Web pilot checks:',passed+'/28 passed');
+ const network=setup('network-status');
+ assert.match(network.elements['quest-pilot-network'].textContent,/Netwerk beschikbaar/);
+ network.setOnline(false);
+ assert.match(network.elements['quest-pilot-network'].textContent,/Offline/);
+ network.setOnline(true);
+ assert.match(network.elements['quest-pilot-network'].textContent,/opnieuw versturen/);
+ assert.equal(network.calls.length,0);
+ console.log('PASS offline indicator only advises manual replay and performs no automatic mutation');passed++;
+ console.log('Web pilot checks:',passed+'/29 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

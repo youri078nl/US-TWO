@@ -355,6 +355,16 @@ async function main(){
  assert.match(superVotes.elements['quest-pilot-super-finale'].textContent,/TOEGESTANE FINALE/);
  assert.equal(superVotes.elements['quest-pilot-super-done'].disabled,true);
  console.log('PASS double consent shows finale and awaits separate completion');passed++;
- console.log('Web pilot checks:',passed+'/32 passed');
+ const cancelled=setup('superdate-consent-cancel');
+ cancelled.setSuper([{cell:20,revision:8,status:'preparing',my_prep:'Alleen eigen voorbereiding',
+   my_ready:true,partner_ready:true,can_reveal:true,my_reveal:false,partner_reveal:false,
+   prep_until:new Date(Date.now()-3600000).toISOString()}]);
+ await cancelled.click('quest-pilot-refresh');
+ cancelled.ctx.confirm=()=>false;
+ await cancelled.click('quest-pilot-super-reveal');
+ assert.equal(cancelled.calls.length,0);
+ assert.equal(cancelled.elements['quest-pilot-super-reveal'].disabled,false);
+ console.log('PASS cancelled superdate consent does not send an RPC or queue a mutation');passed++;
+ console.log('Web pilot checks:',passed+'/33 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

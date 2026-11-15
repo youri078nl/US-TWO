@@ -18,6 +18,10 @@
   async function ensureQueue() {
     const who=identity(), key=JSON.stringify([who.userId,who.coupleId]);
     if(queue && queueFor===key)return queue;
+    // Prevent previously loaded private preparation from appearing under another account.
+    currentSuper=null;
+    text('quest-pilot-super-prep','Alleen jouw voorbereiding wordt hier weergegeven.');
+    text('quest-pilot-super-finale','De finale is nog niet opgehaald.');
     if(queue){await queue.close();queue=null;queueFor='';}
     if(!window.USTwoOffline)throw Error('Offline-module niet geladen.');
     queue=window.USTwoOffline.createBrowserQueue({
@@ -82,19 +86,25 @@
   }
   async function refresh() {
     const q=await ensureQueue();
-    const [server,local,superdates]=await Promise.all([
-      window.USTwoQuestPilotBridge.read(),q.state(),
-      window.USTwoQuestPilotBridge.readSuper()
+    const [server,local]=await Promise.all([
+      window.USTwoQuestPilotBridge.read(),q.state()
     ]);
     latest=server;
     status(server,local.items,local.blocked);
-    showSuper(superdates,local.items.length>0,local.blocked);
+    try {
+      const superdates=await window.USTwoQuestPilotBridge.readSuper();
+      showSuper(superdates,local.items.length>0,local.blocked);
+    } catch(_error) {
+      showSuper([],true,'superdate_read_failed');
+      text('quest-pilot-super-status','Superdategegevens tijdelijk niet beschikbaar. Probeer opnieuw.');
+    }
   }
   async function operation(fn) {
     if(loading)return;loading=true;
     for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync',...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
     catch(e){
+      showSuper([],true,'read_failed');
       // The server may be offline: show durable local queue state without another network call.
       try{
         const local=await (await ensureQueue()).state();

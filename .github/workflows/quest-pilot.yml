@@ -7,6 +7,8 @@ on:
     paths:
       - 'app.js'
       - 'quest-pilot.js'
+      - 'quest-catalog.js'
+      - 'tests/quest-browser-smoke.cjs'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -28,9 +30,19 @@ jobs:
         run: |
           node --check app.js
           node --check quest-pilot.js
+          node --check quest-catalog.js
           node --check us-two-offline.js
           node --check service-worker.js
       - name: Install isolated browser-storage test dependency
         run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
       - name: Exercise offline browser integration
         run: node tests/quest-pilot.test.cjs
+      - name: Install Chromium browser test dependency
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run actual Chromium interface smoke test
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-http.log 2>&1 &
+          sleep 2
+          node tests/quest-browser-smoke.cjs

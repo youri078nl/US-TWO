@@ -142,6 +142,17 @@
               <h4>Kies een nieuwe opdracht</h4>
               <label for="quest-pilot-mode">Hoe spelen jullie?</label>
               <select id="quest-pilot-mode" aria-label="Speelvorm"><option value="samen">Samen</option><option value="afstand">Op afstand</option></select>
+              <label for="quest-pilot-budget">Maximale kosten voor jullie samen</label>
+              <select id="quest-pilot-budget" aria-label="Maximaal datebudget">
+                <option value="0">Gratis (€0)</option>
+                <option value="10">Maximaal €10</option>
+                <option value="20">Maximaal €20</option>
+                <option value="40">Maximaal €40</option>
+                <option value="60">Maximaal €60</option>
+                <option value="100">Maximaal €100</option>
+                <option value="max">Onbeperkt</option>
+              </select>
+              <p class="muted">Dit is een maximum, geen verplicht uit te geven bedrag. Gratis dates blijven bij elk budget beschikbaar. Richtprijzen zijn voor twee personen.</p>
               <button id="quest-pilot-load-catalog" class="secondary-btn" type="button" disabled>Toon drie voorstellen</button>
               <div id="quest-pilot-options" class="stack" role="group" aria-label="Beschikbare opdrachten">
                 <button id="quest-pilot-option-0" type="button" class="secondary-btn" disabled>Voorstel 1</button>

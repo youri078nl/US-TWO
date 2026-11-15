@@ -24,7 +24,9 @@ function setup(name) {
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
+ const events={};
  const ctx={console,document:doc,indexedDB,crypto:require('node:crypto').webcrypto};
+ ctx.addEventListener=(name,fn)=>{events[name]=fn;};
  ctx.globalThis=ctx;ctx.window=ctx;
  ctx.navigator={locks:{request:async(_key,_options,fn)=>fn()}};
  ctx.confirm=()=>true;
@@ -62,7 +64,8 @@ function setup(name) {
  };
  vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(catalogScript,ctx);vm.runInContext(pilot,ctx);
  return {elements,v,ctx,calls,setError:x=>error=x,setServer:x=>server=x,
-   click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x};
+   click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x,
+   emit:name=>events[name]?.()};
 }
 async function main(){
  const demo=setup('one');
@@ -227,6 +230,16 @@ async function main(){
  assert.equal(repeated.length,3);
  assert.equal(new Set(repeated.map(x=>x.id)).size,3);
  console.log('PASS small or exhausted catalog still yields unique options');passed++;
- console.log('Web pilot checks:',passed+'/19 passed');
+ const privacy=setup('privacy');
+ privacy.setSuper([{cell:20,revision:1,status:'revealed',my_prep:'PRIVÉ VOORBEREIDING',
+   finale_together:'GEHEIME FINALE',my_done:false}]);
+ await privacy.click('quest-pilot-refresh');
+ assert.match(privacy.elements['quest-pilot-super-prep'].textContent,/PRIVÉ VOORBEREIDING/);
+ privacy.emit('us-two-session-cleared');
+ assert.doesNotMatch(privacy.elements['quest-pilot-super-prep'].textContent,/PRIVÉ VOORBEREIDING/);
+ assert.doesNotMatch(privacy.elements['quest-pilot-super-finale'].textContent,/GEHEIME FINALE/);
+ assert.equal(privacy.elements['quest-pilot-super-reveal'].disabled,true);
+ console.log('PASS logout clears private preparation and finale from staged UI');passed++;
+ console.log('Web pilot checks:',passed+'/20 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

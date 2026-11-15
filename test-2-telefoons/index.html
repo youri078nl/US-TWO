@@ -143,7 +143,18 @@
             <p id="quest-pilot-network" class="muted" role="status" aria-live="polite">Netwerkstatus controleren…</p>
             <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
             <p id="quest-pilot-instructions" class="muted" aria-live="polite">De opdrachtinstructies verschijnen zodra jullie een opdracht hebben gekozen.</p>
-            <div class="stack" id="quest-pilot-catalog">
+                        <section class="stack" aria-labelledby="quest-schedule-heading">
+              <h4 id="quest-schedule-heading">Date samen plannen</h4>
+              <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>
+              <label for="quest-pilot-schedule-time">Voorgestelde datum en tijd</label>
+              <input id="quest-pilot-schedule-time" type="datetime-local" aria-label="Date voorstellen voor datum en tijd" />
+              <button id="quest-pilot-schedule-propose" type="button" class="secondary-btn" disabled>Datum voorstellen</button>
+              <button id="quest-pilot-schedule-accept" type="button" class="secondary-btn" disabled>Datum accepteren</button>
+              <button id="quest-pilot-schedule-reject" type="button" class="ghost-btn" disabled>Datum afwijzen</button>
+              <button id="quest-pilot-schedule-cancel" type="button" class="ghost-btn" disabled>Mijn datumvoorstel intrekken</button>
+              <p class="muted">Alleen de partner mag jouw voorstel bevestigen. De planning wordt op beide telefoons opgeslagen; het bestaande agendascherm blijft vooralsnog apart.</p>
+            </section>
+<div class="stack" id="quest-pilot-catalog">
               <h4>Kies een nieuwe opdracht</h4>
               <label for="quest-pilot-mode">Hoe spelen jullie?</label>
               <select id="quest-pilot-mode" aria-label="Speelvorm"><option value="samen">Samen</option><option value="afstand">Op afstand</option></select>

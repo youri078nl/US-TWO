@@ -6,6 +6,7 @@
   let queue=null, queueFor='', loading=false, latest=null;
   const TASK_ACTIONS=['accept','reject','cancel','complete','skip'];
   const SUPER_ACTIONS=['ready','reveal','done','skip'];
+  const SCHEDULE_ACTIONS=['propose','accept','reject','cancel'];
   let currentSuper=null;
   let catalogChoices=[];let catalogWorld=null;let catalogMode=null;let catalogBudget=null;
   const text=(id,value)=>{const el=$(id);if(el)el.textContent=String(value);};
@@ -72,6 +73,30 @@
           'Voor deze opdracht zijn nog geen inhoudelijke instructies uitgewerkt.')
       : 'Kies een opdracht om de uitleg te zien.');
   }
+  function showSchedule(state,items,blocked) {
+    const user=window.USTwoQuestPilotBridge?.identity()?.userId;
+    const active=Boolean(state?.initialized)&&state.phase==='active'&&!items.length&&!blocked;
+    const schedule=active?state.schedule:null;
+    const pending=Boolean(schedule?.pending_at);
+    const own=pending&&schedule.pending_by===user;
+    const partner=pending&&schedule.pending_by!==user;
+    const fmt=value=>{
+      const d=typeof value==='string'?new Date(value):null;
+      return d&&!Number.isNaN(d.getTime())
+        ?new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'}).format(d)
+        : 'onbekend';
+    };
+    const confirmed=schedule?.status==='confirmed'&&schedule?.confirmed_at;
+    text('quest-pilot-schedule-status',
+      !active?(state?.phase==='active'?'Los eerst de wachtrij op.':'Accepteer eerst samen een opdracht om deze te plannen.')
+      : (confirmed?'Bevestigde datum: '+fmt(schedule.confirmed_at)+'. ':'Nog geen datum bevestigd. ')+
+        (pending?(own?'Jouw voorstel: ':'Voorstel van je partner: ')+fmt(schedule.pending_at)
+          :'Geen openstaand datumvoorstel.'));
+    $('quest-pilot-schedule-propose').disabled=!active||partner;
+    $('quest-pilot-schedule-accept').disabled=!active||!partner;
+    $('quest-pilot-schedule-reject').disabled=!active||!partner;
+    $('quest-pilot-schedule-cancel').disabled=!active||!own;
+  }
   function showSuper(all, pending, blocked) {
     const items=Array.isArray(all)?all:[];
     currentSuper=items.find(x=>x&&(x.status==='preparing'||x.status==='revealed'))||items[0]||null;
@@ -129,6 +154,7 @@
     latest=server;
     if(server.world_index!==catalogWorld||server.phase!=='choose') {catalogChoices=[];catalogWorld=null;}
     status(server,local.items,local.blocked);
+    showSchedule(server,local.items,local.blocked);
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -139,10 +165,12 @@
   }
   async function operation(fn) {
     if(loading)return;loading=true;
-    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
+    for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x),...SCHEDULE_ACTIONS.map(x=>'quest-pilot-schedule-'+x)])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
     catch(e){
       showSuper([],true,'read_failed');
+      for(const a of SCHEDULE_ACTIONS)$('quest-pilot-schedule-'+a).disabled=true;
+      text('quest-pilot-schedule-status','De planning is niet betrouwbaar opgehaald. Ververs opnieuw.');
       // The server may be offline: show durable local queue state without another network call.
       try{
         const local=await (await ensureQueue()).state();
@@ -160,6 +188,7 @@
           : state.blocked ? 'Blokkade: '+state.blocked+'. Neem geen automatische herstelactie.' : 'Geen synchronisatieconflict vastgesteld.');
         $('quest-pilot-resolve').disabled=!conflict||state.items.length!==1||state.items[0]?.type!=='quest_action';
       }catch(_readError){}
+      try{await refresh();}catch(_retryReadError){}
       text('quest-pilot-message',String(e?.message||e));
     }
     finally{loading=false;$('quest-pilot-refresh').disabled=false;}
@@ -181,10 +210,13 @@
     text('quest-pilot-conflict','Geen synchronisatieconflict vastgesteld.');
     text('quest-pilot-super-prep','Geheime voorbereiding verborgen.');
     text('quest-pilot-super-finale','Geheime finale verborgen.');
+    text('quest-pilot-schedule-status','Planning verborgen na uitloggen.');
+    $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
       ...TASK_ACTIONS.map(x=>'quest-pilot-'+x),
-      ...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
+      ...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x),
+      ...SCHEDULE_ACTIONS.map(x=>'quest-pilot-schedule-'+x)])$(id).disabled=true;
     const old=queue;queue=null;queueFor='';
     if(old)old.close().catch(()=>{});
   }
@@ -337,6 +369,43 @@
         if(!window.confirm(message[action]))return;
         await q.enqueue({type:'super_action',requestId:crypto.randomUUID(),
           expectedRevision:v.revision,payload:{cell:v.cell,action}});
+        handleSync(await q.sync());
+      }));
+    }
+    for(const action of SCHEDULE_ACTIONS) {
+      $('quest-pilot-schedule-'+action).addEventListener('click',()=>operation(async()=>{
+        const who=identity();
+        const q=await ensureQueue();
+        const local=await q.state();
+        if(local.items.length||local.blocked)throw Error('Los eerst de eerdere wachtrij op.');
+        const state=await window.USTwoQuestPilotBridge.read();
+        if(!state?.initialized||state.phase!=='active'||!Number.isSafeInteger(state.revision))
+          throw Error('Alleen actieve opdrachten kunnen samen worden ingepland.');
+        const schedule=state.schedule;
+        const pending=Boolean(schedule?.pending_at);
+        const own=pending&&schedule.pending_by===who.userId;
+        const partner=pending&&schedule.pending_by!==who.userId;
+        let time=null;
+        if(action==='propose') {
+          if(partner)throw Error('Beantwoord eerst het voorstel van je partner.');
+          const raw=$('quest-pilot-schedule-time').value;
+          const date=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)?new Date(raw):null;
+          const diff=date?.getTime()-Date.now();
+          if(!Number.isFinite(diff)||diff<=0||diff>365*24*3600*1000)
+            throw Error('Kies een geldige toekomstige datum binnen één jaar.');
+          time=date.toISOString();
+        } else if((action==='accept'||action==='reject')&&!partner) {
+          throw Error('Alleen je partner kan dit datumvoorstel beantwoorden.');
+        } else if(action==='cancel'&&!own) {
+          throw Error('Alleen de oorspronkelijke voorsteller kan dit voorstel intrekken.');
+        }
+        const titles={propose:'Deze datum voorstellen voor jullie gezamenlijke date?',
+          accept:'Deze datum samen definitief bevestigen?',
+          reject:'Het datumvoorstel afwijzen?',
+          cancel:'Je eigen datumvoorstel intrekken?'};
+        if(!window.confirm(titles[action]))return;
+        await q.enqueue({type:'schedule_action',requestId:crypto.randomUUID(),
+          expectedRevision:state.revision,payload:{action,...(time?{time}:{})}});
         handleSync(await q.sync());
       }));
     }

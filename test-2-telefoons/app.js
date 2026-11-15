@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.6-twee-telefoons-test',
+  version: '0.8.7-twee-telefoons-test',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

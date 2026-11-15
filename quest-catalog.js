@@ -4,18 +4,23 @@
  * cards where alternatives exist, and rotates consistently with game position.
  * No random choices, so both devices with the same canonical state agree.
  */
-function chooseOptions(rows,{world,mode,position,history=[],limit=3}={}) {
+function chooseOptions(rows,{world,mode,position,history=[],limit=3,budget='max'}={}) {
   if(!Number.isSafeInteger(world)||world<0||world>5
     ||!Number.isSafeInteger(position)||position<0
     ||!['afstand','samen'].includes(mode)
-    ||!Number.isSafeInteger(limit)||limit<1||limit>3) throw Error('invalid_selection');
+    ||!Number.isSafeInteger(limit)||limit<1||limit>3
+    ||!(budget==='max'||[0,10,20,40,60,100].includes(budget))) throw Error('invalid_selection');
   const eligibility=mode==='afstand'?'remote':'together';
   const unique=new Map();
   for(const card of Array.isArray(rows)?rows:[]) {
     if(!card||typeof card.id!=='string'||!card.id||card.id.length>150||
       typeof card.title!=='string'||!card.title.trim()||
       card.world!==world||card.category==='Flirt'||card[eligibility]!==true) continue;
-    if(!unique.has(card.id))unique.set(card.id,{...card});
+    // Existing zero-cost tasks use supplies already at home; no real-world prices implied.
+    const cost=card.estimated_cost_eur??0;
+    if(typeof cost!=='number'||!Number.isFinite(cost)||cost<0||
+       (budget!=='max'&&cost>budget))continue;
+    if(!unique.has(card.id))unique.set(card.id,{...card,estimated_cost_eur:cost});
   }
   const pool=[...unique.values()].sort((a,b)=>a.id.localeCompare(b.id));
   if(!pool.length)return [];

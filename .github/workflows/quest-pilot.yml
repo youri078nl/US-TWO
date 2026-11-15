@@ -9,6 +9,7 @@ on:
       - 'quest-pilot.js'
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
+      - 'tests/quest-browser-offline.cjs'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -46,3 +47,5 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-http.log 2>&1 &
           sleep 2
           node tests/quest-browser-smoke.cjs
+      - name: Test durable offline replay in two real Chromium tabs
+        run: node tests/quest-browser-offline.cjs

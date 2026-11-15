@@ -59,6 +59,12 @@
       ? 'Opdracht: '+d.title+' · '+(state.mode==='afstand'?'op afstand':'samen')
         +' · '+Number(d.steps||0)+' stappen · '+(state.phase||'')
       : 'Geen actieve opdracht in de nieuwe serverreis.');
+    const instructions=d?(state.mode==='afstand'?d.remoteText:d.togetherText):null;
+    text('quest-pilot-instructions',d
+      ? String(typeof instructions==='string'&&instructions.trim()?instructions:
+          typeof d.brief==='string'&&d.brief.trim()?d.brief:
+          'Voor deze opdracht zijn nog geen inhoudelijke instructies uitgewerkt.')
+      : 'Kies een opdracht om de uitleg te zien.');
   }
   function showSuper(all, pending, blocked) {
     const items=Array.isArray(all)?all:[];
@@ -133,6 +139,7 @@
     text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
     text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
+    text('quest-pilot-instructions','Opdrachtinstructies verborgen.');
     text('quest-pilot-super-status','Geen superdategegevens geladen.');
     text('quest-pilot-super-prep','Geheime voorbereiding verborgen.');
     text('quest-pilot-super-finale','Geheime finale verborgen.');
@@ -183,7 +190,7 @@
         if(!c||!state.initialized||state.phase!=='choose'||state.turn_user!==identity().userId||
            state.world_index!==catalogWorld||catalogMode!==mode||pending.items.length||pending.blocked||
            !Number.isSafeInteger(state.revision))throw Error('Voorstel is verouderd. Laad opnieuw.');
-        if(!window.confirm('Stel de opdracht "'+c.title+'" voor aan je partner?'))return;
+        if(!window.confirm('Opdracht: '+c.title+'\\n'+String(c.brief||'')+'\\n\\nStel deze opdracht voor aan je partner?'))return;
         await q.enqueue({type:'quest_action',requestId:crypto.randomUUID(),expectedRevision:state.revision,
           payload:{action:'propose',dateId:c.id,mode}});
         handleSync(await q.sync());

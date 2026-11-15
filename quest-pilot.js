@@ -44,7 +44,16 @@
     if(loading)return;loading=true;
     for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync'])$(id).disabled=true;
     try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
-    catch(e){text('quest-pilot-message',String(e?.message||e));}
+    catch(e){
+      // The server may be offline: show durable local queue state without another network call.
+      try{
+        const local=await (await ensureQueue()).state();
+        text('quest-pilot-pending',`Wachtende acties: ${local.items.length}${local.blocked?' · geblokkeerd: '+local.blocked:''}`);
+        $('quest-pilot-sync').disabled=local.items.length===0||Boolean(local.blocked);
+        $('quest-pilot-start').disabled=true;
+      }catch(_storageError){}
+      text('quest-pilot-message',String(e?.message||e));
+    }
     finally{loading=false;$('quest-pilot-refresh').disabled=false;}
   }
   function handleSync(result) {

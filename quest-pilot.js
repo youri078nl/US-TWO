@@ -128,8 +128,24 @@
     if(result.status==='retry_later')throw Error('Geen betrouwbare serverbevestiging. De actie blijft veilig in de wachtrij staan.');
     if(result.status==='busy')throw Error('Synchronisatie is al bezig in een ander venster.');
   }
+  function clearPrivateScreen() {
+    latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;
+    text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
+    text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
+    text('quest-pilot-task','Geen opdrachtgegevens geladen.');
+    text('quest-pilot-super-status','Geen superdategegevens geladen.');
+    text('quest-pilot-super-prep','Geheime voorbereiding verborgen.');
+    text('quest-pilot-super-finale','Geheime finale verborgen.');
+    for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',
+      ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
+      ...TASK_ACTIONS.map(x=>'quest-pilot-'+x),
+      ...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x)])$(id).disabled=true;
+    const old=queue;queue=null;queueFor='';
+    if(old)old.close().catch(()=>{});
+  }
   function init() {
     if(!$('quest-pilot-refresh'))return;
+    window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
     $('quest-pilot-mode').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;
       for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}

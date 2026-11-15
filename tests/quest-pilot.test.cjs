@@ -7,6 +7,7 @@ const app=fs.readFileSync('app.js','utf8');
 const sw=fs.readFileSync('service-worker.js','utf8');
 const bundle=fs.readFileSync('us-two-offline.js','utf8');
 const pilot=fs.readFileSync('quest-pilot.js','utf8');
+const catalog=fs.readFileSync('quest-catalog.js','utf8');
 let passed=0;const check=(name,fn)=>{fn();console.log('PASS',name);passed++;};
 check('staging markup and scripts are referenced',()=>{
  assert.match(html,/id="quest-pilot"/);
@@ -59,7 +60,7 @@ function setup(name) {
      return {data:{...server},error:null};
    }
  };
- vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(pilot,ctx);
+ vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(catalog,ctx);vm.runInContext(pilot,ctx);
  return {elements,v,ctx,calls,setError:x=>error=x,setServer:x=>server=x,
    click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x};
 }
@@ -208,6 +209,24 @@ async function main(){
  assert.equal(unavailable.elements['quest-pilot-option-0'].disabled,true);
  assert.equal(unavailable.calls.length,0);
  console.log('PASS wrong-world results cannot be proposed');passed++;
- console.log('Web pilot checks:',passed+'/17 passed');
+ const selector=setup('rotation');
+ const input=[
+   {id:'A',title:'Eerste',world:0,category:'Creatief',together:true},
+   {id:'B',title:'Tweede',world:0,category:'Creatief',together:true},
+   {id:'C',title:'Derde',world:0,category:'Creatief',together:true},
+   {id:'D',title:'Vierde',world:0,category:'Creatief',together:true}
+ ];
+ const choices=selector.ctx.USTwoQuestCatalog.chooseOptions(input,{
+   world:0,mode:'samen',position:0,history:[{id:'A'}],limit:3
+ });
+ assert.deepEqual([...choices].map(x=>x.id),['B','C','D']);
+ console.log('PASS avoids recent assignment when alternative cards exist');passed++;
+ const repeated=selector.ctx.USTwoQuestCatalog.chooseOptions(input,{
+   world:0,mode:'samen',position:3,history:[{id:'D'},{id:'C'},{id:'A'},{id:'B'}],limit:3
+ });
+ assert.equal(repeated.length,3);
+ assert.equal(new Set(repeated.map(x=>x.id)).size,3);
+ console.log('PASS small or exhausted catalog still yields unique options');passed++;
+ console.log('Web pilot checks:',passed+'/19 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

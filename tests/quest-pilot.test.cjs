@@ -20,7 +20,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  elements['quest-pilot-budget'].value='0';
@@ -323,6 +323,38 @@ async function main(){
  assert.match(network.elements['quest-pilot-network'].textContent,/opnieuw versturen/);
  assert.equal(network.calls.length,0);
  console.log('PASS offline indicator only advises manual replay and performs no automatic mutation');passed++;
- console.log('Web pilot checks:',passed+'/29 passed');
+ const superVotes=setup('consent-votes');
+ const expiry=new Date(Date.now()+72*60*60*1000).toISOString();
+ superVotes.setSuper([{cell:20,title:'Toestemmingstest',revision:4,status:'preparing',
+   prep_until:expiry,my_prep:'ALLEEN MIJN GEHEIM',my_ready:true,partner_ready:true,
+   my_reveal:true,partner_reveal:false,can_reveal:false,partner_done:false,my_done:false,
+   finale_together:'VERBODEN FINALE'}]);
+ await superVotes.click('quest-pilot-refresh');
+ assert.match(superVotes.elements['quest-pilot-super-consent'].textContent,/toestemming finale: 1\/2/);
+ assert.match(superVotes.elements['quest-pilot-super-consent'].textContent,/wacht op je partner/);
+ assert.match(superVotes.elements['quest-pilot-super-timing'].textContent,/Voorbereiding nog/);
+ assert.doesNotMatch(superVotes.elements['quest-pilot-super-finale'].textContent,/VERBODEN FINALE/);
+ assert.equal(superVotes.elements['quest-pilot-super-reveal'].disabled,true);
+ console.log('PASS first reveal vote stays private and cannot unlock early finale');passed++;
+ superVotes.setSuper([{cell:20,title:'Toestemmingstest',revision:5,status:'preparing',
+   prep_until:new Date(Date.now()-3600000).toISOString(),my_prep:'ALLEEN MIJN GEHEIM',
+   my_ready:true,partner_ready:true,my_reveal:true,partner_reveal:false,can_reveal:true,
+   finale_together:'VERBODEN FINALE'}]);
+ await superVotes.click('quest-pilot-refresh');
+ assert.match(superVotes.elements['quest-pilot-super-timing'].textContent,/verstreken/);
+ assert.equal(superVotes.elements['quest-pilot-super-reveal'].disabled,true);
+ console.log('PASS first consenting partner cannot vote twice when 72h expires');passed++;
+ superVotes.setSuper([{cell:20,title:'Toestemmingstest',revision:6,status:'revealed',
+   prep_until:new Date(Date.now()-3600000).toISOString(),my_prep:'ALLEEN MIJN GEHEIM',
+   my_ready:true,partner_ready:true,my_reveal:true,partner_reveal:true,
+   finale_together:'TOEGESTANE FINALE',finale_remote:'OP AFSTAND FINALE',
+   my_done:true,partner_done:false}]);
+ await superVotes.click('quest-pilot-refresh');
+ assert.match(superVotes.elements['quest-pilot-super-consent'].textContent,/toestemming finale: 2\/2/);
+ assert.match(superVotes.elements['quest-pilot-super-consent'].textContent,/voltooiing: 1\/2/);
+ assert.match(superVotes.elements['quest-pilot-super-finale'].textContent,/TOEGESTANE FINALE/);
+ assert.equal(superVotes.elements['quest-pilot-super-done'].disabled,true);
+ console.log('PASS double consent shows finale and awaits separate completion');passed++;
+ console.log('Web pilot checks:',passed+'/32 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

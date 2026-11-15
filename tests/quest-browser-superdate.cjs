@@ -77,6 +77,7 @@ async function install(page,user){
   assert.equal(db.status,'revealed');
   assert.match(await bob.locator('#quest-pilot-super-finale').textContent(),/SAMEN FINALE/);
   await alice.locator('#quest-pilot-refresh').click();
+  await alice.locator('#quest-pilot-super-finale').getByText(/SAMEN FINALE/).waitFor({timeout:10000});
   assert.match(await alice.locator('#quest-pilot-super-finale').textContent(),/SAMEN FINALE/);
   await alice.locator('#quest-pilot-super-done').click();
   await alice.locator('#quest-pilot-super-consent').getByText(/voltooiing: 1\/2/).waitFor({timeout:10000});

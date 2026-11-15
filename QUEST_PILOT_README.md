@@ -33,3 +33,16 @@
 `node tests/quest-pilot.test.cjs` met `fake-indexeddb@6.2.5` en de GitHub Actions-workflow.
 
 Voortgangspercentage in het private acceptatieregister blijft **14,54%**. De proef telt niet als voltooide cross-platform integratie.
+
+## Nieuwe opdracht- en superdatebediening (15 november 2026)
+
+- Het proefpaneel biedt afzonderlijke, vanuit de **actuele** serverstatus gevalideerde knoppen: voorstel accepteren, afwijzen, eigen voorstel intrekken, persoonlijke voltooiing bevestigen en samen overslaan.
+- Een gebruikersactie wordt in IndexedDB bewaard met een unieke verzoek-ID en de revision van de daadwerkelijke serverstatus. De server blijft beslissen of een actie toegestaan is.
+- Een openstaande/belaste wachtrij blokkeert nieuwe spelmutaties. De interface vervangt de verouderde spelstand nooit automatisch.
+- Het paneel vraagt `us_quest_super_state` op. Het toont uitsluitend `my_prep` en nooit `prep_a` of `prep_b`; de finale wordt alleen getoond bij serverstatus `revealed` of `completed`.
+- Ready, reveal, done en skip worden met de eigen **superdate-revisie** via `us_quest_super_action` verzonden. Eén onthullingsakkoord opent de finale niet.
+- Bij het wisselen van account of bij een fout met serverstatus worden eerder getoonde geheime details uit de proefweergave gewist.
+- Er is geen nieuwe datecatalogus-selector of nieuw voorstel via de nieuwe serverreis geïmplementeerd: daarvoor is nog een veilig cataloguscontract nodig.
+- De mock-integratietests dekken nu 14 scenario's. De tests bewijzen geen echte HTTP/JWT-authenticatie, niet dat een Android/iPhone tegelijk gekoppeld zijn en geen live servermutaties.
+
+**Vrijgavebeleid:** concept-PR blijft open. Geen wijziging aan `main` en geen nieuwe claim van mobiele eindacceptatie. De bewezen projectscore blijft 14,54%.

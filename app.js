@@ -522,6 +522,18 @@ window.USTwoQuestPilotBridge = Object.freeze({
   }),
   read: () => rpc('us_quest_state'),
   readSuper: () => rpc('us_quest_super_state'),
+  catalog: async (world, mode) => {
+    if(!Number.isInteger(world)||world<0||world>5||!['afstand','samen'].includes(mode))
+      throw Error('Ongeldige catalogusselectie.');
+    if(!paired())throw Error('Koppel eerst jullie accounts.');
+    if(!state.session)throw Error('Log eerst in.');
+    if(state.session.expires_at<Date.now()/1000+80)await freshToken();
+    const type=mode==='afstand'?'remote':'together';
+    const query='/rest/v1/us_quest_catalog?select=id,title,category,minutes,reward_steps,brief,remote,together,world&world=eq.'+world+'&category=neq.Flirt&'+type+'=eq.true&order=id.asc&limit=50';
+    const call=()=>request(query,{headers:{Authorization:'Bearer '+state.session.access_token}});
+    try{return await call();}
+    catch(e){if(e.status===401){await freshToken();return call();}throw e;}
+  },
   call: async (name, args) => {
     try { return {data:await rpc(name,args),error:null}; }
     catch(e) { return {data:null,error:{code:String(e?.code??e?.status??''),message:String(e?.message||e)}}; }

@@ -521,6 +521,7 @@ window.USTwoQuestPilotBridge = Object.freeze({
     paired: paired()
   }),
   read: () => rpc('us_quest_state'),
+  readSuper: () => rpc('us_quest_super_state'),
   call: async (name, args) => {
     try { return {data:await rpc(name,args),error:null}; }
     catch(e) { return {data:null,error:{code:String(e?.code??e?.status??''),message:String(e?.message||e)}}; }

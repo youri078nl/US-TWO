@@ -20,7 +20,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  elements['quest-pilot-budget'].value='0';
@@ -33,7 +33,7 @@ function setup(name) {
  ctx.confirm=()=>true;
  const v={paired:true,userId:'00000000-0000-4000-8000-000000000001',coupleId:'00000000-0000-4000-8000-000000000002'};
  let server={paired:true,initialized:false,revision:0,position:0,phase:'choose'};
- let error=false,calls=[],superdates=[],catalog=[];
+ let error=false,conflict=false,calls=[],superdates=[],catalog=[];
  ctx.USTwoQuestPilotBridge={
    identity:()=>v,
    read:async()=>({...server}),
@@ -42,6 +42,7 @@ function setup(name) {
    call:async(name,args)=>{
      calls.push({name,args});
      if(error)return {data:null,error:{code:'',message:'network_error'}};
+     if(conflict)return {data:null,error:{code:'40001',message:'stale_revision'}};
      if(name==='us_quest_action'&&args.p_action==='start'&&!server.initialized)
        server={...server,initialized:true};
      if(name==='us_quest_super_action') {
@@ -64,7 +65,7 @@ function setup(name) {
    }
  };
  vm.createContext(ctx);vm.runInContext(bundle,ctx);vm.runInContext(catalogScript,ctx);vm.runInContext(pilot,ctx);
- return {elements,v,ctx,calls,setError:x=>error=x,setServer:x=>server=x,
+ return {elements,v,ctx,calls,setError:x=>error=x,setConflict:x=>conflict=x,setServer:x=>server=x,
    click:async id=>elements[id].handlers.click(),setSuper:x=>superdates=x,setCatalog:x=>catalog=x,
    emit:name=>events[name]?.()};
 }
@@ -286,6 +287,34 @@ async function main(){
  assert.equal(mixed.filter(c=>c.estimated_cost_eur===0).length,2);
  assert.equal(mixed.filter(c=>c.estimated_cost_eur>0).length,1);
  console.log('PASS higher budget prioritizes two free dates and one paid option');passed++;
- console.log('Web pilot checks:',passed+'/26 passed');
+ const blocked=setup('revision-conflict');
+ blocked.setServer({paired:true,initialized:true,revision:7,position:10,world_index:0,
+   phase:'active',my_done:false,my_skip:false,partner_skip:false});
+ await blocked.click('quest-pilot-refresh');
+ blocked.setConflict(true);
+ await blocked.click('quest-pilot-complete');
+ assert.equal(blocked.calls.length,1);
+ assert.match(blocked.elements['quest-pilot-pending'].textContent,/Wachtende acties: 1/);
+ assert.equal(blocked.elements['quest-pilot-resolve'].disabled,false);
+ blocked.setConflict(false);
+ blocked.setServer({paired:true,initialized:true,revision:8,position:12,world_index:0,
+   phase:'choose',turn_user:myId});
+ await blocked.click('quest-pilot-resolve');
+ assert.equal(blocked.calls.length,1,'recovery must not replay the blocked RPC');
+ assert.match(blocked.elements['quest-pilot-pending'].textContent,/Wachtende acties: 0/);
+ assert.equal(blocked.elements['quest-pilot-resolve'].disabled,true);
+ console.log('PASS revision conflict requires server check and can cancel only local blocked action');passed++;
+ const guard=setup('revision-guard');
+ guard.setServer({paired:true,initialized:true,revision:5,position:2,phase:'active',
+   my_done:false,my_skip:false,partner_skip:false});
+ await guard.click('quest-pilot-refresh');
+ guard.setConflict(true);
+ await guard.click('quest-pilot-complete');
+ guard.setConflict(false);
+ await guard.click('quest-pilot-resolve');
+ assert.match(guard.elements['quest-pilot-pending'].textContent,/Wachtende acties: 1/);
+ assert.equal(guard.calls.length,1);
+ console.log('PASS conflict recovery refuses cancellation without newer server revision');passed++;
+ console.log('Web pilot checks:',passed+'/28 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

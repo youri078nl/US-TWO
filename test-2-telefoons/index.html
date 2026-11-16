@@ -25,8 +25,8 @@
 
     <main id="main">
       <aside class="panel inset stack" role="note" aria-label="Testversie">
-        <strong>US TWO · TESTVERSIE VOOR TWEE TELEFOONS · 2D POSEPAKKET</strong>
-        <p class="muted">Deze afzonderlijke testversie gebruikt de nieuwe gezamenlijke spelreis. Jullie eigen getekende 2D-posebeelden kunnen privé via het ZIP-pakket worden geïmporteerd. De gewone hoofdapp is niet vervangen.</p>
+        <strong>US TWO · TESTVERSIE VOOR TWEE TELEFOONS</strong>
+        <p class="muted">Dit is de afzonderlijke Android- en iPhone-PWA. Het goedgekeurde speelbord en de 2D-poppetjes blijven. Er worden geen 3D-modellen geladen. Deze versie gebruikt jullie bestaande gekoppelde Supabase-server.</p>
       </aside>
       <section id="auth-view" class="auth-view panel">
         <div class="auth-hero"><span class="hero-glyph" aria-hidden="true">♡</span><span class="eyebrow">JULLIE EIGEN AVONTUUR</span><h1>Een beetje meer <em>samen.</em></h1><p>Plan een date, verras elkaar en speel jullie verhaal verder.</p></div>
@@ -163,22 +163,6 @@
               <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
               <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
               <p id="quest-world-art-status" class="muted">Gebruik het originele, goedgekeurde plaatje van jullie drieën. De afbeelding wordt alleen op dit toestel in lokale opslag bewaard, niet gepubliceerd of naar de server verstuurd.</p>
-              <details id="quest-3d-details" class="quest-3d-details">
-                <summary>Originele 3D-personages en animaties bekijken</summary>
-                <p class="muted">Hier wordt het bestaande 3D-model van Youri en Kim gebruikt, niet een nieuw uiterlijk. Kies eenmaal het originele GLB-bestand. Het blijft privé op jouw telefoon. De server bepaalt altijd de spelpositie.</p>
-                <label for="quest-3d-model">Origineel PAWN_DUO 3D-model (.glb)</label>
-                <input id="quest-3d-model" type="file" accept=".glb,model/gltf-binary" disabled>
-                <button type="button" id="quest-3d-load-saved" class="secondary-btn" disabled>Open eerder opgeslagen 3D-model</button>
-                <div class="quest-3d-viewport">
-                  <canvas id="quest-3d-canvas" aria-label="Draaibare originele 3D-pion met twee figuren op één gezamenlijke sokkel"></canvas>
-                  <p id="quest-3d-loading" class="quest-3d-loading">Kies het originele 3D-model om te beginnen.</p>
-                </div>
-                <label for="quest-3d-animation">Originele 3D-beweging</label>
-                <select id="quest-3d-animation" disabled><option>Laad eerst het model</option></select>
-                <button type="button" id="quest-3d-pause" class="ghost-btn" disabled>Pauzeer beweging</button>
-                <p id="quest-3d-status" class="muted" role="status" aria-live="polite">3D-model nog niet geladen. Geen serverwijziging.</p>
-                <p class="muted">Sleep om te draaien; knijp om te zoomen. De originele 3D-bron bevat nog geen Pepsi-mesh. De 2D-pion hierboven blijft ongewijzigd beschikbaar.</p>
-              </details>
               <details class="quest-pose-management">
                 <summary>Goedgekeurde 2D-bewegingen beheren</summary>
                 <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
@@ -208,7 +192,7 @@
                   <button type="button" id="quest-cinematic-play" class="secondary-btn" disabled>Speel bijpassende beweging</button>
                   <button type="button" id="quest-cinematic-stop" class="ghost-btn" disabled>Stop animatie</button>
                 </div>
-                <p class="muted">Voorlopige bewegingschoreografie met de goedgekeurde afbeelding. Echte 3D-personagebewegingen vereisen afzonderlijke 3D-modellen.</p>
+                <p class="muted">Bewegingen gebruiken uitsluitend de goedgekeurde 2D-personages en beschikbare poseframes.</p>
               </div>
             </section>
             <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
@@ -330,7 +314,6 @@
    <script src="./quest-pose-archive.js" defer></script>
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
-   <script src="./quest-3d.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
 </body>
 </html>

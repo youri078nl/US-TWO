@@ -5,8 +5,16 @@ const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   const page=await browser.newPage();
+  // App code is an ES module. Expose read-only test handles by intercepting
+  // the JS response in this isolated browser context; production stays unchanged.
+  await page.route('**/app.js',async route=>{
+    const response=await route.fetch();
+    const code=await response.text();
+    await route.fulfill({response,body:code+'\nwindow.__calendarTestHooks={state,renderCalendar,amsterdamDay,clearSession};'});
+  });
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
   const result=await page.evaluate(()=>{
+    const {state,renderCalendar,amsterdamDay,clearSession}=window.__calendarTestHooks;
     const user='00000000-0000-4000-8000-000000000081';
     const couple='00000000-0000-4000-8000-000000000082';
     const when=new Date(Date.now()+4*86400000);

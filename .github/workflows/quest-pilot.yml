@@ -8,6 +8,8 @@ on:
       - 'quest-board.js'
       - 'quest-cinematics.js'
       - 'quest-poses.js'
+      - 'quest-3d.js'
+      - 'tests/quest-browser-3d.cjs'
       - 'tests/quest-browser-pose-frames.cjs'
       - 'tests/quest-browser-cinematics.cjs'
       - 'quest-pilot.js'
@@ -46,6 +48,7 @@ jobs:
           node --check quest-board.js
           node --check quest-cinematics.js
           node --check quest-poses.js
+          node --check quest-3d.js
           node --check quest-pilot.js
           node --check quest-catalog.js
           node --check us-two-offline.js
@@ -76,6 +79,8 @@ jobs:
         run: node tests/quest-browser-cinematics.cjs
       - name: Verify offline-approved frame packs, scene playback and account separation
         run: node tests/quest-browser-pose-frames.cjs
+      - name: Verify original WebGL2 renderer safety and paired-account gating
+        run: node tests/quest-browser-3d.cjs
       - name: Test durable offline replay in two real Chromium tabs
         run: node tests/quest-browser-offline.cjs
       - name: Verify two-browser superdate consent and private preparation

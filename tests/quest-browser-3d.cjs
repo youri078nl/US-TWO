@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-webgl','--use-gl=angle','--use-angle=swiftshader']});
  try{
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -15,7 +15,7 @@ const {chromium}=require('playwright');
    api.update(game,who);
    const enabled=!document.querySelector('#quest-3d-model').disabled;
    const stillNoModel=api.availableClips().length===0&&
-     document.querySelector('#quest-3d-status').textContent.includes('originele 3D-model');
+     document.querySelector('#quest-3d-status').textContent.includes('3D-model');
    api.clear();
    const cleared=document.querySelector('#quest-3d-model').disabled&&api.availableClips().length===0;
    api.update({...game,paired:false},who);

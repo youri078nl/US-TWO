@@ -145,7 +145,8 @@
             <p id="quest-journey-guidance" class="quest-journey-guidance" role="status" aria-live="polite">De spelreisstatus verschijnt na het inloggen.</p>
             <section class="quest-board-section stack" aria-label="Oorspronkelijke gezamenlijke spelwereld">
               <h4>Jullie gezamenlijke speelwereld</h4>
-              <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Spelbord met één gezamenlijke pion">
+              <div class="quest-world-scroll" id="quest-world-scroll" role="region" tabindex="0" aria-label="Grote speelkaart, veeg horizontaal en verticaal om te verkennen">
+                <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Originele US TWO-wereld met één gezamenlijke pion">
                 <img class="quest-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="Officiële geïllustreerde US TWO-wereld met gouden hartjespad" loading="eager">
                 <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor jullie beiden en Pepsi">
                   <div id="quest-world-actor" class="quest-world-actor">
@@ -156,6 +157,11 @@
                   <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
                   <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
                 </div>
+                </div>
+              </div>
+              <div class="quest-board-navigation">
+                <p class="muted">Veeg <strong>links/rechts én omhoog/omlaag</strong> over de kaart. De kaart is ongeveer twee telefoonschermen hoog.</p>
+                <button type="button" class="secondary-btn" id="quest-world-find-pawn">Ga naar onze pion</button>
               </div>
               <p id="quest-world-position" class="muted" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
               <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
@@ -195,8 +201,21 @@
             </section>
             <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
             <p id="quest-pilot-network" class="muted" role="status" aria-live="polite">Netwerkstatus controleren…</p>
-            <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
-            <p id="quest-pilot-instructions" class="muted" aria-live="polite">De opdrachtinstructies verschijnen zodra jullie een opdracht hebben gekozen.</p>
+            <article id="quest-card" class="quest-task-card" aria-label="Opdrachtkaart in de goedgekeurde US TWO-stijl">
+              <div class="quest-task-card-heading">
+                <span class="quest-task-card-label">US TWO ♥ JULLIE OPDRACHT</span>
+                <span id="quest-card-phase" class="quest-task-card-phase">Klaar voor jullie volgende avontuur</span>
+              </div>
+              <div class="quest-task-card-art">
+                <img id="quest-card-approved-pose" alt="Jullie eigen goedgekeurde personages in een pose die bij de opdracht past" hidden>
+                <span id="quest-card-art-placeholder" class="quest-card-heart" aria-hidden="true">♡</span>
+              </div>
+              <div class="quest-task-card-body">
+                <h4 id="quest-pilot-task">Huidige opdracht nog niet opgehaald.</h4>
+                <p id="quest-pilot-instructions" aria-live="polite">De opdrachtinstructies verschijnen zodra jullie een opdracht hebben gekozen.</p>
+                <div id="quest-card-meta" class="quest-card-meta" aria-live="polite">Samen op avontuur · zonder verplichte uitgaven</div>
+              </div>
+            </article>
             <section class="stack" aria-labelledby="quest-schedule-heading">
               <h4 id="quest-schedule-heading">Date samen plannen</h4>
               <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>

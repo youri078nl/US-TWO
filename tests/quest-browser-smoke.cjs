@@ -14,9 +14,9 @@ const {chromium}=require('playwright');
     let game={paired:true,initialized:true,revision:5,position:12,world_index:0,
       phase:'choose',turn_user:userId,history:[]};
     const cards=[
-      {id:'a',title:'Samen schilderen',world:0,category:'Creatief',together:true,remote:true,reward_steps:3,minutes:45},
-      {id:'b',title:'Mini-festival',world:0,category:'Spel',together:true,remote:true,reward_steps:2,minutes:30},
-      {id:'c',title:'Wandeling',world:0,category:'Buiten',together:true,remote:false,reward_steps:4,minutes:60}
+      {id:'a',title:'Samen schilderen',world:0,category:'Creatief',together:true,remote:true,reward_steps:3,minutes:45,estimated_cost_eur:0},
+      {id:'b',title:'Mini-festival',world:0,category:'Spel',together:true,remote:true,reward_steps:2,minutes:30,estimated_cost_eur:0},
+      {id:'c',title:'Wandeling',world:0,category:'Buiten',together:true,remote:false,reward_steps:4,minutes:60,estimated_cost_eur:0}
     ];
     window.__requests=[];
     window.USTwoQuestPilotBridge={

@@ -43,6 +43,7 @@
   const enabled=Boolean(account);
   if($('quest-pose-scene'))$('quest-pose-scene').disabled=!enabled;
   if($('quest-pose-upload'))$('quest-pose-upload').disabled=!enabled||playing;
+  if($('quest-pose-zip'))$('quest-pose-zip').disabled=!enabled||playing;
   if($('quest-pose-remove'))$('quest-pose-remove').disabled=!enabled||!loadedKey||!frames||playing;
  }
  function hidePreview(){
@@ -92,6 +93,47 @@
   }
   controls();
   window.dispatchEvent(new Event('us-two-poses-changed'));
+ }
+ async function writeBundle(wanted,entries){
+  const db=await open();
+  try{
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE,'readwrite');
+      try{
+        for(const entry of entries){
+          tx.objectStore(STORE).put({
+            frames:entry.frames,scene:entry.scene,createdAt:new Date().toISOString(),
+            version:1,filenames:entry.filenames
+          },key(wanted,entry.scene));
+        }
+      }catch(error){tx.abort();reject(error);return;}
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error||Error('Opslag geweigerd'));
+      tx.onabort=()=>reject(tx.error||Error('Opslag afgebroken'));
+    });
+  }finally{db.close();}
+ }
+ async function importBundle(){
+  const input=$('quest-pose-zip'),file=input?.files?.[0];
+  if(input)input.value='';
+  if(!file||!account||playing)return;
+  const wanted=account,n=++token;
+  status('Posepakket controleren. De beelden worden niet verstuurd.');
+  try{
+    if(!window.USTwoPoseArchive?.parseZip)
+      throw Error('De lokale ZIP-lezer kon niet worden geladen.');
+    const entries=await window.USTwoPoseArchive.parseZip(file);
+    if(wanted!==account||n!==token)return;
+    if(!window.confirm('Importeer '+entries.length+' goedgekeurde 2D-scènes uitsluitend op dit toestel? Bestaande lokale beeldreeksen voor die scènes worden vervangen.'))return;
+    if(wanted!==account||n!==token)return;
+    await writeBundle(wanted,entries);
+    if(wanted!==account||n!==token)return;
+    await load();
+    status(entries.length+' 2D-scènes veilig en privé geïmporteerd voor dit account. De bestaande personages en de gezamenlijke pion blijven behouden.');
+  }catch(error){
+    if(wanted===account&&n===token)
+      status('Posepakket niet geïmporteerd: '+String(error?.message||error).slice(0,180));
+  }
  }
  function update(identity,activeScene){
   const next=identity?.paired&&identity?.userId&&identity?.coupleId?
@@ -159,6 +201,7 @@
  function bind(){
   if(!$('quest-pose-upload'))return;
   $('quest-pose-upload').addEventListener('change',onUpload);
+  $('quest-pose-zip')?.addEventListener('change',importBundle);
   $('quest-pose-scene')?.addEventListener('change',()=>{
    stop();hidePreview();selected=$('quest-pose-scene').value;load();
   });

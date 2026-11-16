@@ -40,7 +40,7 @@
     const who=window.USTwoQuestPilotBridge?.identity();
     const turn=state.turn_user===who?.userId;
     const guidance= !state.initialized
-      ? 'Deze spelreis is nog niet gestart. Kies 'Spelreis starten' om te beginnen.'
+      ? 'Deze spelreis is nog niet gestart. Kies hieronder Spelreis starten om te beginnen.'
       : state.phase==='choose'
         ? turn?'Jij bent aan de beurt: kies een opdracht en stel die voor.':'Je partner is aan de beurt om een opdracht te kiezen.'
       : state.phase==='approval'

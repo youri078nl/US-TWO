@@ -1,0 +1,10 @@
+/* Exact original continuous world and a single non-interactive common pawn. */
+.quest-board-section{gap:10px}
+.quest-world-viewport{position:relative;overflow:hidden;width:100%;aspect-ratio:1279/720;border:1px solid #b68e65;border-radius:16px;background:#131024;isolation:isolate}
+.quest-world-art{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;user-select:none;-webkit-user-drag:none}
+.quest-world-pawn{position:absolute;z-index:2;left:11.8%;top:78.1%;width:17%;max-width:170px;aspect-ratio:1/1;display:grid;place-items:center;transform:translate(-50%,-83%);pointer-events:none;transition:left 210ms ease,top 210ms ease;filter:drop-shadow(0 3px 8px #120812bb)}
+.quest-world-pawn img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.quest-world-pawn img[hidden],.quest-world-heart[hidden]{display:none}
+.quest-world-heart{font-size:clamp(20px,5vw,48px);font-weight:800;line-height:1;color:#ffd9a0;text-shadow:0 0 12px #fb9628,0 0 4px #2c1620;background:#37244fbb;border:2px solid #ffdc90;border-radius:50%;width:50%;aspect-ratio:1;display:grid;place-items:center}
+#quest-world-art-upload{max-width:100%;font-size:13px}
+@media(prefers-reduced-motion:reduce){.quest-world-pawn{transition:none}}

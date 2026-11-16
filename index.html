@@ -178,6 +178,9 @@
               <details class="quest-pose-management">
                 <summary>Goedgekeurde 2D-bewegingen beheren</summary>
                 <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
+                <label for="quest-pose-zip">Goedgekeurd US TWO-posepakket in één keer importeren (ZIP)</label>
+                <input id="quest-pose-zip" type="file" accept=".zip,application/zip" disabled>
+                <p class="muted">Importeer het lokaal gedownloade US TWO-posepakket. De negen scènes worden alleen op dit toestel en voor dit gekoppelde account bewaard.</p>
                 <label for="quest-pose-scene">Animatie waarvoor je frames toevoegt</label>
                 <select id="quest-pose-scene" disabled>
                   <option value="pepsi">Bal gooien met Pepsi</option>
@@ -320,6 +323,7 @@
    <script type="module" src="./app.js"></script>
    <script src="./quest-catalog.js" defer></script>
    <script src="./quest-board.js" defer></script>
+   <script src="./quest-pose-archive.js" defer></script>
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
    <script src="./quest-3d.js" defer></script>

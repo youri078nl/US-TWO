@@ -8,7 +8,7 @@
  const DB='us-two-approved-pose-frames-v1',STORE='clips';
  const SCENES=['pepsi','kiss','hug','dance','walk','stars','five','play','calm'];
  const MAX_FRAMES=24,MAX_FRAME_BYTES=4_000_000,MAX_TOTAL=20_000_000;
- let account='',scene='',selected='',frames=null,loadedKey='',token=0,playing=false,urls=[],timer=null,sourceImage='';
+ let account='',scene='',selected='',frames=null,loadedKey='',token=0,playing=false,urls=[],timer=null,previewUrl='';
  const key=(a,s)=>a+'::'+s;
  const name=(s)=>({pepsi:'Balspel met Pepsi',kiss:'Zoenen',hug:'Knuffelen',dance:'Dansen',
    walk:'Wandelen',stars:'Sterren kijken',five:'Samen vieren',play:'Spel en plezier',
@@ -45,21 +45,27 @@
   if($('quest-pose-upload'))$('quest-pose-upload').disabled=!enabled||playing;
   if($('quest-pose-remove'))$('quest-pose-remove').disabled=!enabled||!loadedKey||!frames||playing;
  }
+ function hidePreview(){
+  const preview=$('quest-world-pose-frame');
+  if(preview){preview.hidden=true;preview.removeAttribute('src');}
+  if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl='';}
+ }
  function stop(){
   if(timer!==null){clearTimeout(timer);timer=null;}
-  const image=$('quest-world-pawn-art');
-  if(image&&urls.length){
-   const now=image.getAttribute('src');
-   if(now&&urls.includes(now)&&sourceImage&&!image.hidden)image.src=sourceImage;
+  const preview=$('quest-world-pose-frame');
+  if(preview){
+   if(previewUrl&&loadedKey===key(account,scene)){
+    preview.src=previewUrl;preview.hidden=false;
+   }else{preview.hidden=true;preview.removeAttribute('src');}
   }
-  urls.forEach(url=>URL.revokeObjectURL(url));urls=[];sourceImage='';
+  urls.forEach(url=>URL.revokeObjectURL(url));urls=[];
   playing=false;
   $('quest-world-pawn')?.removeAttribute('data-framepack');
   controls();
  }
  async function load(){
   const n=++token,k=account&&SCENES.includes(selected)?key(account,selected):'';
-  frames=null;loadedKey='';
+  frames=null;loadedKey='';hidePreview();
   controls();
   if(!k){status('Koppel eerst jullie accounts om goedgekeurde beeldreeksen lokaal te gebruiken.');return;}
   status('Goedgekeurde beeldreeks controleren…');
@@ -69,6 +75,10 @@
    if(saved?.frames?.length>=2&&saved.frames.length<=MAX_FRAMES&&
      saved.frames.every(f=>f instanceof Blob&&['image/png','image/webp'].includes(f.type)&&f.size<=MAX_FRAME_BYTES)){
     frames=saved.frames;loadedKey=k;
+    const image=$('quest-world-pose-frame'),original=$('quest-world-pawn-art');
+    if(image&&original&&!original.hidden&&original.getAttribute('src')&&selected===scene){
+      previewUrl=URL.createObjectURL(frames[0]);image.src=previewUrl;image.hidden=false;
+    }
     status(frames.length+' originele beeldframes op dit toestel geladen voor '+name(selected)+
       '. Deze blijven privé en veranderen de pion niet.');
    }else status('Nog geen goedgekeurde beeldreeks voor '+name(selected)+
@@ -84,7 +94,7 @@
     identity.userId+':'+identity.coupleId:'';
   const desired=SCENES.includes(activeScene)?activeScene:'';
   if(next===account&&desired===scene)return;
-  stop();account=next;scene=desired;
+  stop();hidePreview();account=next;scene=desired;
   // Only expose the scenes for the paired account. The chosen pose may differ
   // from the active card, but playback NEVER uses the wrong scene.
   selected=desired||SCENES[0];
@@ -94,11 +104,11 @@
  function play(sceneToPlay,onFinished){
   if(!account||!SCENES.includes(sceneToPlay)||loadedKey!==key(account,sceneToPlay)||
      !frames||frames.length<2||playing)return false;
-  const image=$('quest-world-pawn-art'),pawn=$('quest-world-pawn');
-  if(!image||image.hidden||!image.getAttribute('src')||!pawn)return false;
+  const image=$('quest-world-pose-frame'),original=$('quest-world-pawn-art'),pawn=$('quest-world-pawn');
+  if(!image||!original||original.hidden||!original.getAttribute('src')||!pawn)return false;
   const current=frames;
   try{urls=current.map(frame=>URL.createObjectURL(frame));}catch(_e){stop();return false;}
-  sourceImage=image.getAttribute('src');playing=true;
+  playing=true;image.hidden=false;
   pawn.setAttribute('data-framepack','true');
   let index=0;
   const tick=()=>{
@@ -140,13 +150,13 @@
   try{await write(target,null,true);if(n===token&&target===key(account,selected))await load();}
   catch(_err){if(n===token)status('Verwijderen van de lokale beeldreeks mislukt.');}
  }
- function clear(){++token;stop();account='';scene='';selected='';frames=null;loadedKey='';controls();
+ function clear(){++token;stop();hidePreview();account='';scene='';selected='';frames=null;loadedKey='';controls();
   status('Beeldreeksen verborgen na uitloggen. Opgeslagen frames blijven privé per account.');}
  function bind(){
   if(!$('quest-pose-upload'))return;
   $('quest-pose-upload').addEventListener('change',onUpload);
   $('quest-pose-scene')?.addEventListener('change',()=>{
-   stop();selected=$('quest-pose-scene').value;load();
+   stop();hidePreview();selected=$('quest-pose-scene').value;load();
   });
   $('quest-pose-remove')?.addEventListener('click',remove);
   window.addEventListener('us-two-session-cleared',clear);

@@ -20,7 +20,7 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2','quest-pilot-schedule-status','quest-pilot-schedule-time','quest-pilot-schedule-propose','quest-pilot-schedule-accept','quest-pilot-schedule-reject','quest-pilot-schedule-cancel'];
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2','quest-pilot-schedule-status','quest-pilot-agenda-schedule','quest-pilot-agenda-refresh','quest-pilot-schedule-time','quest-pilot-schedule-propose','quest-pilot-schedule-accept','quest-pilot-schedule-reject','quest-pilot-schedule-cancel'];
  for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
  elements['quest-pilot-mode'].value='samen';
  elements['quest-pilot-budget'].value='0';
@@ -415,6 +415,7 @@ async function main(){
  assert.equal(partner.calls[0].args.p_action,'accept');
  assert.equal(partner.calls[0].args.p_expected_revision,7);
  assert.match(partner.elements['quest-pilot-schedule-status'].textContent,/Bevestigde datum/);
+ assert.match(partner.elements['quest-pilot-agenda-schedule'].textContent,/Bevestigde datum/);
  console.log('PASS partner accepts proposed date and sees confirmed date');passed++;
  const reject=setup('reject-schedule');
  reject.setServer({paired:true,initialized:true,revision:4,phase:'active',
@@ -438,6 +439,15 @@ async function main(){
  assert.equal(offlineDate.calls[1].args.p_request_id,savedId);
  assert.match(offlineDate.elements['quest-pilot-pending'].textContent,/Wachtende acties: 0/);
  console.log('PASS offline date approval retries once with unchanged request ID');passed++;
- console.log('Web pilot checks:',passed+'/39 passed');
+ const calendar=setup('agenda-display');
+ calendar.setServer({paired:true,initialized:true,revision:10,position:4,phase:'active',
+   schedule:{status:'confirmed',confirmed_at:new Date(Date.now()+86400000).toISOString()}});
+ await calendar.click('quest-pilot-agenda-refresh');
+ assert.match(calendar.elements['quest-pilot-agenda-schedule'].textContent,/Bevestigde datum/);
+ assert.equal(calendar.calls.length,0);
+ calendar.emit('us-two-session-cleared');
+ assert.match(calendar.elements['quest-pilot-agenda-schedule'].textContent,/verborgen/);
+ console.log('PASS Agenda tab reads canonical schedule and clears on logout');passed++;
+ console.log('Web pilot checks:',passed+'/40 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

@@ -136,12 +136,11 @@
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
           <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
-          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
-          <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
           <section class="panel inset stack" id="quest-pilot" aria-labelledby="quest-pilot-heading">
-            <h3 id="quest-pilot-heading">Nieuwe spelreis · experimentele synchronisatie</h3>
-            <p class="muted">Dit onderdeel is een aparte proef. Het bestaande speelbord hierboven verandert niet. Alleen de knop 'Nieuwe spelreis starten' kan de nieuwe gezamenlijke serverstand aanmaken.</p>
+            <h3 id="quest-pilot-heading">Jullie gezamenlijke spelreis</h3>
+            <p class="muted">Eén gedeelde pion, één serverstand en één route. Dit is nog een testversie; bestaande oude rondes worden niet automatisch overgezet.</p>
             <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
+            <p id="quest-journey-guidance" class="quest-journey-guidance" role="status" aria-live="polite">De spelreisstatus verschijnt na het inloggen.</p>
             <section class="quest-board-section stack" aria-label="Oorspronkelijke gezamenlijke spelwereld">
               <h4>Jullie gezamenlijke speelwereld</h4>
               <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Spelbord met één gezamenlijke pion">
@@ -223,6 +222,12 @@
             </section>
             <p id="quest-pilot-message" class="muted" role="status" aria-live="polite">Niet voor productie vrijgegeven.</p>
           </section>
+          <details id="legacy-board-details" class="panel legacy-board-details">
+            <summary>Oude spelronde bekijken (apart bewaard)</summary>
+            <p class="muted">Dit is het eerdere spelsysteem. De positie en opdrachten worden niet automatisch samengevoegd met jullie nieuwe spelreis. Een openstaande ronde blijft hier beschikbaar.</p>
+            <div class="board-hero"><div class="eyebrow">VORIGE SPELWEERGAVE</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Voortgang van de oude spelronde"></div><p id="board-next-note" class="muted center"></p></div>
+            <div id="round-detail" class="panel inset stack"><p class="muted">Gegevens van de oude ronde laden…</p></div>
+          </details>
         </section>
 
 

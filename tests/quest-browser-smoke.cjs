@@ -50,6 +50,7 @@ const {chromium}=require('playwright');
       {id:'c',title:'Wandeling',world:0,category:'Buiten',together:true,remote:false,reward_steps:4,minutes:60,estimated_cost_eur:0}
     ];
     window.__requests=[];window.__questReads=0;
+    window.__setTestGame=changes=>{game={...game,...changes};};
     window.USTwoQuestPilotBridge={
       identity:()=>({paired:true,userId,coupleId:'00000000-0000-4000-8000-000000000002'}),
       read:async()=>{window.__questReads++;return {...game};},
@@ -69,11 +70,25 @@ const {chromium}=require('playwright');
     window.__legacyBoardTest.setTab('game');
   });
   await page.getByText(/Nieuwe serverreis: vak 12/).waitFor();
+  assert.equal(await page.locator('#legacy-board-details').evaluate(el=>el.open),false,
+    'legacy round must be collapsed when canonical journey exists');
+  assert.ok(await page.locator('#quest-pilot').evaluate(el=>el.compareDocumentPosition(document.querySelector('#legacy-board-details')) & Node.DOCUMENT_POSITION_FOLLOWING),
+    'canonical journey must appear before previous round');
+  assert.match(await page.locator('#quest-journey-guidance').textContent(),/Jij bent aan de beurt/);
   await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
   assert.equal(await page.evaluate(()=>window.__questReads),1,'opening the game triggers one read-only refresh');
   await page.locator('#quest-pilot-refresh').click();
   await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
   assert.equal(await page.evaluate(()=>window.__questReads),2,'manual refresh must not query twice');
+  // No hidden migration: if the canonical journey is uninitialized, show the old board.
+  await page.evaluate(()=>window.__setTestGame({initialized:false}));
+  await page.locator('#quest-pilot-refresh').click();
+  await page.getByText(/Deze spelreis is nog niet gestart/).waitFor();
+  assert.equal(await page.locator('#legacy-board-details').evaluate(el=>el.open),true);
+  await page.evaluate(()=>window.__setTestGame({initialized:true}));
+  await page.locator('#quest-pilot-refresh').click();
+  await page.getByText(/Jij bent aan de beurt/).waitFor();
+  assert.equal(await page.locator('#legacy-board-details').evaluate(el=>el.open),false);
   await page.locator('#quest-pilot-load-catalog').click();
   await page.locator('#quest-pilot-option-0').getByText(/Samen schilderen/).waitFor();
   assert.equal(await page.locator('[id^="quest-pilot-option-"]:not([disabled])').count(),3);

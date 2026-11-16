@@ -8,3 +8,10 @@
 .quest-world-heart{font-size:clamp(20px,5vw,48px);font-weight:800;line-height:1;color:#ffd9a0;text-shadow:0 0 12px #fb9628,0 0 4px #2c1620;background:#37244fbb;border:2px solid #ffdc90;border-radius:50%;width:50%;aspect-ratio:1;display:grid;place-items:center}
 #quest-world-art-upload{max-width:100%;font-size:13px}
 @media(prefers-reduced-motion:reduce){.quest-world-pawn{transition:none}}
+
+/* The canonical world is primary; historical rounds remain accessible without mixing server positions. */
+.quest-journey-guidance{padding:12px 14px;border:1px solid #a78570;border-radius:12px;background:#332439;color:#ffeac8}
+.legacy-board-details{margin-top:12px}
+.legacy-board-details>summary{cursor:pointer;font-weight:800;min-height:44px;display:list-item;padding:8px 2px}
+.legacy-board-details[open]>summary{margin-bottom:12px}
+.legacy-board-details>.board-hero{margin:12px 0}

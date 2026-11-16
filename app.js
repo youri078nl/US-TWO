@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.2-pilot',
+  version: '0.9.2-pilot',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -117,7 +117,7 @@ function renderHome(){
   let cards='';
   if(!paired()){cards+=`<div class="card"><span class="eyebrow">EERSTE STAP</span><h3>Verbind jullie accounts</h3><p class="muted">Gebruik een koppelcode zodat jullie samen kunnen plannen en spelen.</p><button class="secondary-btn" data-action="open-pair">Naar koppelen</button></div>`}
   else {cards+=`<div class="card"><span class="eyebrow">VOLGENDE DATE</span><h3>${next?safe(next.title):'Tijd voor een nieuwe afspraak?'}</h3><p class="muted">${next?timeFmt.format(new Date(next.start_at)):'Plan iets leuks, ook als het maar een halfuurtje is.'}</p><button class="secondary-btn" data-action="open-dates">Bekijk agenda</button></div>`;
-    cards+=`<div class="card"><span class="eyebrow">HET SPEELBORD</span><h3>Vakje ${Number(b.position)||1}</h3><p class="muted">${b.round?'Jullie hebben een opdracht openstaan.':'Jullie volgende avontuur ligt klaar.'}</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
+    cards+=`<div class="card"><span class="eyebrow">JULLIE SPELREIS</span><h3>Samen verder spelen</h3><p class="muted">Bekijk jullie gezamenlijke wereld en de actuele serverstand. De vorige ronde blijft bereikbaar in het spelscherm.</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
   $('home-cards').innerHTML=cards;
 }
 function renderPair(){

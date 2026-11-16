@@ -92,6 +92,7 @@ async function showApp(){
 function setTab(tab){
   if(!['home','pair','dates','game','memories','more'].includes(tab))return;
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
+  if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   window.scrollTo({top:0,behavior:'instant'});
 }

@@ -11,3 +11,35 @@
 
 /* Only the canonical quest journey remains active. */
 .quest-journey-guidance{padding:12px 14px;border:1px solid #a78570;border-radius:12px;background:#332439;color:#ffeac8}
+
+/* Choreography reuses the already-approved pixels; not rigged 3D animation. */
+.quest-world-actor{position:relative;width:100%;height:100%;display:grid;place-items:center;transform-origin:50% 80%}
+.quest-world-actor>img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.quest-world-scene-spark{position:absolute;left:56%;top:0;color:#ffb6d9;font-size:clamp(15px,3vw,31px);text-shadow:0 0 8px #ff70b8;pointer-events:none}
+.quest-world-scene-ball{position:absolute;left:56%;top:63%;width:clamp(9px,1.5vw,18px);height:clamp(9px,1.5vw,18px);background:radial-gradient(circle at 30% 30%,#fff5b3,#ec9c4a 65%,#b65c30);border:1px solid #fff3ae;border-radius:50%;pointer-events:none}
+.quest-world-scene-ball[hidden],.quest-world-scene-spark[hidden]{display:none}
+.quest-cinematic-controls{padding:10px 0 3px}
+.quest-cinematic-controls>.buttons{display:flex;gap:8px;flex-wrap:wrap}
+.quest-cinematic-controls .buttons>button{flex:1;min-width:150px}
+.quest-world-pawn[data-scene="hug"] .quest-world-actor{animation:us-hug 2800ms ease-in-out 1}
+.quest-world-pawn[data-scene="kiss"] .quest-world-actor{animation:us-kiss 2800ms ease-in-out 1}
+.quest-world-pawn[data-scene="dance"] .quest-world-actor{animation:us-dance 3200ms ease-in-out 1}
+.quest-world-pawn[data-scene="pepsi"] .quest-world-actor{animation:us-pepsi 3400ms ease-in-out 1}
+.quest-world-pawn[data-scene="walk"] .quest-world-actor{animation:us-walk 3000ms ease-in-out 1}
+.quest-world-pawn[data-scene="five"] .quest-world-actor{animation:us-five 2800ms ease-in-out 1}
+.quest-world-pawn[data-scene="stars"] .quest-world-actor{animation:us-stars 3200ms ease-in-out 1}
+.quest-world-pawn[data-scene="play"] .quest-world-actor{animation:us-play 3000ms ease-in-out 1}
+.quest-world-pawn[data-scene="calm"] .quest-world-actor{animation:us-stars 3200ms ease-in-out 1}
+.quest-world-pawn[data-scene="hug"] .quest-world-scene-spark,.quest-world-pawn[data-scene="kiss"] .quest-world-scene-spark,.quest-world-pawn[data-scene="five"] .quest-world-scene-spark{animation:us-spark 2800ms ease-out 1}
+.quest-world-pawn[data-scene="pepsi"] .quest-world-scene-ball{animation:us-ball 3400ms ease-in-out 1}
+@keyframes us-hug{0%,100%{transform:scale(1)}30%,70%{transform:scale(1.08) rotate(-4deg)}50%{transform:scale(1.12) rotate(2deg)}}
+@keyframes us-kiss{0%,100%{transform:scale(1)}35%,65%{transform:translateX(4%) scale(1.09) rotate(-3deg)}}
+@keyframes us-dance{0%,100%{transform:translateY(0) rotate(0)}18%{transform:translateY(-8%) rotate(-7deg)}36%{transform:translateY(0) rotate(7deg)}54%{transform:translateY(-10%) rotate(-5deg)}72%{transform:translateY(0) rotate(8deg)}}
+@keyframes us-pepsi{0%,100%{transform:translateY(0)}25%,65%{transform:translateY(-5%) scale(1.025)}50%{transform:translateY(0)}}
+@keyframes us-walk{0%,100%{transform:translate(0,0) rotate(0)}18%{transform:translate(3%,-3%) rotate(3deg)}38%{transform:translate(-3%,0) rotate(-3deg)}60%{transform:translate(3%,-3%) rotate(3deg)}80%{transform:translate(-3%,0) rotate(-3deg)}}
+@keyframes us-five{0%,100%{transform:scale(1)}45%{transform:translateY(-5%) scale(1.07) rotate(4deg)}65%{transform:scale(1.04) rotate(-4deg)}}
+@keyframes us-stars{0%,100%{transform:translateY(0) scale(1)}40%,70%{transform:translateY(-3%) scale(1.04)}}
+@keyframes us-play{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-7deg) translateY(-3%)}40%,80%{transform:rotate(7deg) translateY(-3%)}}
+@keyframes us-spark{0%,20%,100%{opacity:0;transform:translateY(8px) scale(.5)}45%,70%{opacity:1;transform:translateY(-19px) scale(1.4)}}
+@keyframes us-ball{0%,100%{opacity:0;transform:translate(0,0) scale(.5)}12%{opacity:1}38%{transform:translate(240%,-360%) scale(1)}65%{transform:translate(320%,-60%) scale(1)}88%{opacity:1;transform:translate(25%,0) scale(.7)}}
+@media(prefers-reduced-motion:reduce){.quest-world-pawn[data-scene] .quest-world-actor,.quest-world-pawn[data-scene] .quest-world-scene-spark,.quest-world-pawn[data-scene] .quest-world-scene-ball{animation:none!important}}

@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.9.3-pilot',
+  version: '0.9.4-pilot',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -96,6 +96,7 @@ function setTab(tab){
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
   if(tab==='game'&&state.session)window.dispatchEvent(new Event('us-two-quest-game-open'));
+  window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab}}));
   window.scrollTo({top:0,behavior:'instant'});
 }
 async function syncAll({quiet=false}={}) {

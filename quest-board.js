@@ -9,6 +9,7 @@
  ];
  const $=id=>document.getElementById(id);
  const DB='us-two-private-pawn-v1',TABLE='images';
+ const artChanged=()=>window.dispatchEvent(new Event('us-two-pawn-art-changed'));
  let activeKey='',position=null,revision=0,pictureUrl='',animationTimer=null;
  function storage(){
    return new Promise((resolve,reject)=>{
@@ -36,6 +37,7 @@
    img.hidden=true;
    img.removeAttribute('src');
    $('quest-world-fallback').hidden=false;
+   artChanged();
  }
  function point(step){
    const k=((step%PATH.length)+PATH.length)%PATH.length;
@@ -64,6 +66,7 @@
        $('quest-world-pawn-art').hidden=false;
        $('quest-world-fallback').hidden=true;
        $('quest-world-art-status').textContent='Jullie goedgekeurde pion is privé op dit toestel opgeslagen.';
+       artChanged();
      }else{
        $('quest-world-art-status').textContent='Kies eenmaal de originele afbeelding van jullie drieën. De gouden hartmarkering blijft zichtbaar totdat je die kiest.';
      }

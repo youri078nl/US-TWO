@@ -559,7 +559,7 @@ window.USTwoQuestPilotBridge = Object.freeze({
     if(!state.session)throw Error('Log eerst in.');
     if(state.session.expires_at<Date.now()/1000+80)await freshToken();
     const type=mode==='afstand'?'remote':'together';
-    const query='/rest/v1/us_quest_catalog?select=id,title,category,minutes,reward_steps,brief,remote,together,world&world=eq.'+world+'&category=neq.Flirt&'+type+'=eq.true&order=id.asc&limit=50';
+    const query='/rest/v1/us_quest_catalog?select=id,title,category,minutes,reward_steps,brief,remote,together,world,estimated_cost_eur&world=eq.'+world+'&category=neq.Flirt&'+type+'=eq.true&order=id.asc&limit=50';
     const call=()=>request(query,{headers:{Authorization:'Bearer '+state.session.access_token}});
     try{return await call();}
     catch(e){if(e.status===401){await freshToken();return call();}throw e;}

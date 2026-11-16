@@ -13,6 +13,7 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./quest-board.css">
   <title>US TWO | Samen op avontuur</title>
 </head>
 <body>
@@ -141,6 +142,20 @@
             <h3 id="quest-pilot-heading">Nieuwe spelreis · experimentele synchronisatie</h3>
             <p class="muted">Dit onderdeel is een aparte proef. Het bestaande speelbord hierboven verandert niet. Alleen de knop 'Nieuwe spelreis starten' kan de nieuwe gezamenlijke serverstand aanmaken.</p>
             <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
+            <section class="quest-board-section stack" aria-label="Oorspronkelijke gezamenlijke spelwereld">
+              <h4>Jullie gezamenlijke speelwereld</h4>
+              <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Spelbord met één gezamenlijke pion">
+                <img class="quest-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="Officiële geïllustreerde US TWO-wereld met gouden hartjespad" loading="eager">
+                <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor jullie beiden en Pepsi">
+                  <img id="quest-world-pawn-art" alt="Goedgekeurd origineel van Youri, Kim en Pepsi" hidden>
+                  <span id="quest-world-fallback" class="quest-world-heart" aria-hidden="true">♥</span>
+                </div>
+              </div>
+              <p id="quest-world-position" class="muted" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
+              <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
+              <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
+              <p id="quest-world-art-status" class="muted">Gebruik het originele, goedgekeurde plaatje van jullie drieën. De afbeelding wordt alleen op dit toestel in lokale opslag bewaard, niet gepubliceerd of naar de server verstuurd.</p>
+            </section>
             <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
             <p id="quest-pilot-network" class="muted" role="status" aria-live="polite">Netwerkstatus controleren…</p>
             <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
@@ -256,6 +271,7 @@
   <script src="./us-two-offline.js" defer></script>
    <script type="module" src="./app.js"></script>
    <script src="./quest-catalog.js" defer></script>
+   <script src="./quest-board.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
 </body>
 </html>

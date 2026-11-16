@@ -6,9 +6,40 @@ const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // Test the real legacy DOM renderer without touching connected accounts or server data.
+ await page.route('**/app.js',async route=>{
+  const response=await route.fetch();
+  const code=await response.text();
+  await route.fulfill({response,body:code+'\nwindow.__legacyBoardTest={state,renderBoard};'});
+ });
  try {
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle',timeout:30000});
   assert.equal(await page.title(),'US TWO | Samen op avontuur');
+  const duo=await page.evaluate(()=>{
+    const {state,renderBoard}=window.__legacyBoardTest;
+    state.dashboard={couple_id:'test-couple',members:[{name:'Youri'},{name:'Kim'}]};
+    state.board={position:13,chapter:1,next_super_cell:20,round:null};
+    renderBoard();
+    const original={
+      tokenCount:document.querySelectorAll('#board-trail .board-pawn').length,
+      markerClass:document.querySelector('#board-trail .board-pawn')?.className,
+      caption:document.querySelector('#board-trail .pawns-caption')?.textContent,
+      description:document.querySelector('#board-trail .board-map')?.getAttribute('aria-label'),
+      tile:document.querySelector('#board-trail .map-cell.current .cell-number')?.textContent
+    };
+    state.board.position=15;
+    renderBoard();
+    return {...original,afterTokenCount:document.querySelectorAll('#board-trail .board-pawn').length,
+      afterTile:document.querySelector('#board-trail .map-cell.current .cell-number')?.textContent};
+  });
+  assert.equal(duo.tokenCount,1,'never display independent pawn for each partner');
+  assert.equal(duo.afterTokenCount,1,'subsequent server positions still have one pawn');
+  assert.match(duo.markerClass,/board-pawn-duo/);
+  assert.match(duo.caption,/Eén gezamenlijke pion: Youri en Kim/);
+  assert.match(duo.description,/Eén gezamenlijke pion op vakje 13/);
+  assert.equal(duo.tile,'13');
+  assert.equal(duo.afterTile,'15');
+  console.log('PASS Chromium legacy board: one shared couple marker across two positions');
   await page.evaluate(()=>{
     const userId='00000000-0000-4000-8000-000000000001';
     let game={paired:true,initialized:true,revision:5,position:12,world_index:0,

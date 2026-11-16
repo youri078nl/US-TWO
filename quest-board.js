@@ -50,6 +50,19 @@
    el.style.left=(x/1279*100).toFixed(4)+'%';
    el.style.top=(y/720*100).toFixed(4)+'%';
  }
+ function focusPawn(smooth=false){
+   const scroller=$('quest-world-scroll'),map=$('quest-world-viewport');
+   if(!scroller||!map)return;
+   const [x,y]=point(position??0);
+   const left=Math.max(0,Math.min(map.clientWidth-scroller.clientWidth,
+     x/1279*map.clientWidth-scroller.clientWidth/2));
+   const top=Math.max(0,Math.min(map.clientHeight-scroller.clientHeight,
+     y/720*map.clientHeight-scroller.clientHeight/2));
+   const reduce=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+   if(typeof scroller.scrollTo==='function')
+     scroller.scrollTo({left,top,behavior:smooth&&!reduce?'smooth':'instant'});
+   else{scroller.scrollLeft=left;scroller.scrollTop=top;}
+ }
  function cancelMotion(){
    if(animationTimer!==null){clearTimeout(animationTimer);animationTimer=null;}
  }
@@ -97,7 +110,9 @@
    $('quest-world-position').textContent='Samen op vak '+next+' · wereld '+world+' van 6. De server bepaalt de voortgang.';
    cancelMotion();
    if(old===null||next<=old||next-old>6||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
-     move(next);return;
+     move(next);
+     requestAnimationFrame(()=>focusPawn(old!==null));
+     return;
    }
    let step=old;
    const tick=()=>{
@@ -105,7 +120,7 @@
      step++;
      move(step);
      if(step<next)animationTimer=setTimeout(tick,240);
-     else animationTimer=null;
+     else{animationTimer=null;focusPawn(true);}
    };
    animationTimer=setTimeout(tick,100);
  }
@@ -113,6 +128,7 @@
    const input=$('quest-world-art-upload');
    if(!input)return;
    move(0);
+   $('quest-world-find-pawn')?.addEventListener('click',()=>focusPawn(true));
    input.addEventListener('change',async()=>{
      const key=activeKey,file=input.files?.[0];input.value='';
      if(!key||!file)return;
@@ -125,6 +141,6 @@
    });
    window.addEventListener('us-two-session-cleared',clear);
  }
- window.USTwoQuestBoard=Object.freeze({update,clear,pathPoint:point});
+ window.USTwoQuestBoard=Object.freeze({update,clear,pathPoint:point,focusPawn});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();

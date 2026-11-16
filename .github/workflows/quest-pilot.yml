@@ -15,6 +15,8 @@ on:
       - 'tests/quest-browser-month-calendar.cjs'
       - 'tests/quest-budget-catalog.test.cjs'
       - 'supabase/migrations/20261116_premium_catalog_36.sql'
+      - 'supabase/migrations/20261116_complete_240_catalog.sql'
+      - 'supabase/catalog/*.json'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'

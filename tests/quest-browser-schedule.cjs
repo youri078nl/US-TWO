@@ -53,7 +53,7 @@ async function setup(page,user){
   },{user,coupleId});
   await page.locator('#quest-pilot-refresh').click();
   await page.locator('#quest-pilot-schedule-propose').waitFor();
-  await page.getByText(/Nog geen datum bevestigd/).first().waitFor({timeout:10000});
+  await page.locator('#quest-pilot-schedule-status').getByText(/Nog geen datum bevestigd/).waitFor({timeout:10000});
 }
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});

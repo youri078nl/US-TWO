@@ -76,7 +76,7 @@
     const canChoose=state.initialized&&state.phase==='choose'&&state.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId&&!items.length&&!blocked;
     $('quest-pilot-load-catalog').disabled=!canChoose;
     for(let i=0;i<3;i++)$('quest-pilot-option-'+i).disabled=!canChoose||!catalogChoices[i]||state.world_index!==catalogWorld||$('quest-pilot-mode').value!==catalogMode||$('quest-pilot-budget').value!==catalogBudget;
-    const who=window.USTwoQuestPilotBridge?.identity();
+
     const active=Boolean(state.initialized)&&items.length===0&&!blocked;
     const partnerProposal=active&&state.phase==='approval'&&state.proposer_id!==who?.userId;
     const ownProposal=active&&state.phase==='approval'&&state.proposer_id===who?.userId;

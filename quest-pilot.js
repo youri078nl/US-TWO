@@ -8,7 +8,7 @@
   const SUPER_ACTIONS=['ready','reveal','done','skip'];
   const SCHEDULE_ACTIONS=['propose','accept','reject','cancel'];
   let currentSuper=null;
-  let catalogChoices=[];let catalogWorld=null;let catalogMode=null;let catalogBudget=null;
+  let catalogChoices=[];let catalogWorld=null;let catalogMode=null;let catalogBudget=null;let catalogPage=0;
   const text=(id,value)=>{const el=$(id);if(el)el.textContent=String(value);};
   function identity() {
     const b=window.USTwoQuestPilotBridge;
@@ -158,7 +158,7 @@
       window.USTwoQuestPilotBridge.read(),q.state()
     ]);
     latest=server;
-    if(server.world_index!==catalogWorld||server.phase!=='choose') {catalogChoices=[];catalogWorld=null;}
+    if(server.world_index!==catalogWorld||server.phase!=='choose') {catalogChoices=[];catalogWorld=null;catalogPage=0;}
     status(server,local.items,local.blocked);
     showSchedule(server,local.items,local.blocked);
     window.USTwoQuestCalendar?.update(server,identity());
@@ -210,7 +210,7 @@
     if(result.status==='busy')throw Error('Synchronisatie is al bezig in een ander venster.');
   }
   function clearPrivateScreen() {
-    latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
+    latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
     text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
     text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
@@ -252,13 +252,13 @@
     });
     $('quest-pilot-agenda-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-budget').addEventListener('change',()=>{
-      catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
+      catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
       for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}
       if(latest?.initialized&&latest.phase==='choose'&&latest.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId)
         $('quest-pilot-load-catalog').disabled=false;
     });
     $('quest-pilot-mode').addEventListener('change',()=>{
-      catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
+      catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
       for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}
       if(latest&&latest.initialized&&latest.phase==='choose'&&latest.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId)
         $('quest-pilot-load-catalog').disabled=false;
@@ -279,9 +279,11 @@
       const budget=budgetRaw==='max'?'max':Number(budgetRaw);
       catalogChoices=window.USTwoQuestCatalog.chooseOptions(candidates,{
         world:fresh.world_index,mode,position:fresh.position,
-        history:fresh.history,limit:3,budget
+        history:fresh.history,limit:3,budget,page:catalogPage
       });
+      if(catalogChoices.length)catalogPage=(catalogPage+1)%10001;
       catalogWorld=fresh.world_index;catalogMode=mode;catalogBudget=budgetRaw;
+      text('quest-pilot-load-catalog',catalogChoices.length?'Toon drie andere voorstellen':'Toon drie voorstellen');
       for(let i=0;i<3;i++){
         const c=catalogChoices[i];
         text('quest-pilot-option-'+i,c?c.title+' · '+(c.estimated_cost_eur===0?'gratis':('circa €'+c.estimated_cost_eur))+' · '+Number(c.reward_steps||0)+' stappen · '+Number(c.minutes||0)+' minuten':'Geen voorstel');

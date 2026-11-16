@@ -55,7 +55,7 @@ assert.throws(()=>decode(archive([
 ])),/onvolledig/);
 assert.throws(()=>decode(archive([['../evil.webp',image(1)]])),/Onverwacht bestand/);
 assert.throws(()=>decode(archive([['pepsi/pepsi_01.webp',image(1),8]])),/ongecomprimeerde/);
-const corrupt=Buffer.from(valid);corrupt[37]^=1;
+const corrupt=Buffer.from(valid);corrupt[30+Buffer.byteLength('pepsi/pepsi_01.webp')+20]^=1;
 assert.throws(()=>decode(corrupt),/beschadigd/);
 assert.throws(()=>decode(Buffer.alloc(10)),/ongeldig formaat/);
 console.log('PASS ZIP posepack: two scenes, trusted frame signatures, CRC, duplicate/traversal/recompression guards and contiguous numbering');

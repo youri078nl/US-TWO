@@ -1,8 +1,33 @@
 /* Exact original continuous world and a single non-interactive common pawn. */
 .quest-board-section{gap:10px}
-.quest-world-viewport{position:relative;overflow:hidden;width:100%;aspect-ratio:1279/720;border:1px solid #b68e65;border-radius:16px;background:#131024;isolation:isolate}
+/* Oversized, genuinely pannable board. Original 1279:720 image ratio and server
+   coordinates are preserved; only the visible camera window changes. */
+#quest-pilot .quest-board-section{min-width:0}
+.quest-world-scroll{
+  position:relative;left:50%;transform:translateX(-50%);
+  width:min(calc(100vw - 12px),1060px);
+  max-width:none;height:min(84svh,940px);min-height:420px;
+  overflow-x:auto;overflow-y:auto;overscroll-behavior:contain;
+  touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scrollbar-color:#d59a54 #241629;
+  border:2px solid #c59757;border-radius:17px;
+  background:#130e24;box-shadow:0 15px 44px #08041199,inset 0 0 0 2px #2f1b2a;
+}
+.quest-world-scroll:focus-visible{outline:3px solid #ffdda0;outline-offset:3px}
+.quest-world-viewport{
+  position:relative;overflow:hidden;
+  width:max(220vw,355svh);max-width:none;aspect-ratio:1279/720;
+  border:0;border-radius:0;background:#131024;isolation:isolate;
+}
+.quest-board-navigation{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.quest-board-navigation p{flex:1;min-width:210px}
+.quest-board-navigation button{flex:0 0 auto}
+@media(max-width:480px){
+  .quest-world-scroll{height:82svh;min-height:390px}
+  .quest-board-navigation button{width:100%}
+}
 .quest-world-art{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;user-select:none;-webkit-user-drag:none}
-.quest-world-pawn{position:absolute;z-index:2;left:11.8%;top:78.1%;width:17%;max-width:170px;aspect-ratio:1/1;display:grid;place-items:center;transform:translate(-50%,-83%);pointer-events:none;transition:left 210ms ease,top 210ms ease;filter:drop-shadow(0 3px 8px #120812bb)}
+.quest-world-pawn{position:absolute;z-index:2;left:11.8%;top:78.1%;width:clamp(110px,7.4%,210px);max-width:none;aspect-ratio:1/1;display:grid;place-items:center;transform:translate(-50%,-83%);pointer-events:none;transition:left 210ms ease,top 210ms ease;filter:drop-shadow(0 3px 8px #120812bb)}
 .quest-world-pawn img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
 .quest-world-pawn img[hidden],.quest-world-heart[hidden]{display:none}
 .quest-world-heart{font-size:clamp(20px,5vw,48px);font-weight:800;line-height:1;color:#ffd9a0;text-shadow:0 0 12px #fb9628,0 0 4px #2c1620;background:#37244fbb;border:2px solid #ffdc90;border-radius:50%;width:50%;aspect-ratio:1;display:grid;place-items:center}
@@ -127,3 +152,39 @@
 @media(prefers-reduced-motion:reduce){
   #quest-pilot button{transition:none!important;animation:none!important}
 }
+
+/* Task cards follow the approved mahogany/gold US TWO palette. The image
+   remains the user's locally imported approved character art, never a new avatar. */
+.quest-task-card{position:relative;overflow:hidden;display:grid;gap:0;
+  border:2px solid #c6914a;border-radius:23px;
+  color:#ffe9c5;background:
+  radial-gradient(ellipse at 50% 30%,#6d2d4145,transparent 70%),
+  linear-gradient(150deg,#261126,#3a1a2b 54%,#170f22);
+  box-shadow:inset 0 0 0 3px #65402c,0 12px 32px #05030db3;
+}
+.quest-task-card::before{content:"";position:absolute;inset:7px;pointer-events:none;
+  border:1px solid #c18f4a70;border-radius:17px}
+.quest-task-card-heading{position:relative;z-index:1;text-align:center;padding:23px 22px 8px;
+  display:grid;gap:5px}
+.quest-task-card-label{font:800 11px/1.4 ui-rounded,system-ui,sans-serif;
+  color:#ffcf87;letter-spacing:.19em}
+.quest-task-card-phase{font-size:12px;color:#eec1a2;letter-spacing:.02em}
+.quest-task-card-art{position:relative;display:grid;place-items:center;
+  width:100%;height:clamp(200px,55vw,350px);overflow:hidden;
+  background:radial-gradient(ellipse at 50% 78%,#ed8c4444,transparent 60%)}
+.quest-task-card-art img{width:100%;height:100%;max-width:560px;object-fit:contain;
+  object-position:center bottom;filter:drop-shadow(0 8px 15px #090514c7)}
+.quest-task-card-art img[hidden],.quest-card-heart[hidden]{display:none}
+.quest-card-heart{font:300 clamp(100px,37vw,200px)/1 Georgia,serif;
+  color:#e8a14e;text-shadow:0 0 20px #fe912777,0 5px 8px #09040e}
+.quest-task-card-body{position:relative;z-index:1;display:grid;gap:12px;text-align:center;
+  padding:15px 24px 28px;background:linear-gradient(180deg,transparent,#1d1126c4)}
+.quest-task-card-body h4{font:700 clamp(22px,5vw,31px)/1.2 Georgia,serif;
+  color:#ffdb96;letter-spacing:.015em;margin:0}
+.quest-task-card-body p{font-size:15px;line-height:1.65;margin:0;
+  white-space:pre-line;color:#f9e5d5}
+.quest-card-meta{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;
+  gap:8px;color:#fdd39c;font-size:12px;font-weight:750;letter-spacing:.025em}
+.quest-card-meta span{border:1px solid #a17a4d;border-radius:99px;
+  background:#3b2430;padding:7px 11px}
+@media(prefers-reduced-motion:reduce){.quest-world-scroll{scroll-behavior:auto}}

@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('index.html','utf8');
+const pilot=fs.readFileSync('quest-pilot.js','utf8');
+const cache=fs.readFileSync('service-worker.js','utf8');
+assert.doesNotMatch(html,/quest-3d-|quest-3d\.js|\.glb|<canvas[^>]*3d/i,'3D viewer must not return to the PWA');
+assert.doesNotMatch(pilot,/USTwoQuest3D/,'gameplay must not initialize a 3D renderer');
+assert.doesNotMatch(cache,/quest-3d\.js/,'offline cache must not ship 3D code');
+assert.match(html,/quest-pose-zip/,'approved 2D pose import must remain');
+assert.match(html,/quest-cinematic-play/,'approved 2D animation UI must remain');
+assert.match(html,/quest-board/,'original board must remain');
+assert.equal(fs.existsSync('quest-3d.js'),false,'3D implementation must not be bundled');
+console.log('PASS: PWA keeps original board and approved 2D pose workflow, without 3D model or renderer');

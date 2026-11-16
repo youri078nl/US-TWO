@@ -77,6 +77,7 @@
    if(n===token)status('Lokale beeldreeks niet toegankelijk. De bestaande beweging blijft beschikbaar.');
   }
   controls();
+  window.dispatchEvent(new Event('us-two-poses-changed'));
  }
  function update(identity,activeScene){
   const next=identity?.paired&&identity?.userId&&identity?.coupleId?

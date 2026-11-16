@@ -187,10 +187,10 @@ async function main(){
  chooser.setServer({paired:true,initialized:true,revision:4,position:12,world_index:0,
    phase:'choose',turn_user:myId});
  chooser.setCatalog([
-   {id:'A',title:'Schilderen',world:0,category:'Creatief',together:true,reward_steps:3,minutes:40},
-   {id:'B',title:'Dansen',world:0,category:'Romantisch',together:true,reward_steps:2,minutes:20},
+   {id:'A',title:'Schilderen',world:0,category:'Creatief',together:true,reward_steps:3,minutes:40,estimated_cost_eur:0},
+   {id:'B',title:'Dansen',world:0,category:'Romantisch',together:true,reward_steps:2,minutes:20,estimated_cost_eur:0},
    {id:'BAD',title:'Verkeerde wereld',world:1,category:'Creatief',together:true},
-   {id:'C',title:'Koken',world:0,category:'Creatief',together:true,reward_steps:3,minutes:50},
+   {id:'C',title:'Koken',world:0,category:'Creatief',together:true,reward_steps:3,minutes:50,estimated_cost_eur:0},
    {id:'SECRET',title:'Verboden kaart',world:0,category:'Flirt',together:true}
  ]);
  await chooser.click('quest-pilot-refresh');
@@ -224,10 +224,10 @@ async function main(){
  console.log('PASS wrong-world results cannot be proposed');passed++;
  const selector=setup('rotation');
  const input=[
-   {id:'A',title:'Eerste',world:0,category:'Creatief',together:true},
-   {id:'B',title:'Tweede',world:0,category:'Creatief',together:true},
-   {id:'C',title:'Derde',world:0,category:'Creatief',together:true},
-   {id:'D',title:'Vierde',world:0,category:'Creatief',together:true}
+   {id:'A',title:'Eerste',world:0,category:'Creatief',together:true,estimated_cost_eur:0},
+   {id:'B',title:'Tweede',world:0,category:'Creatief',together:true,estimated_cost_eur:0},
+   {id:'C',title:'Derde',world:0,category:'Creatief',together:true,estimated_cost_eur:0},
+   {id:'D',title:'Vierde',world:0,category:'Creatief',together:true,estimated_cost_eur:0}
  ];
  const choices=selector.ctx.USTwoQuestCatalog.chooseOptions(input,{
    world:0,mode:'samen',position:0,history:[{id:'A'}],limit:3

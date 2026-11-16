@@ -17,6 +17,8 @@ on:
       - 'supabase/migrations/20261116_premium_catalog_36.sql'
       - 'supabase/migrations/20261116_complete_240_catalog.sql'
       - 'supabase/catalog/*.json'
+      - 'supabase/migrations/20261116_superdate_templates_18.sql'
+      - 'tests/quest-superdate-content.test.cjs'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -47,6 +49,8 @@ jobs:
         run: node tests/quest-pilot.test.cjs
       - name: Validate authored budget catalog and shared-cost filtering
         run: node tests/quest-budget-catalog.test.cjs
+      - name: Verify eighteen private superdate storylines
+        run: node tests/quest-superdate-content.test.cjs
       - name: Install Chromium browser test dependency
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1

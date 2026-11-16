@@ -264,8 +264,10 @@
         Boolean(window.USTwoQuestPilotBridge?.identity()?.paired);
     };
     const refreshVisible=()=>{
-      if(!loading&&gameVisible())operation(refresh);
+      if(!loading&&navigator.onLine!==false&&gameVisible())operation(refresh);
     };
+    // Do not erase a valid on-screen board by needlessly polling while offline.
+    window.addEventListener?.('online',refreshVisible);
     window.addEventListener?.('us-two-quest-game-open',refreshVisible);
     window.addEventListener?.('focus',refreshVisible);
     document.addEventListener?.('visibilitychange',refreshVisible);

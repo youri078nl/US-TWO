@@ -59,6 +59,10 @@
       }else if(legacy.dataset.canonicalReady==='0'&&state.initialized){
         // After an explicit new-journey start, the previous board becomes optional.
         legacy.open=false;
+      }else if(legacy.dataset.canonicalReady==='1'&&!state.initialized){
+        // The server can report an uninitialized game after account or state recovery.
+        // Preserve access to the original round instead of showing an empty main journey.
+        legacy.open=true;
       }
       legacy.dataset.canonicalReady=state.initialized?'1':'0';
     }

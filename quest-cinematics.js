@@ -80,6 +80,7 @@
   window.addEventListener('us-two-poses-changed',controls);
   window.addEventListener('us-two-tab-changed',e=>{if(e.detail?.tab!=='game')stop();else controls();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else controls();});
+  window.matchMedia?.('(prefers-reduced-motion: reduce)')?.addEventListener?.('change',()=>{if(reduced())stop();else controls();});
   $('quest-world-actor')?.addEventListener('animationend',e=>{if(e.target===$('quest-world-actor'))stop();});
   controls();
  }

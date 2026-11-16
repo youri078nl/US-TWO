@@ -15,6 +15,19 @@ check('only canonical game remains and legacy RPCs cannot mutate discarded test 
  assert.match(html,/id="quest-world-pawn"/);
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
+check('large scrollable world and story-style quest card retain original art',()=>{
+ assert.match(html,/id="quest-world-scroll"/);
+ assert.match(html,/id="quest-world-find-pawn"/);
+ assert.match(html,/id="quest-world-viewport"/);
+ assert.match(html,/id="quest-card-approved-pose"/);
+ assert.match(html,/id="quest-pilot-task"/);
+ assert.match(html,/id="quest-pilot-instructions"/);
+ const css=fs.readFileSync('quest-board.css','utf8');
+ assert.match(css,/overflow-x:auto;overflow-y:auto/);
+ assert.match(css,/355svh/);
+ assert.match(css,/aspect-ratio:1279\/720/);
+ assert.match(fs.readFileSync('quest-board.js','utf8'),/focusPawn/);
+});
 check('staging markup and scripts are referenced',()=>{
  assert.match(html,/id="quest-pilot"/);
  assert.match(html,/src="\.\/us-two-offline\.js"/);
@@ -26,11 +39,11 @@ check('bridge reuses authenticated, refreshing app RPC',()=>{
  assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
 });
 function setup(name) {
- const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2','quest-pilot-schedule-status','quest-pilot-agenda-schedule','quest-pilot-agenda-refresh','quest-pilot-schedule-time','quest-pilot-schedule-propose','quest-pilot-schedule-accept','quest-pilot-schedule-reject','quest-pilot-schedule-cancel'];
- for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
+ const elements={};const ids=['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-status','quest-pilot-pending','quest-pilot-message','quest-pilot-conflict','quest-pilot-resolve','quest-pilot-network','quest-pilot-task','quest-pilot-instructions','quest-card-approved-pose','quest-card-art-placeholder','quest-card-phase','quest-card-meta','quest-pilot-accept','quest-pilot-reject','quest-pilot-cancel','quest-pilot-complete','quest-pilot-skip','quest-pilot-super-status','quest-pilot-super-consent','quest-pilot-super-timing','quest-pilot-super-prep','quest-pilot-super-finale','quest-pilot-super-ready','quest-pilot-super-reveal','quest-pilot-super-done','quest-pilot-super-skip','quest-pilot-mode','quest-pilot-budget','quest-pilot-load-catalog','quest-pilot-option-0','quest-pilot-option-1','quest-pilot-option-2','quest-pilot-schedule-status','quest-pilot-agenda-schedule','quest-pilot-agenda-refresh','quest-pilot-schedule-time','quest-pilot-schedule-propose','quest-pilot-schedule-accept','quest-pilot-schedule-reject','quest-pilot-schedule-cancel'];
+ for(const id of ids)elements[id]={disabled:false,textContent:'',handlers:{},children:[],attributes:{},addEventListener(type,fn){this.handlers[type]=fn;},replaceChildren(...children){this.children=children;},appendChild(child){this.children.push(child);return child;},getAttribute(k){return this.attributes[k]??null;},setAttribute(k,v){this.attributes[k]=String(v);},removeAttribute(k){delete this.attributes[k];}};
  elements['quest-pilot-mode'].value='samen';
  elements['quest-pilot-budget'].value='0';
- const doc={readyState:'complete',getElementById:id=>elements[id]||null};
+ const doc={readyState:'complete',getElementById:id=>elements[id]||null,createElement:tag=>({tagName:tag.toUpperCase(),textContent:''})};
  const events={};
  const ctx={console,document:doc,indexedDB:new IDBFactory(),crypto:require('node:crypto').webcrypto};
  ctx.addEventListener=(name,fn)=>{events[name]=fn;};
@@ -159,7 +172,7 @@ async function main(){
    my_prep:'Mijn eigen geheime opdracht',partner_ready:false,my_ready:false,can_reveal:false,
    prep_a:'NIET TONEN PARTNER',prep_b:'OOK NIET TONEN',finale_remote:'VERBODEN FINALE'}]);
  await superTest.click('quest-pilot-refresh');
- assert.match(superTest.elements['quest-pilot-super-prep'].textContent,/Mijn eigen geheime opdracht/);
+ assert.match(superTest.elements['quest-pilot-super-prep'].textContent,/Mijn eigen geheime opdracht/,'message='+superTest.elements['quest-pilot-message'].textContent+' status='+superTest.elements['quest-pilot-super-status'].textContent+' card='+superTest.elements['quest-card-phase'].textContent);
  assert.doesNotMatch(superTest.elements['quest-pilot-super-prep'].textContent,/NIET TONEN/);
  assert.doesNotMatch(superTest.elements['quest-pilot-super-finale'].textContent,/VERBODEN FINALE/);
  assert.equal(superTest.elements['quest-pilot-super-reveal'].disabled,true);
@@ -468,6 +481,6 @@ async function main(){
  assert.ok(nextThree.every(x=>x.includes('gratis')),'rerolls must preserve free choices');
  assert.equal(reroll.calls.length,0,'rerolling only reads, never sends a game mutation');
  console.log('PASS catalog reroll cycles through different free choices without server mutations');passed++;
- console.log('Web pilot checks:',passed+'/41 passed');
+ console.log('Web pilot checks:',passed+'/42 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

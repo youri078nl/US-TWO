@@ -21,6 +21,7 @@ on:
       - 'tests/quest-browser-superdate.cjs'
       - 'tests/quest-browser-schedule.cjs'
       - 'tests/quest-browser-month-calendar.cjs'
+      - 'tests/quest-browser-board-pan.cjs'
       - 'tests/quest-budget-catalog.test.cjs'
       - 'supabase/migrations/20261116_premium_catalog_36.sql'
       - 'supabase/migrations/20261116_complete_240_catalog.sql'
@@ -95,3 +96,5 @@ jobs:
         run: node tests/quest-browser-schedule.cjs
       - name: Verify canonical game dates in the existing month calendar
         run: node tests/quest-browser-month-calendar.cjs
+      - name: Verify full-screen two-axis touch pan and approved-style task cards
+        run: node tests/quest-browser-board-pan.cjs

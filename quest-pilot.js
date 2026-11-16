@@ -34,6 +34,48 @@
     queueFor=key;
     return queue;
   }
+  function mirrorApprovedPose(){
+    const target=$('quest-card-approved-pose');
+    if(!target)return;
+    const candidates=[$('quest-world-pose-frame'),$('quest-world-pawn-art')];
+    const source=candidates.find(img=>img&&!img.hidden&&img.getAttribute('src'));
+    if(source){
+      if(target.getAttribute('src')!==source.getAttribute('src'))
+        target.setAttribute('src',source.getAttribute('src'));
+      target.hidden=false;
+      $('quest-card-art-placeholder').hidden=true;
+    }else{
+      target.hidden=true;target.removeAttribute('src');
+      $('quest-card-art-placeholder').hidden=false;
+    }
+  }
+  function showStyledCard(state){
+    const phases={choose:'Kies samen jullie volgende uitdaging',
+      approval:'Wacht op de reactie van je partner',
+      active:'Jullie gezamenlijke opdracht'};
+    const d=state?.date;
+    text('quest-card-phase',phases[state?.phase]||'Het volgende avontuur begint hier');
+    const info=[];
+    if(d){
+      info.push(state.mode==='afstand'?'Op afstand':'Samen');
+      if(Number.isFinite(Number(d.minutes))&&Number(d.minutes)>0)
+        info.push(Number(d.minutes)+' minuten');
+      if(Number.isFinite(Number(d.steps))&&Number(d.steps)>0)
+        info.push('+'+Number(d.steps)+' stappen');
+      if(d.estimated_cost_eur===0)info.push('Gratis');
+      else if(Number.isFinite(d.estimated_cost_eur)&&d.estimated_cost_eur>0)
+        info.push('Richtbudget €'+d.estimated_cost_eur+' samen');
+    }else info.push('Eén gezamenlijk avontuur');
+    const meta=$('quest-card-meta');
+    if(meta){
+      meta.replaceChildren();
+      for(const item of info){
+        const badge=document.createElement('span');
+        badge.textContent=item;meta.appendChild(badge);
+      }
+    }
+    mirrorApprovedPose();
+  }
   function status(state, items, blocked) {
     if(!state?.paired){text('quest-pilot-status','Nog niet gekoppeld.');return;}
     const phase=state.initialized?(state.phase||'onbekend'):'nog niet gestart';
@@ -84,6 +126,7 @@
           typeof d.brief==='string'&&d.brief.trim()?d.brief:
           'Voor deze opdracht zijn nog geen inhoudelijke instructies uitgewerkt.')
       : 'Kies een opdracht om de uitleg te zien.');
+    showStyledCard(state);
   }
   function showSchedule(state,items,blocked) {
     const user=window.USTwoQuestPilotBridge?.identity()?.userId;
@@ -234,6 +277,11 @@
     text('quest-journey-guidance','De spelreisstatus is verborgen na uitloggen.');
     text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
+    text('quest-card-phase','Het volgende avontuur begint hier');
+    $('quest-card-approved-pose').hidden=true;
+    $('quest-card-approved-pose').removeAttribute('src');
+    $('quest-card-art-placeholder').hidden=false;
+    $('quest-card-meta').replaceChildren();
     text('quest-pilot-instructions','Opdrachtinstructies verborgen.');
     text('quest-pilot-super-status','Geen superdategegevens geladen.');
     text('quest-pilot-super-consent','Toestemmingsstatus verborgen.');
@@ -267,6 +315,15 @@
     showNetworkStatus();
     window.addEventListener?.('online',showNetworkStatus);
     window.addEventListener?.('offline',showNetworkStatus);
+    window.addEventListener?.('us-two-pawn-art-changed',mirrorApprovedPose);
+    window.addEventListener?.('us-two-poses-changed',mirrorApprovedPose);
+    if(typeof MutationObserver==='function'){
+      const observer=new MutationObserver(mirrorApprovedPose);
+      for(const id of ['quest-world-pose-frame','quest-world-pawn-art']){
+        const art=$(id);
+        if(art)observer.observe(art,{attributes:true,attributeFilter:['src','hidden']});
+      }
+    }
     window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
     window.addEventListener?.('us-two-quest-calendar-refresh',()=>{
       if(!loading&&window.USTwoQuestPilotBridge?.identity()?.paired)operation(refresh);

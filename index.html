@@ -158,6 +158,26 @@
               <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
               <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
               <p id="quest-world-art-status" class="muted">Gebruik het originele, goedgekeurde plaatje van jullie drieën. De afbeelding wordt alleen op dit toestel in lokale opslag bewaard, niet gepubliceerd of naar de server verstuurd.</p>
+              <details class="quest-pose-management">
+                <summary>Goedgekeurde 2D-bewegingen beheren</summary>
+                <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
+                <label for="quest-pose-scene">Animatie waarvoor je frames toevoegt</label>
+                <select id="quest-pose-scene" disabled>
+                  <option value="pepsi">Bal gooien met Pepsi</option>
+                  <option value="kiss">Zoenen</option>
+                  <option value="hug">Knuffelen</option>
+                  <option value="dance">Dansen</option>
+                  <option value="walk">Wandelen</option>
+                  <option value="stars">Sterren kijken</option>
+                  <option value="five">Samen vieren</option>
+                  <option value="play">Spel en plezier</option>
+                  <option value="calm">Rustig samen</option>
+                </select>
+                <label for="quest-pose-upload">Kies 2 tot 24 originele PNG- of WebP-frames</label>
+                <input id="quest-pose-upload" type="file" accept="image/png,image/webp" multiple disabled>
+                <button type="button" id="quest-pose-remove" class="ghost-btn" disabled>Verwijder lokale beeldreeks</button>
+                <p id="quest-pose-status" class="muted" role="status" aria-live="polite">Nog geen goedgekeurde beeldframes geladen.</p>
+              </details>
               <div class="quest-cinematic-controls" role="group" aria-label="Animatie voor de opdracht">
                 <p id="quest-cinematic-status" class="muted" role="status" aria-live="polite">De animatie verschijnt wanneer jullie een opdracht hebben.</p>
                 <div class="buttons">
@@ -283,6 +303,7 @@
    <script type="module" src="./app.js"></script>
    <script src="./quest-catalog.js" defer></script>
    <script src="./quest-board.js" defer></script>
+   <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
 </body>

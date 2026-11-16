@@ -64,7 +64,10 @@
   const who=identity?.paired&&identity.userId&&identity.coupleId?identity.userId+':'+identity.coupleId:'';
   const card=state?.date;
   if(!who||!state?.paired||!state?.initialized||!['approval','active'].includes(state.phase)||!card||!card.title){
-   if(account)clear();else controls();return;
+   if(account)clear();else controls();
+   // Let a paired account prepare approved frames even before selecting a date.
+   if(who&&state?.paired)window.USTwoPoseFrames?.update(identity,'');
+   return;
   }
   const key=String(card.id||card.title).slice(0,240)+':'+state.phase+':'+state.position;
   if(who!==account||key!==task){stop();account=who;task=key;scene=sceneFor(card);}

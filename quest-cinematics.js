@@ -34,10 +34,11 @@
   else if(reduced())show('Animaties staan uit via de toegankelijkheidsinstellingen.');
   else if(!hasArt())show('Laad de goedgekeurde pion op dit toestel. Er verschijnen geen andere personages.');
   else if(running)show('Beweging: '+NAMES[scene]+'. De spelstand verandert niet.');
-  else show('Bijpassende beweging: '+NAMES[scene]+'.');
+  else show('Bijpassende beweging: '+NAMES[scene]+(window.USTwoPoseFrames?.hasSelected()?' · goedgekeurde 2D-frames geladen.':' · eenvoudige beweging.'));
  }
  function stop(){
   if(timer!==null){clearTimeout(timer);timer=null;}
+  window.USTwoPoseFrames?.stop();
   running=false;$('quest-world-pawn')?.removeAttribute('data-scene');
   for(const id of ['quest-world-scene-ball','quest-world-scene-spark'])if($(id))$(id).hidden=true;
   if($('quest-cinematic-stop'))$('quest-cinematic-stop').disabled=true;
@@ -53,9 +54,12 @@
   }
   if($('quest-world-scene-ball'))$('quest-world-scene-ball').hidden=scene!=='pepsi';
   if($('quest-cinematic-stop'))$('quest-cinematic-stop').disabled=false;
-  controls();timer=setTimeout(stop,3600);return true;
+  const usesFrames=window.USTwoPoseFrames?.play(scene,stop)===true;
+  controls();
+  if(!usesFrames)timer=setTimeout(stop,3600);
+  return true;
  }
- function clear(){stop();account='';task='';scene='';controls();show('Animatie verborgen. Log in om jullie opdracht te bekijken.');}
+ function clear(){stop();window.USTwoPoseFrames?.clear();account='';task='';scene='';controls();show('Animatie verborgen. Log in om jullie opdracht te bekijken.');}
  function update(state,identity){
   const who=identity?.paired&&identity.userId&&identity.coupleId?identity.userId+':'+identity.coupleId:'';
   const card=state?.date;
@@ -64,6 +68,7 @@
   }
   const key=String(card.id||card.title).slice(0,240)+':'+state.phase+':'+state.position;
   if(who!==account||key!==task){stop();account=who;task=key;scene=sceneFor(card);}
+  window.USTwoPoseFrames?.update(identity,scene);
   controls();
  }
  function bind(){
@@ -71,7 +76,7 @@
   $('quest-cinematic-play').addEventListener('click',play);
   $('quest-cinematic-stop').addEventListener('click',stop);
   window.addEventListener('us-two-session-cleared',clear);
-  window.addEventListener('us-two-pawn-art-changed',controls);
+  window.addEventListener('us-two-pawn-art-changed',()=>{if(running)stop();else controls();});
   window.addEventListener('us-two-tab-changed',e=>{if(e.detail?.tab!=='game')stop();else controls();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else controls();});
   $('quest-world-actor')?.addEventListener('animationend',e=>{if(e.target===$('quest-world-actor'))stop();});

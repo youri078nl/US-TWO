@@ -63,13 +63,17 @@ async function setup(page,user){
   await page.locator('#quest-pose-status').getByText(/3 originele beeldframes/).waitFor();
   assert.equal(await page.evaluate(()=>window.USTwoPoseFrames.hasSelected()),true);
   const original=await page.locator('#quest-world-pawn-art').getAttribute('src');
+  assert.equal(await page.locator('#quest-world-pose-frame').isHidden(),false);
+  assert.match(await page.locator('#quest-world-pose-frame').getAttribute('src'),/^blob:/);
   await page.locator('#quest-cinematic-play').click();
   await page.locator('#quest-world-pawn[data-framepack="true"]').waitFor();
-  assert.match(await page.locator('#quest-world-pawn-art').getAttribute('src'),/^blob:/);
+  assert.match(await page.locator('#quest-world-pose-frame').getAttribute('src'),/^blob:/);
+  assert.equal(await page.locator('#quest-world-pawn-art').getAttribute('src'),original);
   await page.locator('#quest-world-pawn:not([data-framepack])').waitFor({timeout:10000});
   assert.equal(await page.locator('#quest-world-pawn-art').getAttribute('src'),original);
+  assert.equal(await page.locator('#quest-world-pose-frame').isHidden(),false);
   assert.equal(await page.locator('#quest-world-pawn').getAttribute('data-scene'),null);
-  console.log('PASS animation frames play in a sequence and restore the approved original');
+  console.log('PASS frame-by-frame poses play above the untouched original character image');
 
   // Reload same origin: the saved frames survive page close via IndexedDB.
   await page.reload({waitUntil:'networkidle'});
@@ -82,6 +86,7 @@ async function setup(page,user){
   await setup(page,OTHER);
   await page.locator('#quest-pose-status').getByText(/Nog geen goedgekeurde beeldreeks/).waitFor({timeout:10000});
   assert.equal(await page.evaluate(()=>window.USTwoPoseFrames.hasSelected()),false);
+  assert.equal(await page.locator('#quest-world-pose-frame').isHidden(),true);
   console.log('PASS saved animation stays isolated by user identity');
 
   await setup(page,USER);
@@ -91,12 +96,10 @@ async function setup(page,user){
   assert.equal(await page.evaluate(()=>window.USTwoCinematics.play()),false);
   assert.equal(await page.locator('#quest-world-pawn').getAttribute('data-framepack'),null);
   await page.emulateMedia({reducedMotion:'no-preference'});
-  windowUnused: {
-    // Read-only checks: reduced-motion mode never requires a reward mutation.
-  }
   await page.evaluate(()=>window.dispatchEvent(new Event('us-two-session-cleared')));
   assert.equal(await page.locator('#quest-pose-upload').isDisabled(),true);
   assert.equal(await page.evaluate(()=>window.USTwoPoseFrames.hasSelected()),false);
+  assert.equal(await page.locator('#quest-world-pose-frame').isHidden(),true);
   assert.match(await page.locator('#quest-pose-status').textContent(),/uitloggen/);
   assert.deepEqual(errors,[]);
   console.log('PASS reduced motion, logout and privacy clean-up');

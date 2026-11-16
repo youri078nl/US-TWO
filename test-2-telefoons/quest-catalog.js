@@ -4,11 +4,12 @@
  * cards where alternatives exist, and rotates consistently with game position.
  * No random choices, so both devices with the same canonical state agree.
  */
-function chooseOptions(rows,{world,mode,position,history=[],limit=3,budget='max'}={}) {
+function chooseOptions(rows,{world,mode,position,history=[],limit=3,budget='max',page=0}={}) {
   if(!Number.isSafeInteger(world)||world<0||world>5
     ||!Number.isSafeInteger(position)||position<0
     ||!['afstand','samen'].includes(mode)
     ||!Number.isSafeInteger(limit)||limit<1||limit>3
+    ||!Number.isSafeInteger(page)||page<0||page>10000
     ||!(budget==='max'||[0,10,20,40,60,100].includes(budget))) throw Error('invalid_selection');
   const eligibility=mode==='afstand'?'remote':'together';
   const unique=new Map();
@@ -26,7 +27,7 @@ function chooseOptions(rows,{world,mode,position,history=[],limit=3,budget='max'
   if(!pool.length)return [];
   const recent=new Set((Array.isArray(history)?history:[]).slice(0,Math.min(10,pool.length))
     .map(h=>typeof h==='string'?h:h?.id).filter(Boolean));
-  const start=position%pool.length;
+  const start=(position+(page*3))%pool.length;
   const ordered=[...pool.slice(start),...pool.slice(0,start)];
   const ranked=[...ordered.filter(x=>!recent.has(x.id)),...ordered.filter(x=>recent.has(x.id))];
   const free=ranked.filter(c=>c.estimated_cost_eur===0);

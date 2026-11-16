@@ -13,6 +13,8 @@ on:
       - 'tests/quest-browser-superdate.cjs'
       - 'tests/quest-browser-schedule.cjs'
       - 'tests/quest-browser-month-calendar.cjs'
+      - 'tests/quest-budget-catalog.test.cjs'
+      - 'supabase/migrations/20261116_premium_catalog_36.sql'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -41,6 +43,8 @@ jobs:
         run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
       - name: Exercise offline browser integration
         run: node tests/quest-pilot.test.cjs
+      - name: Validate authored budget catalog and shared-cost filtering
+        run: node tests/quest-budget-catalog.test.cjs
       - name: Install Chromium browser test dependency
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1

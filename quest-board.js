@@ -60,7 +60,7 @@
      y/720*map.clientHeight-scroller.clientHeight/2));
    const reduce=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
    if(typeof scroller.scrollTo==='function')
-     scroller.scrollTo({left,top,behavior:smooth&&!reduce?'smooth':'instant'});
+     scroller.scrollTo({left,top,behavior:smooth&&!reduce?'smooth':'auto'});
    else{scroller.scrollLeft=left;scroller.scrollTop=top;}
  }
  function cancelMotion(){

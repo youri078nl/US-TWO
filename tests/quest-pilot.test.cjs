@@ -448,6 +448,20 @@ async function main(){
  calendar.emit('us-two-session-cleared');
  assert.match(calendar.elements['quest-pilot-agenda-schedule'].textContent,/verborgen/);
  console.log('PASS Agenda tab reads canonical schedule and clears on logout');passed++;
- console.log('Web pilot checks:',passed+'/40 passed');
+ const reroll=setup('reroll-three');
+ reroll.setServer({paired:true,initialized:true,revision:2,position:0,world_index:0,phase:'choose',turn_user:myId,history:[]});
+ reroll.setCatalog(Array.from({length:10},(_,i)=>({id:'free-'+String(i).padStart(2,'0'),
+   title:'Gratis opdracht '+i,world:0,category:'Creatief',together:true,remote:true,
+   estimated_cost_eur:0,reward_steps:2,minutes:20})));
+ await reroll.click('quest-pilot-refresh');
+ await reroll.click('quest-pilot-load-catalog');
+ const firstThree=Array.from({length:3},(_,i)=>reroll.elements['quest-pilot-option-'+i].textContent);
+ await reroll.click('quest-pilot-load-catalog');
+ const nextThree=Array.from({length:3},(_,i)=>reroll.elements['quest-pilot-option-'+i].textContent);
+ assert.notDeepEqual(nextThree,firstThree);
+ assert.ok(nextThree.every(x=>x.includes('gratis')),'rerolls must preserve free choices');
+ assert.equal(reroll.calls.length,0,'rerolling only reads, never sends a game mutation');
+ console.log('PASS catalog reroll cycles through different free choices without server mutations');passed++;
+ console.log('Web pilot checks:',passed+'/41 passed');
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

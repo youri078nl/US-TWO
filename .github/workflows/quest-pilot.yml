@@ -1,11 +1,11 @@
 name: Quest offline pilot tests
 on:
-  push:
-    branches:
-      - feature/quest-offline-pilot-20261115
   pull_request:
     paths:
       - 'app.js'
+      - 'styles.css'
+      - 'quest-board.css'
+      - 'quest-board.js'
       - 'quest-pilot.js'
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
@@ -39,6 +39,7 @@ jobs:
       - name: Check script syntax
         run: |
           node --check app.js
+          node --check quest-board.js
           node --check quest-pilot.js
           node --check quest-catalog.js
           node --check us-two-offline.js
@@ -51,6 +52,11 @@ jobs:
         run: node tests/quest-budget-catalog.test.cjs
       - name: Verify eighteen private superdate storylines
         run: node tests/quest-superdate-content.test.cjs
+      - name: Reuse downloaded Playwright Chromium across CI runs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-1.56.1
       - name: Install Chromium browser test dependency
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1

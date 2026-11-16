@@ -159,6 +159,22 @@
               <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
               <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
               <p id="quest-world-art-status" class="muted">Gebruik het originele, goedgekeurde plaatje van jullie drieën. De afbeelding wordt alleen op dit toestel in lokale opslag bewaard, niet gepubliceerd of naar de server verstuurd.</p>
+              <details id="quest-3d-details" class="quest-3d-details">
+                <summary>Originele 3D-personages en animaties bekijken</summary>
+                <p class="muted">Hier wordt het bestaande 3D-model van Youri en Kim gebruikt, niet een nieuw uiterlijk. Kies eenmaal het originele GLB-bestand. Het blijft privé op jouw telefoon. De server bepaalt altijd de spelpositie.</p>
+                <label for="quest-3d-model">Origineel PAWN_DUO 3D-model (.glb)</label>
+                <input id="quest-3d-model" type="file" accept=".glb,model/gltf-binary" disabled>
+                <button type="button" id="quest-3d-load-saved" class="secondary-btn" disabled>Open eerder opgeslagen 3D-model</button>
+                <div class="quest-3d-viewport">
+                  <canvas id="quest-3d-canvas" aria-label="Draaibare originele 3D-pion met twee figuren op één gezamenlijke sokkel"></canvas>
+                  <p id="quest-3d-loading" class="quest-3d-loading">Kies het originele 3D-model om te beginnen.</p>
+                </div>
+                <label for="quest-3d-animation">Originele 3D-beweging</label>
+                <select id="quest-3d-animation" disabled><option>Laad eerst het model</option></select>
+                <button type="button" id="quest-3d-pause" class="ghost-btn" disabled>Pauzeer beweging</button>
+                <p id="quest-3d-status" class="muted" role="status" aria-live="polite">3D-model nog niet geladen. Geen serverwijziging.</p>
+                <p class="muted">Sleep om te draaien; knijp om te zoomen. De originele 3D-bron bevat nog geen Pepsi-mesh. De 2D-pion hierboven blijft ongewijzigd beschikbaar.</p>
+              </details>
               <details class="quest-pose-management">
                 <summary>Goedgekeurde 2D-bewegingen beheren</summary>
                 <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
@@ -306,6 +322,7 @@
    <script src="./quest-board.js" defer></script>
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
+   <script src="./quest-3d.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
 </body>
 </html>

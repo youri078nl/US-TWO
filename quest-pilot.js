@@ -176,6 +176,7 @@
     window.USTwoQuestCalendar?.update(server,identity());
     window.USTwoQuestBoard?.update(server,identity());
     window.USTwoCinematics?.update(server,identity());
+    window.USTwoQuest3D?.update(server,identity());
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -201,6 +202,7 @@
       window.USTwoQuestCalendar?.clear();
       window.USTwoQuestBoard?.clear();
       window.USTwoCinematics?.clear();
+    window.USTwoQuest3D?.clear();
       // The server may be offline: show durable local queue state without another network call.
       try{
         const local=await (await ensureQueue()).state();

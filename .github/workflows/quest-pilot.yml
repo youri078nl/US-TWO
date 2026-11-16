@@ -11,10 +11,9 @@ on:
       - 'quest-pose-archive.js'
       - 'tests/quest-pose-archive.test.cjs'
       - 'tests/quest-browser-pose-zip.cjs'
-      - 'quest-3d.js'
-      - 'tests/quest-browser-3d.cjs'
       - 'tests/quest-browser-pose-frames.cjs'
       - 'tests/quest-browser-cinematics.cjs'
+      - 'tests/quest-no-3d.test.cjs'
       - 'quest-pilot.js'
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
@@ -52,11 +51,12 @@ jobs:
           node --check quest-cinematics.js
           node --check quest-poses.js
           node --check quest-pose-archive.js
-          node --check quest-3d.js
           node --check quest-pilot.js
           node --check quest-catalog.js
           node --check us-two-offline.js
           node --check service-worker.js
+      - name: Ensure deprecated 3D viewer cannot appear in the PWA
+        run: node tests/quest-no-3d.test.cjs
       - name: Install isolated browser-storage test dependency
         run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
       - name: Verify safe ZIP pose archive parser
@@ -87,8 +87,6 @@ jobs:
         run: node tests/quest-browser-pose-frames.cjs
       - name: Test private ZIP pose import in real Chromium
         run: node tests/quest-browser-pose-zip.cjs
-      - name: Verify original WebGL2 renderer safety and paired-account gating
-        run: node tests/quest-browser-3d.cjs
       - name: Test durable offline replay in two real Chromium tabs
         run: node tests/quest-browser-offline.cjs
       - name: Verify two-browser superdate consent and private preparation

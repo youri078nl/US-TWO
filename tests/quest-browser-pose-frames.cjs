@@ -33,6 +33,7 @@ async function setup(page,user){
   const who={paired:true,userId:user,coupleId:COUPLE};
   const game={paired:true,initialized:true,phase:'active',position:4,
     date:{id:'demo-frames',title:'Samen dansen'}};
+  document.getElementById('app-view').classList.remove('hidden');
   document.getElementById('game-panel').classList.remove('hidden');
   const img=document.getElementById('quest-world-pawn-art');
   img.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==';

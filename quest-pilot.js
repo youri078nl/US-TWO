@@ -174,7 +174,12 @@
   async function operation(fn) {
     if(loading)return;loading=true;
     for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x),...SCHEDULE_ACTIONS.map(x=>'quest-pilot-schedule-'+x)])$(id).disabled=true;
-    try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
+    try{
+      await fn();
+      // A read-only refresh already fetched the canonical status; never query twice.
+      if(fn!==refresh)await refresh();
+      text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');
+    }
     catch(e){
       showSuper([],true,'read_failed');
       for(const a of SCHEDULE_ACTIONS)$('quest-pilot-schedule-'+a).disabled=true;
@@ -250,6 +255,21 @@
     window.addEventListener?.('us-two-quest-calendar-refresh',()=>{
       if(!loading&&window.USTwoQuestPilotBridge?.identity()?.paired)operation(refresh);
     });
+    // Read-only refresh. No automatic start, proposal, reward, or outbox replay.
+    // Poll only while the game is actually visible to limit requests and avoid stale turns.
+    const gameVisible=()=>{
+      const panel=$('game-panel');
+      return document.visibilityState!=='hidden'&&Boolean(panel?.classList)&&
+        !panel.classList.contains('hidden')&&
+        Boolean(window.USTwoQuestPilotBridge?.identity()?.paired);
+    };
+    const refreshVisible=()=>{
+      if(!loading&&gameVisible())operation(refresh);
+    };
+    window.addEventListener?.('us-two-quest-game-open',refreshVisible);
+    window.addEventListener?.('focus',refreshVisible);
+    document.addEventListener?.('visibilitychange',refreshVisible);
+    if(typeof window.setInterval==='function')window.setInterval(refreshVisible,20000);
     $('quest-pilot-agenda-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-budget').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;

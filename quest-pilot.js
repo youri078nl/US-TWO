@@ -40,7 +40,7 @@
     const who=window.USTwoQuestPilotBridge?.identity();
     const turn=state.turn_user===who?.userId;
     const guidance= !state.initialized
-      ? 'Deze spelreis is nog niet gestart. Een bestaande ronde is hieronder apart beschikbaar.'
+      ? 'Deze spelreis is nog niet gestart. Kies 'Spelreis starten' om te beginnen.'
       : state.phase==='choose'
         ? turn?'Jij bent aan de beurt: kies een opdracht en stel die voor.':'Je partner is aan de beurt om een opdracht te kiezen.'
       : state.phase==='approval'
@@ -49,23 +49,6 @@
         ? state.my_done?'Jouw voltooiing is bevestigd. Wacht op je partner.':'Jullie hebben een actieve opdracht. Na beide voltooiingen worden de stappen toegekend.'
       : 'Controleer de opdracht en jullie gedeelde spelstand voordat je verdergaat.';
     text('quest-journey-guidance',guidance);
-    const legacy=$('legacy-board-details');
-    if(legacy){
-      const pairKey=String(who?.userId||'')+':'+String(who?.coupleId||'');
-      if(legacy.dataset.pairKey!==pairKey){
-        // Initial state per signed-in couple: old round accessible until new journey starts.
-        legacy.open=!state.initialized;
-        legacy.dataset.pairKey=pairKey;
-      }else if(legacy.dataset.canonicalReady==='0'&&state.initialized){
-        // After an explicit new-journey start, the previous board becomes optional.
-        legacy.open=false;
-      }else if(legacy.dataset.canonicalReady==='1'&&!state.initialized){
-        // The server can report an uninitialized game after account or state recovery.
-        // Preserve access to the original round instead of showing an empty main journey.
-        legacy.open=true;
-      }
-      legacy.dataset.canonicalReady=state.initialized?'1':'0';
-    }
     const tile=Number.isSafeInteger(Number(state.position))?state.position:'?';
     text('quest-pilot-status',`Nieuwe serverreis: vak ${tile}; status: ${phase}; revisie: ${state.revision??0}.`);
     text('quest-pilot-pending',`Wachtende acties: ${items.length}${blocked?' · geblokkeerd: '+blocked:''}`);
@@ -247,8 +230,6 @@
     latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
     text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
     text('quest-journey-guidance','De spelreisstatus is verborgen na uitloggen.');
-    const legacy=$('legacy-board-details');
-    if(legacy){legacy.open=false;delete legacy.dataset.pairKey;delete legacy.dataset.canonicalReady;}
     text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
     text('quest-pilot-instructions','Opdrachtinstructies verborgen.');
@@ -489,7 +470,7 @@
       if(!state?.paired||state.initialized)throw Error('De nieuwe spelreis is al gestart of jullie zijn nog niet gekoppeld.');
       const local=await q.state();
       if(local.blocked||local.items.length)throw Error('Los eerst de bestaande wachtrij op.');
-      if(!window.confirm('Start de nieuwe SERVER-spelreis op vak 0? Dit beïnvloedt de gedeelde nieuwe spelstand.'))return;
+      if(!window.confirm('Start jullie nieuwe gezamenlijke spelreis op vak 0? Jullie testvoortgang uit het oude spel wordt niet overgenomen.'))return;
       const action={type:'quest_action',requestId:crypto.randomUUID(),expectedRevision:0,payload:{action:'start'}};
       await q.enqueue(action);handleSync(await q.sync());
     }));

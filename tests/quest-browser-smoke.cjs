@@ -6,40 +6,19 @@ const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- // Test the real legacy DOM renderer without touching connected accounts or server data.
+ // Test canonical game presentation with a mocked authenticated session.
  await page.route('**/app.js',async route=>{
   const response=await route.fetch();
   const code=await response.text();
-  await route.fulfill({response,body:code+'\nwindow.__legacyBoardTest={state,renderBoard,setTab};'});
+  await route.fulfill({response,body:code+'\nwindow.__questAppTest={state,setTab,renderHome};'});
  });
  try {
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle',timeout:30000});
   assert.equal(await page.title(),'US TWO | Samen op avontuur');
-  const duo=await page.evaluate(()=>{
-    const {state,renderBoard}=window.__legacyBoardTest;
-    state.dashboard={couple_id:'test-couple',members:[{name:'Youri'},{name:'Kim'}]};
-    state.board={position:13,chapter:1,next_super_cell:20,round:null};
-    renderBoard();
-    const original={
-      tokenCount:document.querySelectorAll('#board-trail .board-pawn').length,
-      markerClass:document.querySelector('#board-trail .board-pawn')?.className,
-      caption:document.querySelector('#board-trail .pawns-caption')?.textContent,
-      description:document.querySelector('#board-trail .board-map')?.getAttribute('aria-label'),
-      tile:document.querySelector('#board-trail .map-cell.current .cell-number')?.textContent
-    };
-    state.board.position=15;
-    renderBoard();
-    return {...original,afterTokenCount:document.querySelectorAll('#board-trail .board-pawn').length,
-      afterTile:document.querySelector('#board-trail .map-cell.current .cell-number')?.textContent};
-  });
-  assert.equal(duo.tokenCount,1,'never display independent pawn for each partner');
-  assert.equal(duo.afterTokenCount,1,'subsequent server positions still have one pawn');
-  assert.match(duo.markerClass,/board-pawn-duo/);
-  assert.match(duo.caption,/Eén gezamenlijke pion: Youri en Kim/);
-  assert.match(duo.description,/Eén gezamenlijke pion op vakje 13/);
-  assert.equal(duo.tile,'13');
-  assert.equal(duo.afterTile,'15');
-  console.log('PASS Chromium legacy board: one shared couple marker across two positions');
+  assert.equal(await page.locator('#legacy-board-details').count(),0,'old game view must be removed');
+  assert.equal(await page.locator('#board-trail').count(),0,'old token map must not remain');
+  assert.equal(await page.locator('#quest-world-pawn').count(),1,'one shared token in approved world');
+  assert.match(await page.locator('#quest-pilot-heading').textContent(),/Jullie gezamenlijke spelreis/);
   await page.evaluate(()=>{
     const userId='00000000-0000-4000-8000-000000000001';
     let game={paired:true,initialized:true,revision:5,position:12,world_index:0,
@@ -65,30 +44,26 @@ const {chromium}=require('playwright');
       }
     };
     document.querySelector('#app-view').classList.remove('hidden');
-    window.__legacyBoardTest.state.session={user:{id:userId},access_token:'mock-only'};
+    window.__questAppTest.state.session={user:{id:userId},access_token:'mock-only'};
     // Opening the game tab must refresh canonical position without a manual click.
-    window.__legacyBoardTest.setTab('game');
+    window.__questAppTest.setTab('game');
   });
   await page.getByText(/Nieuwe serverreis: vak 12/).waitFor();
-  assert.equal(await page.locator('#legacy-board-details').evaluate(el=>el.open),false,
-    'legacy round must be collapsed when canonical journey exists');
-  assert.ok(await page.locator('#quest-pilot').evaluate(el=>el.compareDocumentPosition(document.querySelector('#legacy-board-details')) & Node.DOCUMENT_POSITION_FOLLOWING),
-    'canonical journey must appear before previous round');
   assert.match(await page.locator('#quest-journey-guidance').textContent(),/Jij bent aan de beurt/);
   await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
   assert.equal(await page.evaluate(()=>window.__questReads),1,'opening the game triggers one read-only refresh');
   await page.locator('#quest-pilot-refresh').click();
   await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
   assert.equal(await page.evaluate(()=>window.__questReads),2,'manual refresh must not query twice');
-  // No hidden migration: if the canonical journey is uninitialized, show the old board.
+  // Canonical game starts at zero; discarded trial position is not migrated.
   await page.evaluate(()=>window.__setTestGame({initialized:false}));
   await page.locator('#quest-pilot-refresh').click();
   await page.getByText(/Deze spelreis is nog niet gestart/).waitFor();
-  assert.equal(await page.locator('#legacy-board-details').evaluate(el=>el.open),true);
+  assert.equal(await page.locator('#quest-pilot-start').isDisabled(),false);
   await page.evaluate(()=>window.__setTestGame({initialized:true}));
   await page.locator('#quest-pilot-refresh').click();
   await page.getByText(/Jij bent aan de beurt/).waitFor();
-  assert.equal(await page.locator('#legacy-board-details').evaluate(el=>el.open),false);
+  assert.equal(await page.locator('#quest-pilot-start').isDisabled(),true);
   await page.locator('#quest-pilot-load-catalog').click();
   await page.locator('#quest-pilot-option-0').getByText(/Samen schilderen/).waitFor();
   assert.equal(await page.locator('[id^="quest-pilot-option-"]:not([disabled])').count(),3);

@@ -9,6 +9,12 @@ const bundle=fs.readFileSync('us-two-offline.js','utf8');
 const pilot=fs.readFileSync('quest-pilot.js','utf8');
 const catalogScript=fs.readFileSync('quest-catalog.js','utf8');
 let passed=0;const check=(name,fn)=>{fn();console.log('PASS',name);passed++;};
+check('only canonical game remains and legacy RPCs cannot mutate discarded test progress',()=>{
+ assert.doesNotMatch(html,/id="legacy-board-details"|id="board-trail"|id="round-detail"/);
+ assert.doesNotMatch(app,/us_board_state|us_board_begin|us_board_ready|us_board_confirm_start|us_board_complete|us_board_skip/);
+ assert.match(html,/id="quest-world-pawn"/);
+ assert.match(app,/read:\s*\(\)\s*=>\s*rpc\('us_quest_state'\)/);
+});
 check('staging markup and scripts are referenced',()=>{
  assert.match(html,/id="quest-pilot"/);
  assert.match(html,/src="\.\/us-two-offline\.js"/);

@@ -9,9 +9,5 @@
 #quest-world-art-upload{max-width:100%;font-size:13px}
 @media(prefers-reduced-motion:reduce){.quest-world-pawn{transition:none}}
 
-/* The canonical world is primary; historical rounds remain accessible without mixing server positions. */
+/* Only the canonical quest journey remains active. */
 .quest-journey-guidance{padding:12px 14px;border:1px solid #a78570;border-radius:12px;background:#332439;color:#ffeac8}
-.legacy-board-details{margin-top:12px}
-.legacy-board-details>summary{cursor:pointer;font-weight:800;min-height:44px;display:list-item;padding:8px 2px}
-.legacy-board-details[open]>summary{margin-bottom:12px}
-.legacy-board-details>.board-hero{margin:12px 0}

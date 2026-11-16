@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.9.2-pilot',
+  version: '0.9.3-pilot',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
 const STORAGE_KEY = 'us-two-web-session-v1';
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
@@ -43,7 +43,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;
@@ -101,23 +101,23 @@ function setTab(tab){
 async function syncAll({quiet=false}={}) {
   if(!state.session||pollBusy)return;pollBusy=true;
   try{
-    const [d,b,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_board_state'),rpc('us_memory_list').catch(()=>null)]);
-    state.dashboard=d;state.board=b;
+    const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
+    state.dashboard=d;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();if(!quiet)connection(true);
   }catch(e){if(!quiet)toast(failText(e),true)}finally{pollBusy=false}
 }
-function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderBoard();renderHome()}
+function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
 function renderHome(){
-  const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];const b=state.board||{};
+  const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];
   $('couple-banner').innerHTML=paired()?'<span class="dot"></span><span>Jullie zijn gekoppeld 💞</span>':`<span class="dot"></span><span>${m.length?'Wachten op jouw partner':'Koppel jullie accounts om te starten'}</span>`;
   $('welcome-note').textContent=paired()?'Een kleine verrassing kan een gewone dag bijzonder maken.':'Twee accounts, één avontuur. Nodig je partner uit om te beginnen.';
   const next=[...list].filter(x=>x.status!=='declined'&&x.status!=='cancelled'&&new Date(x.start_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at))[0];
   let cards='';
   if(!paired()){cards+=`<div class="card"><span class="eyebrow">EERSTE STAP</span><h3>Verbind jullie accounts</h3><p class="muted">Gebruik een koppelcode zodat jullie samen kunnen plannen en spelen.</p><button class="secondary-btn" data-action="open-pair">Naar koppelen</button></div>`}
   else {cards+=`<div class="card"><span class="eyebrow">VOLGENDE DATE</span><h3>${next?safe(next.title):'Tijd voor een nieuwe afspraak?'}</h3><p class="muted">${next?timeFmt.format(new Date(next.start_at)):'Plan iets leuks, ook als het maar een halfuurtje is.'}</p><button class="secondary-btn" data-action="open-dates">Bekijk agenda</button></div>`;
-    cards+=`<div class="card"><span class="eyebrow">JULLIE SPELREIS</span><h3>Samen verder spelen</h3><p class="muted">Bekijk jullie gezamenlijke wereld en de actuele serverstand. De vorige ronde blijft bereikbaar in het spelscherm.</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
+    cards+=`<div class="card"><span class="eyebrow">JULLIE SPELREIS</span><h3>Samen verder spelen</h3><p class="muted">Bekijk jullie gezamenlijke wereld, opdrachten en de actuele serverstand.</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
   $('home-cards').innerHTML=cards;
 }
 function renderPair(){
@@ -298,84 +298,10 @@ function openDateChangeEditor(id){
   $('date-change-editor').classList.remove('hidden');
   $('date-change-editor').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function renderBoard() {
-  const board = state.board || {};
-  const position = Math.max(1, Number(board.position) || 1);
-  const round = board.round || null;
-  const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
-  const first = Math.floor((position - 1) / 12) * 12 + 1;
-  const members = (state.dashboard?.members || []).slice(0, 2);
-  const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
-  // The couple shares ONE progress marker even in the preserved legacy board.
-  // Do not render individual tokens, or they appear to have separate turns.
-  const players = '<span class="board-pawn board-pawn-duo" aria-hidden="true">♥</span>';
-  const path = Array.from({length: 12}, (_, slot) => {
-    const row = Math.floor(slot / 4);
-    const col = slot % 4;
-    const number = first + row * 4 + (row % 2 ? 3 - col : col);
-    const isCurrent = number === position;
-    const isTarget = number === activeCell;
-    const isSuper = number % 20 === 0;
-    const completed = number < position;
-    return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
-  }).join('');
-  $('board-position').textContent = String(position);
-  $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Eén gezamenlijke pion op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
-  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Eén gezamenlijke pion: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : '<p class="pawns-caption">Eén gezamenlijke pion voor jullie beiden.</p>'}`;
-  $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
-
-  if (!paired()) {
-    $('round-detail').innerHTML = '<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';
-    return;
-  }
-  if (!round) {
-    $('round-detail').innerHTML = '<h3>Klaar voor de volgende opdracht?</h3><p class="muted">Jullie krijgen ieder een andere, geheime voorbereiding. De gezamenlijke opdracht verschijnt pas nadat de start is bevestigd.</p><label for="prep-days">Voorbereidingstijd</label><select id="prep-days"><option value="1">1 dag</option><option value="2">2 dagen</option><option value="3" selected>3 dagen</option><option value="4">4 dagen</option><option value="5">5 dagen</option><option value="7">7 dagen</option></select><p class="muted">Bij superopdrachten is minstens 3 dagen voorbereiding vereist.</p><button class="primary-btn" data-action="board-begin">Begin de volgende opdracht</button>';
-    return;
-  }
-  const isPreparing = round.status === 'preparing';
-  const isActive = round.status === 'active';
-  let html = `<span class="tag ${round.is_super ? 'pending' : 'active'}">${round.is_super ? '✦ Superopdracht' : 'Missie op vakje ' + Number(round.cell)}</span><h3>${safe(round.title)}</h3>`;
-  if (isPreparing) {
-    const bothReady = Boolean(round.my_ready && round.partner_ready);
-    const count = Number(Boolean(round.my_ready)) + Number(Boolean(round.partner_ready));
-    const startAt = new Date(round.prep_until);
-    const deadline = Number.isFinite(startAt.getTime()) ? timeFmt.format(startAt) : 'het afgesproken moment';
-    const countdownHours = Number.isFinite(startAt.getTime()) ? Math.max(0, Math.ceil((startAt.getTime() - Date.now()) / 3600000)) : null;
-    const untilText = countdownHours === null ? '' : countdownHours > 0 ? ` (nog ongeveer ${countdownHours} uur)` : ' (tijd bereikt, synchroniseren…)';
-    html += `<div class="prep-progress"><span class="eyebrow">VOORBEREIDING</span><strong>${count}/2 klaar</strong><div class="prep-track"><span style="width:${count * 50}%"></span></div><p class="muted">Startmoment: <strong class="countdown">${safe(deadline)}</strong>${untilText}</p></div>`;
-    html += `<div class="task-box"><span class="eyebrow">ALLEEN VOOR JOU</span><p>${safe(round.my_assignment)}</p></div>`;
-    html += `<div class="readiness"><span class="ready-line${round.my_ready ? ' ready' : ''}">${round.my_ready ? '✓' : '○'} Jij: ${round.my_ready ? 'klaar' : 'nog voorbereiden'}</span><span class="ready-line${round.partner_ready ? ' ready' : ''}">${round.partner_ready ? '✓' : '○'} Partner: ${round.partner_ready ? 'klaar' : 'nog voorbereiden'}</span></div>`;
-    if (!round.my_ready) html += '<button class="primary-btn" data-action="board-ready">Ik ben voorbereid</button>';
-    if (round.can_confirm_start && !round.my_start_confirmed) {
-      html += '<p class="muted">De voorbereidingstijd is voorbij. Jullie mogen nu allebei de start bevestigen.</p><button class="primary-btn" data-action="board-confirm">Ik wil starten</button>';
-    } else if (round.my_start_confirmed) {
-      html += '<p class="muted">Jij hebt de start bevestigd. De gezamenlijke missie verschijnt na de bevestiging van je partner.</p>';
-    } else if (bothReady) {
-      html += '<p class="muted">Jullie zijn allebei klaar! De knop ‘Ik wil starten’ verschijnt na het startmoment. Dat wordt door de server bewaakt.</p>';
-    } else {
-      html += '<p class="muted">Beiden moeten voorbereid zijn en de voorbereidingstijd moet verstreken zijn voordat jullie kunnen starten.</p>';
-    }
-  } else if (isActive) {
-    html += `<div class="task-box"><span class="eyebrow">DE GEZAMENLIJKE MISSIE</span><p>${safe(round.shared_challenge)}</p></div>`;
-    if (round.my_completed) html += '<span class="tag active">Jij hebt de opdracht afgerond ✓</span>';
-    else html += '<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';
-    if (round.partner_completed) html += '<p class="muted">Je partner heeft de opdracht al afgerond.</p>';
-  }
-  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
-  else if (round.my_skip_requested) html += '<p class="muted">Jij hebt voorgesteld om over te slaan. Je partner moet dat ook bevestigen.</p>';
-  $('round-detail').innerHTML = html;
-}
 async function runAction(action,extra={}){
   if(state.working)return;
-  const b=state.board?.round;
-  const id=extra.id;const uid=state.session?.user?.id;
+  const id=extra.id;
   const operations={
-    'board-begin':()=>rpc('us_board_begin',{p_prep_days:Number($('prep-days')?.value)||3,p_request_id:crypto.randomUUID()}),
-    'board-ready':()=>rpc('us_board_ready',{p_round_id:b.id}),
-    'board-confirm':()=>rpc('us_board_confirm_start',{p_round_id:b.id}),
-    'board-complete':()=>rpc('us_board_complete',{p_round_id:b.id}),
-    'board-skip':()=>rpc('us_board_skip',{p_round_id:b.id}),
     'mem-share':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'shared',p_expected_revision:Number(extra.revision)}),
     'mem-private':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'private',p_expected_revision:Number(extra.revision)}),
     'mem-delete':()=>rpc('us_memory_delete',{p_memory_id:id,p_expected_revision:Number(extra.revision)}),
@@ -387,7 +313,7 @@ async function runAction(action,extra={}){
     'create-code':async()=>{const v=await rpc('us_create_pair');state.pairCode=v.code;return v;},
   };
   if(!operations[action])return;
-  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id)))return;
+  if((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id))return;
   setBusy(true);
   try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Opgeslagen en gesynchroniseerd.');}
   catch(e){toast(failText(e),true)}finally{setBusy(false)}

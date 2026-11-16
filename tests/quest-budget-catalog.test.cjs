@@ -60,3 +60,26 @@ for(let world=0;world<6;world++){
 assert.ok(fullMigration.includes('ON CONFLICT (id) DO NOTHING'),'catalog migration must not overwrite earlier content');
 console.log('PASS: 240 activities, 40 per world, 204 free and 36 paid; two variants, distinct ID/title and safe migrations');
 
+
+// A missing or untrusted price must never be advertised as a free date.
+// This protects the budget ceiling even when the API payload is malformed.
+{
+ const base={world:0,remote:true,together:true,category:'Normaal'};
+ const sample=[
+  {...base,id:'free-ok',title:'Gratis geldig',estimated_cost_eur:0},
+  {...base,id:'paid-ok',title:'Betaald geldig',estimated_cost_eur:20},
+  {...base,id:'missing',title:'Onbekende prijs'},
+  {...base,id:'null-cost',title:'Lege prijs',estimated_cost_eur:null},
+  {...base,id:'string-cost',title:'Tekstprijs',estimated_cost_eur:'0'},
+  {...base,id:'negative-cost',title:'Negatieve prijs',estimated_cost_eur:-1},
+  {...base,id:'fraction-cost',title:'Gedeelde prijs',estimated_cost_eur:0.5},
+  {...base,id:'oversize-cost',title:'Onrealistische prijs',estimated_cost_eur:999}
+ ];
+ const free=chooseOptions(sample,{world:0,mode:'samen',position:0,budget:0,limit:3});
+ assert.deepEqual(free.map(c=>c.id),['free-ok']);
+ const max=chooseOptions(sample,{world:0,mode:'samen',position:0,budget:'max',limit:3});
+ assert.deepEqual(new Set(max.map(c=>c.id)),new Set(['free-ok','paid-ok']));
+ const underTen=chooseOptions(sample,{world:0,mode:'samen',position:0,budget:10,limit:3});
+ assert.deepEqual(underTen.map(c=>c.id),['free-ok']);
+}
+console.log('PASS: absent and malformed price estimates are never treated as free dates');

@@ -12,6 +12,7 @@ on:
       - 'tests/quest-browser-offline.cjs'
       - 'tests/quest-browser-superdate.cjs'
       - 'tests/quest-browser-schedule.cjs'
+      - 'tests/quest-browser-month-calendar.cjs'
       - 'us-two-offline.js'
       - 'index.html'
       - 'service-worker.js'
@@ -55,3 +56,5 @@ jobs:
         run: node tests/quest-browser-superdate.cjs
       - name: Verify two-browser shared date planning and partner acceptance
         run: node tests/quest-browser-schedule.cjs
+      - name: Verify canonical game dates in the existing month calendar
+        run: node tests/quest-browser-month-calendar.cjs

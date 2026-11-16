@@ -70,8 +70,12 @@
         throw Error('Ongeldig of dubbel frame: '+name);
       if(u32(dv,local)!==0x04034b50)
         throw Error('Ontbrekende beeldgegevens voor '+name);
-      const offset=local+30+u16(dv,local+26)+u16(dv,local+28);
-      if(offset+compressed>buffer.byteLength)
+      const localNameSize=u16(dv,local+26),localExtra=u16(dv,local+28);
+      const localName=decoder.decode(bytes.subarray(local+30,local+30+localNameSize));
+      if(localName!==name||u16(dv,local+8)!==method||(u16(dv,local+6)&1))
+        throw Error('Beschadigd ZIP-bestand: bestandsnamen of gegevens spreken elkaar tegen.');
+      const offset=local+30+localNameSize+localExtra;
+      if(offset+compressed>dirOffset)
         throw Error('Afgebroken beeldgegevens in pakket.');
       const binary=bytes.subarray(offset,offset+compressed);
       if(!validImage(binary,ext)||crc32(binary)!==crc)

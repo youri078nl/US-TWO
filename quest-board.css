@@ -43,3 +43,13 @@
 @keyframes us-spark{0%,20%,100%{opacity:0;transform:translateY(8px) scale(.5)}45%,70%{opacity:1;transform:translateY(-19px) scale(1.4)}}
 @keyframes us-ball{0%,100%{opacity:0;transform:translate(0,0) scale(.5)}12%{opacity:1}38%{transform:translate(240%,-360%) scale(1)}65%{transform:translate(320%,-60%) scale(1)}88%{opacity:1;transform:translate(25%,0) scale(.7)}}
 @media(prefers-reduced-motion:reduce){.quest-world-pawn[data-scene] .quest-world-actor,.quest-world-pawn[data-scene] .quest-world-scene-spark,.quest-world-pawn[data-scene] .quest-world-scene-ball{animation:none!important}}
+
+/* Approved local frame packs override whole-image wobbling; original art is unchanged. */
+.quest-pose-management{border:1px solid #957a6f;border-radius:12px;padding:10px 12px;background:#282039;color:#ffead6}
+.quest-pose-management summary{cursor:pointer;font-weight:700;min-height:36px}
+.quest-pose-management label{display:block;font-size:13px;margin-top:10px}
+.quest-pose-management input,.quest-pose-management select{max-width:100%;width:100%;font-size:14px}
+.quest-pose-management button{margin-top:10px}
+.quest-world-pawn[data-framepack="true"] .quest-world-actor{animation:none!important}
+.quest-world-pawn[data-framepack="true"] .quest-world-actor>img{object-fit:contain;object-position:center bottom}
+@media(prefers-reduced-motion:reduce){.quest-world-pawn[data-framepack="true"] .quest-world-actor>img{animation:none!important}}

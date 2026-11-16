@@ -196,6 +196,10 @@ function renderCalendar(){
  const count=Math.ceil((first+days)/7)*7;
  let html=['ma','di','wo','do','vr','za','zo'].map(x=>'<span class="calendar-weekday">'+x+'</span>').join('');
  const scheduled=(state.dashboard?.dates||[]).filter(d=>d.status==='proposed'||d.status==='accepted');
+ const confirmed=paired()?(state.dashboard?.dates||[]).filter(d=>d.status==='accepted')
+   .concat(state.questCalendar.filter(d=>d.status==='accepted'&&d.kind==='confirmed')):[];
+ const exportButton=$('quest-calendar-export');
+ if(exportButton)exportButton.disabled=!confirmed.some(d=>typeof d.start_at==='string'&&Number.isFinite(new Date(d.start_at).getTime()));
  const byDay=new Map();
  (paired()?scheduled.concat(state.questCalendar):scheduled).forEach(d=>{
   const date=new Date(d.start_at);
@@ -367,6 +371,23 @@ function bind(){
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  $('quest-calendar-export').addEventListener('click',()=>{
+    if(!paired()||!state.session?.user?.id){toast('Log eerst in met een gekoppeld account.',true);return;}
+    const confirmed=(state.dashboard?.dates||[]).filter(d=>d.status==='accepted')
+      .concat(state.questCalendar.filter(d=>d.status==='accepted'&&d.kind==='confirmed'));
+    if(!confirmed.length){toast('Er zijn nog geen bevestigde dates om te exporteren.',true);return;}
+    if(!window.USTwoCalendarIcs?.calendar){toast('Agenda-export is niet geladen. Ververs de app.',true);return;}
+    try{
+      const ics=window.USTwoCalendarIcs.calendar(confirmed);
+      const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+      const href=URL.createObjectURL(blob);
+      const link=document.createElement('a');
+      link.href=href;link.download='US-TWO-bevestigde-dates.ics';
+      document.body.appendChild(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(href),3000);
+      toast('Agenda-export aangemaakt. Importeer het bestand in je telefoonagenda.');
+    }catch(err){toast('Agenda-export mislukt: '+failText(err),true);}
+  });
   $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
   $('date-change-form').addEventListener('submit',async e=>{
     e.preventDefault();

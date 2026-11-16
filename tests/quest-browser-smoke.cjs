@@ -10,7 +10,7 @@ const {chromium}=require('playwright');
  await page.route('**/app.js',async route=>{
   const response=await route.fetch();
   const code=await response.text();
-  await route.fulfill({response,body:code+'\nwindow.__legacyBoardTest={state,renderBoard};'});
+  await route.fulfill({response,body:code+'\nwindow.__legacyBoardTest={state,renderBoard,setTab};'});
  });
  try {
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle',timeout:30000});
@@ -49,10 +49,10 @@ const {chromium}=require('playwright');
       {id:'b',title:'Mini-festival',world:0,category:'Spel',together:true,remote:true,reward_steps:2,minutes:30,estimated_cost_eur:0},
       {id:'c',title:'Wandeling',world:0,category:'Buiten',together:true,remote:false,reward_steps:4,minutes:60,estimated_cost_eur:0}
     ];
-    window.__requests=[];
+    window.__requests=[];window.__questReads=0;
     window.USTwoQuestPilotBridge={
       identity:()=>({paired:true,userId,coupleId:'00000000-0000-4000-8000-000000000002'}),
-      read:async()=>({...game}),
+      read:async()=>{window.__questReads++;return {...game};},
       readSuper:async()=>[],
       catalog:async()=>cards,
       call:async(name,args)=>{
@@ -64,10 +64,16 @@ const {chromium}=require('playwright');
       }
     };
     document.querySelector('#app-view').classList.remove('hidden');
-    document.querySelector('#game-panel').classList.remove('hidden');
+    window.__legacyBoardTest.state.session={user:{id:userId},access_token:'mock-only'};
+    // Opening the game tab must refresh canonical position without a manual click.
+    window.__legacyBoardTest.setTab('game');
   });
-  await page.locator('#quest-pilot-refresh').click();
   await page.getByText(/Nieuwe serverreis: vak 12/).waitFor();
+  await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
+  assert.equal(await page.evaluate(()=>window.__questReads),1,'opening the game triggers one read-only refresh');
+  await page.locator('#quest-pilot-refresh').click();
+  await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
+  assert.equal(await page.evaluate(()=>window.__questReads),2,'manual refresh must not query twice');
   await page.locator('#quest-pilot-load-catalog').click();
   await page.locator('#quest-pilot-option-0').getByText(/Samen schilderen/).waitFor();
   assert.equal(await page.locator('[id^="quest-pilot-option-"]:not([disabled])').count(),3);

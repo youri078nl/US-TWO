@@ -53,3 +53,7 @@
 .quest-world-pawn[data-framepack="true"] .quest-world-actor{animation:none!important}
 .quest-world-pawn[data-framepack="true"] .quest-world-actor>img{object-fit:contain;object-position:center bottom}
 @media(prefers-reduced-motion:reduce){.quest-world-pawn[data-framepack="true"] .quest-world-actor>img{animation:none!important}}
+
+/* Full-frame pose preview is independent of the original approved pawn art. */
+#quest-world-actor #quest-world-pose-frame{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:contain;object-position:center bottom;pointer-events:none}
+#quest-world-actor #quest-world-pose-frame[hidden]{display:none}

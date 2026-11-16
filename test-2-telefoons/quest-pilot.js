@@ -37,6 +37,18 @@
   function status(state, items, blocked) {
     if(!state?.paired){text('quest-pilot-status','Nog niet gekoppeld.');return;}
     const phase=state.initialized?(state.phase||'onbekend'):'nog niet gestart';
+    const who=window.USTwoQuestPilotBridge?.identity();
+    const turn=state.turn_user===who?.userId;
+    const guidance= !state.initialized
+      ? 'Deze spelreis is nog niet gestart. Kies hieronder Spelreis starten om te beginnen.'
+      : state.phase==='choose'
+        ? turn?'Jij bent aan de beurt: kies een opdracht en stel die voor.':'Je partner is aan de beurt om een opdracht te kiezen.'
+      : state.phase==='approval'
+        ? state.proposer_id===who?.userId?'Wachten op de goedkeuring van je partner.':'Jij kunt het opdrachtvoorstel accepteren of afwijzen.'
+      : state.phase==='active'
+        ? state.my_done?'Jouw voltooiing is bevestigd. Wacht op je partner.':'Jullie hebben een actieve opdracht. Na beide voltooiingen worden de stappen toegekend.'
+      : 'Controleer de opdracht en jullie gedeelde spelstand voordat je verdergaat.';
+    text('quest-journey-guidance',guidance);
     const tile=Number.isSafeInteger(Number(state.position))?state.position:'?';
     text('quest-pilot-status',`Nieuwe serverreis: vak ${tile}; status: ${phase}; revisie: ${state.revision??0}.`);
     text('quest-pilot-pending',`Wachtende acties: ${items.length}${blocked?' · geblokkeerd: '+blocked:''}`);
@@ -51,7 +63,7 @@
     const canChoose=state.initialized&&state.phase==='choose'&&state.turn_user===window.USTwoQuestPilotBridge?.identity()?.userId&&!items.length&&!blocked;
     $('quest-pilot-load-catalog').disabled=!canChoose;
     for(let i=0;i<3;i++)$('quest-pilot-option-'+i).disabled=!canChoose||!catalogChoices[i]||state.world_index!==catalogWorld||$('quest-pilot-mode').value!==catalogMode||$('quest-pilot-budget').value!==catalogBudget;
-    const who=window.USTwoQuestPilotBridge?.identity();
+
     const active=Boolean(state.initialized)&&items.length===0&&!blocked;
     const partnerProposal=active&&state.phase==='approval'&&state.proposer_id!==who?.userId;
     const ownProposal=active&&state.phase==='approval'&&state.proposer_id===who?.userId;
@@ -163,6 +175,8 @@
     showSchedule(server,local.items,local.blocked);
     window.USTwoQuestCalendar?.update(server,identity());
     window.USTwoQuestBoard?.update(server,identity());
+    window.USTwoCinematics?.update(server,identity());
+    window.USTwoQuest3D?.update(server,identity());
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -174,14 +188,21 @@
   async function operation(fn) {
     if(loading)return;loading=true;
     for(const id of ['quest-pilot-refresh','quest-pilot-start','quest-pilot-sync','quest-pilot-load-catalog',...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),...TASK_ACTIONS.map(x=>'quest-pilot-'+x),...SUPER_ACTIONS.map(x=>'quest-pilot-super-'+x),...SCHEDULE_ACTIONS.map(x=>'quest-pilot-schedule-'+x)])$(id).disabled=true;
-    try{await fn();await refresh();text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');}
+    try{
+      await fn();
+      // A read-only refresh already fetched the canonical status; never query twice.
+      if(fn!==refresh)await refresh();
+      text('quest-pilot-message','Verbinding en lokale opslag gecontroleerd.');
+    }
     catch(e){
       showSuper([],true,'read_failed');
       for(const a of SCHEDULE_ACTIONS)$('quest-pilot-schedule-'+a).disabled=true;
       text('quest-pilot-schedule-status','De planning is niet betrouwbaar opgehaald. Ververs opnieuw.');
       text('quest-pilot-agenda-schedule','De gezamenlijke datum kon niet betrouwbaar worden opgehaald. Ververs opnieuw.');
       window.USTwoQuestCalendar?.clear();
-    window.USTwoQuestBoard?.clear();
+      window.USTwoQuestBoard?.clear();
+      window.USTwoCinematics?.clear();
+    window.USTwoQuest3D?.clear();
       // The server may be offline: show durable local queue state without another network call.
       try{
         const local=await (await ensureQueue()).state();
@@ -212,6 +233,7 @@
   function clearPrivateScreen() {
     latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
     text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
+    text('quest-journey-guidance','De spelreisstatus is verborgen na uitloggen.');
     text('quest-pilot-pending','Wachtende acties worden bewaard per account.');
     text('quest-pilot-task','Geen opdrachtgegevens geladen.');
     text('quest-pilot-instructions','Opdrachtinstructies verborgen.');
@@ -225,6 +247,7 @@
     text('quest-pilot-agenda-schedule','De spelreisplanning is verborgen na uitloggen.');
     window.USTwoQuestCalendar?.clear();
     window.USTwoQuestBoard?.clear();
+    window.USTwoCinematics?.clear();
     $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
@@ -250,6 +273,23 @@
     window.addEventListener?.('us-two-quest-calendar-refresh',()=>{
       if(!loading&&window.USTwoQuestPilotBridge?.identity()?.paired)operation(refresh);
     });
+    // Read-only refresh. No automatic start, proposal, reward, or outbox replay.
+    // Poll only while the game is actually visible to limit requests and avoid stale turns.
+    const gameVisible=()=>{
+      const panel=$('game-panel');
+      return document.visibilityState!=='hidden'&&Boolean(panel?.classList)&&
+        !panel.classList.contains('hidden')&&
+        Boolean(window.USTwoQuestPilotBridge?.identity()?.paired);
+    };
+    const refreshVisible=()=>{
+      if(!loading&&navigator.onLine!==false&&gameVisible())operation(refresh);
+    };
+    // Do not erase a valid on-screen board by needlessly polling while offline.
+    window.addEventListener?.('online',refreshVisible);
+    window.addEventListener?.('us-two-quest-game-open',refreshVisible);
+    window.addEventListener?.('focus',refreshVisible);
+    document.addEventListener?.('visibilitychange',refreshVisible);
+    if(typeof window.setInterval==='function')window.setInterval(refreshVisible,20000);
     $('quest-pilot-agenda-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-budget').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
@@ -435,7 +475,7 @@
       if(!state?.paired||state.initialized)throw Error('De nieuwe spelreis is al gestart of jullie zijn nog niet gekoppeld.');
       const local=await q.state();
       if(local.blocked||local.items.length)throw Error('Los eerst de bestaande wachtrij op.');
-      if(!window.confirm('Start de nieuwe SERVER-spelreis op vak 0? Dit beïnvloedt de gedeelde nieuwe spelstand.'))return;
+      if(!window.confirm('Start jullie nieuwe gezamenlijke spelreis op vak 0? Jullie testvoortgang uit het oude spel wordt niet overgenomen.'))return;
       const action={type:'quest_action',requestId:crypto.randomUUID(),expectedRevision:0,payload:{action:'start'}};
       await q.enqueue(action);handleSync(await q.sync());
     }));

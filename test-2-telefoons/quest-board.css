@@ -1,0 +1,129 @@
+/* Exact original continuous world and a single non-interactive common pawn. */
+.quest-board-section{gap:10px}
+.quest-world-viewport{position:relative;overflow:hidden;width:100%;aspect-ratio:1279/720;border:1px solid #b68e65;border-radius:16px;background:#131024;isolation:isolate}
+.quest-world-art{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;user-select:none;-webkit-user-drag:none}
+.quest-world-pawn{position:absolute;z-index:2;left:11.8%;top:78.1%;width:17%;max-width:170px;aspect-ratio:1/1;display:grid;place-items:center;transform:translate(-50%,-83%);pointer-events:none;transition:left 210ms ease,top 210ms ease;filter:drop-shadow(0 3px 8px #120812bb)}
+.quest-world-pawn img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.quest-world-pawn img[hidden],.quest-world-heart[hidden]{display:none}
+.quest-world-heart{font-size:clamp(20px,5vw,48px);font-weight:800;line-height:1;color:#ffd9a0;text-shadow:0 0 12px #fb9628,0 0 4px #2c1620;background:#37244fbb;border:2px solid #ffdc90;border-radius:50%;width:50%;aspect-ratio:1;display:grid;place-items:center}
+#quest-world-art-upload{max-width:100%;font-size:13px}
+@media(prefers-reduced-motion:reduce){.quest-world-pawn{transition:none}}
+
+/* Only the canonical quest journey remains active. */
+.quest-journey-guidance{padding:12px 14px;border:1px solid #a78570;border-radius:12px;background:#332439;color:#ffeac8}
+
+/* Choreography reuses the already-approved pixels; not rigged 3D animation. */
+.quest-world-actor{position:relative;width:100%;height:100%;display:grid;place-items:center;transform-origin:50% 80%}
+.quest-world-actor>img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.quest-world-scene-spark{position:absolute;left:56%;top:0;color:#ffb6d9;font-size:clamp(15px,3vw,31px);text-shadow:0 0 8px #ff70b8;pointer-events:none}
+.quest-world-scene-ball{position:absolute;left:56%;top:63%;width:clamp(9px,1.5vw,18px);height:clamp(9px,1.5vw,18px);background:radial-gradient(circle at 30% 30%,#fff5b3,#ec9c4a 65%,#b65c30);border:1px solid #fff3ae;border-radius:50%;pointer-events:none}
+.quest-world-scene-ball[hidden],.quest-world-scene-spark[hidden]{display:none}
+.quest-cinematic-controls{padding:10px 0 3px}
+.quest-cinematic-controls>.buttons{display:flex;gap:8px;flex-wrap:wrap}
+.quest-cinematic-controls .buttons>button{flex:1;min-width:150px}
+.quest-world-pawn[data-scene="hug"] .quest-world-actor{animation:us-hug 2800ms ease-in-out 1}
+.quest-world-pawn[data-scene="kiss"] .quest-world-actor{animation:us-kiss 2800ms ease-in-out 1}
+.quest-world-pawn[data-scene="dance"] .quest-world-actor{animation:us-dance 3200ms ease-in-out 1}
+.quest-world-pawn[data-scene="pepsi"] .quest-world-actor{animation:us-pepsi 3400ms ease-in-out 1}
+.quest-world-pawn[data-scene="walk"] .quest-world-actor{animation:us-walk 3000ms ease-in-out 1}
+.quest-world-pawn[data-scene="five"] .quest-world-actor{animation:us-five 2800ms ease-in-out 1}
+.quest-world-pawn[data-scene="stars"] .quest-world-actor{animation:us-stars 3200ms ease-in-out 1}
+.quest-world-pawn[data-scene="play"] .quest-world-actor{animation:us-play 3000ms ease-in-out 1}
+.quest-world-pawn[data-scene="calm"] .quest-world-actor{animation:us-stars 3200ms ease-in-out 1}
+.quest-world-pawn[data-scene="hug"] .quest-world-scene-spark,.quest-world-pawn[data-scene="kiss"] .quest-world-scene-spark,.quest-world-pawn[data-scene="five"] .quest-world-scene-spark{animation:us-spark 2800ms ease-out 1}
+.quest-world-pawn[data-scene="pepsi"] .quest-world-scene-ball{animation:us-ball 3400ms ease-in-out 1}
+@keyframes us-hug{0%,100%{transform:scale(1)}30%,70%{transform:scale(1.08) rotate(-4deg)}50%{transform:scale(1.12) rotate(2deg)}}
+@keyframes us-kiss{0%,100%{transform:scale(1)}35%,65%{transform:translateX(4%) scale(1.09) rotate(-3deg)}}
+@keyframes us-dance{0%,100%{transform:translateY(0) rotate(0)}18%{transform:translateY(-8%) rotate(-7deg)}36%{transform:translateY(0) rotate(7deg)}54%{transform:translateY(-10%) rotate(-5deg)}72%{transform:translateY(0) rotate(8deg)}}
+@keyframes us-pepsi{0%,100%{transform:translateY(0)}25%,65%{transform:translateY(-5%) scale(1.025)}50%{transform:translateY(0)}}
+@keyframes us-walk{0%,100%{transform:translate(0,0) rotate(0)}18%{transform:translate(3%,-3%) rotate(3deg)}38%{transform:translate(-3%,0) rotate(-3deg)}60%{transform:translate(3%,-3%) rotate(3deg)}80%{transform:translate(-3%,0) rotate(-3deg)}}
+@keyframes us-five{0%,100%{transform:scale(1)}45%{transform:translateY(-5%) scale(1.07) rotate(4deg)}65%{transform:scale(1.04) rotate(-4deg)}}
+@keyframes us-stars{0%,100%{transform:translateY(0) scale(1)}40%,70%{transform:translateY(-3%) scale(1.04)}}
+@keyframes us-play{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-7deg) translateY(-3%)}40%,80%{transform:rotate(7deg) translateY(-3%)}}
+@keyframes us-spark{0%,20%,100%{opacity:0;transform:translateY(8px) scale(.5)}45%,70%{opacity:1;transform:translateY(-19px) scale(1.4)}}
+@keyframes us-ball{0%,100%{opacity:0;transform:translate(0,0) scale(.5)}12%{opacity:1}38%{transform:translate(240%,-360%) scale(1)}65%{transform:translate(320%,-60%) scale(1)}88%{opacity:1;transform:translate(25%,0) scale(.7)}}
+@media(prefers-reduced-motion:reduce){.quest-world-pawn[data-scene] .quest-world-actor,.quest-world-pawn[data-scene] .quest-world-scene-spark,.quest-world-pawn[data-scene] .quest-world-scene-ball{animation:none!important}}
+
+/* Approved local frame packs override whole-image wobbling; original art is unchanged. */
+.quest-pose-management{border:1px solid #957a6f;border-radius:12px;padding:10px 12px;background:#282039;color:#ffead6}
+.quest-pose-management summary{cursor:pointer;font-weight:700;min-height:36px}
+.quest-pose-management label{display:block;font-size:13px;margin-top:10px}
+.quest-pose-management input,.quest-pose-management select{max-width:100%;width:100%;font-size:14px}
+.quest-pose-management button{margin-top:10px}
+.quest-world-pawn[data-framepack="true"] .quest-world-actor{animation:none!important}
+.quest-world-pawn[data-framepack="true"] .quest-world-actor>img{object-fit:contain;object-position:center bottom}
+@media(prefers-reduced-motion:reduce){.quest-world-pawn[data-framepack="true"] .quest-world-actor>img{animation:none!important}}
+
+/* Full-frame pose preview is independent of the original approved pawn art. */
+#quest-world-actor #quest-world-pose-frame{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:contain;object-position:center bottom;pointer-events:none}
+#quest-world-actor #quest-world-pose-frame[hidden]{display:none}
+
+/* Independent 3D WebGL preview of the ORIGINAL private rig. The canonical board remains unchanged. */
+.quest-3d-details{border:1px solid #a98b70;border-radius:12px;padding:10px 12px;background:#251d35;color:#ffe8cf}
+.quest-3d-details summary{min-height:40px;font-weight:700;cursor:pointer}
+.quest-3d-details label{display:block;font-size:13px;margin:10px 0 4px}
+.quest-3d-details input,.quest-3d-details select{max-width:100%;width:100%}
+.quest-3d-details button{margin:9px 4px 9px 0}
+.quest-3d-viewport{position:relative;width:100%;aspect-ratio:16/10;min-height:190px;border-radius:12px;overflow:hidden;background:#0b0917}
+#quest-3d-canvas{display:block;width:100%;height:100%;touch-action:none}
+.quest-3d-loading{position:absolute;inset:0;display:grid;place-items:center;text-align:center;margin:0;padding:16px;background:#11101ccb;color:#f6e7d1}
+.quest-3d-loading[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){#quest-3d-canvas{animation:none!important}}
+
+/* Visual identity taken from the user-supplied US TWO task and pose references.
+ * These styles affect the pilot game/pose controls only; board art, coordinates,
+ * character imagery and the canonical game logic remain untouched. */
+#quest-pilot{
+  border:2px solid #c58b43;
+  border-radius:19px;
+  background:
+    radial-gradient(circle at 80% 0%,#81391e55,transparent 44%),
+    repeating-linear-gradient(94deg,#321b16 0,#321b16 13px,#3b2118 14px,#2d1814 27px);
+  color:#fbeacb;
+  box-shadow:0 0 0 3px #4e2922,0 12px 36px #0b0611ab,inset 0 1px 12px #d8883d38;
+}
+#quest-pilot h3,#quest-pilot h4{
+  color:#ffd58f;
+  text-shadow:0 1px 0 #5c260f,0 0 12px #ff9e265c;
+}
+#quest-pilot .muted{color:#e7c6a3}
+#quest-pilot button{
+  min-height:44px;
+  border-radius:13px;
+  border:1px solid #d9a252;
+  background:linear-gradient(145deg,#744125,#3d211a);
+  color:#ffe9c3;
+  box-shadow:inset 0 1px 0 #fff1bc28,0 2px 6px #0007;
+}
+#quest-pilot button:not(:disabled):hover{
+  border-color:#ffcb76;
+  box-shadow:0 0 14px #ff9d424c,inset 0 1px 0 #ffe2a258;
+}
+#quest-pilot button:focus-visible,#quest-pilot select:focus-visible,
+#quest-pilot input:focus-visible,.quest-pose-management input:focus-visible{
+  outline:3px solid #ffe5ad;outline-offset:2px;
+}
+#quest-pilot button:disabled{opacity:.48;box-shadow:none}
+#quest-pilot .primary-btn{
+  border-color:#ffe59c;
+  background:linear-gradient(180deg,#ffdc8b,#e99b3e);
+  color:#2d160f;
+  text-shadow:none;
+}
+#quest-pilot .quest-board-section,
+#quest-pilot .quest-pose-management{
+  border-color:#a87545;
+  background:#271724a8;
+}
+#quest-pilot .quest-pose-management label{
+  color:#f5d7ae;
+}
+#quest-pilot .quest-pose-management input[type=file]{
+  border:1px dashed #ba895a;
+  border-radius:10px;
+  padding:10px;
+  background:#211525;
+}
+@media(prefers-reduced-motion:reduce){
+  #quest-pilot button{transition:none!important;animation:none!important}
+}

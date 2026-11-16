@@ -13,6 +13,7 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./quest-board.css">
   <title>US TWO | Samen op avontuur</title>
 </head>
 <body>
@@ -24,8 +25,8 @@
 
     <main id="main">
       <aside class="panel inset stack" role="note" aria-label="Testversie">
-        <strong>US TWO · TESTVERSIE VOOR TWEE TELEFOONS</strong>
-        <p class="muted">Afzonderlijke proefversie: 240 datekaarten, 6 werelden en een gedeelde budgetkeuze. Gebruik bij voorkeur twee aparte testaccounts. Je voorstellen gaan naar de echte gekoppelde Supabase-server. De normale hoofdapp is ongewijzigd.</p>
+        <strong>US TWO · TESTVERSIE VOOR TWEE TELEFOONS · 2D POSEPAKKET</strong>
+        <p class="muted">Deze afzonderlijke testversie gebruikt de nieuwe gezamenlijke spelreis. Jullie eigen getekende 2D-posebeelden kunnen privé via het ZIP-pakket worden geïmporteerd. De gewone hoofdapp is niet vervangen.</p>
       </aside>
       <section id="auth-view" class="auth-view panel">
         <div class="auth-hero"><span class="hero-glyph" aria-hidden="true">♡</span><span class="eyebrow">JULLIE EIGEN AVONTUUR</span><h1>Een beetje meer <em>samen.</em></h1><p>Plan een date, verras elkaar en speel jullie verhaal verder.</p></div>
@@ -139,12 +140,77 @@
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
           <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
-          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
-          <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
           <section class="panel inset stack" id="quest-pilot" aria-labelledby="quest-pilot-heading">
-            <h3 id="quest-pilot-heading">Nieuwe spelreis · experimentele synchronisatie</h3>
-            <p class="muted">Dit onderdeel is een aparte proef. Het bestaande speelbord hierboven verandert niet. Alleen de knop 'Nieuwe spelreis starten' kan de nieuwe gezamenlijke serverstand aanmaken.</p>
+            <h3 id="quest-pilot-heading">Jullie gezamenlijke spelreis</h3>
+            <p class="muted">Eén gedeelde pion, één serverstand en één route. Deze testversie gebruikt uitsluitend de nieuwe spelreis.</p>
             <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
+            <p id="quest-journey-guidance" class="quest-journey-guidance" role="status" aria-live="polite">De spelreisstatus verschijnt na het inloggen.</p>
+            <section class="quest-board-section stack" aria-label="Oorspronkelijke gezamenlijke spelwereld">
+              <h4>Jullie gezamenlijke speelwereld</h4>
+              <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Spelbord met één gezamenlijke pion">
+                <img class="quest-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="Officiële geïllustreerde US TWO-wereld met gouden hartjespad" loading="eager">
+                <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor jullie beiden en Pepsi">
+                  <div id="quest-world-actor" class="quest-world-actor">
+                    <img id="quest-world-pawn-art" alt="Goedgekeurd origineel van Youri, Kim en Pepsi" hidden>
+                    <img id="quest-world-pose-frame" alt="" aria-hidden="true" hidden>
+                    <span id="quest-world-fallback" class="quest-world-heart" aria-hidden="true">♥</span>
+                  </div>
+                  <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
+                  <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
+                </div>
+              </div>
+              <p id="quest-world-position" class="muted" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
+              <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
+              <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
+              <p id="quest-world-art-status" class="muted">Gebruik het originele, goedgekeurde plaatje van jullie drieën. De afbeelding wordt alleen op dit toestel in lokale opslag bewaard, niet gepubliceerd of naar de server verstuurd.</p>
+              <details id="quest-3d-details" class="quest-3d-details">
+                <summary>Originele 3D-personages en animaties bekijken</summary>
+                <p class="muted">Hier wordt het bestaande 3D-model van Youri en Kim gebruikt, niet een nieuw uiterlijk. Kies eenmaal het originele GLB-bestand. Het blijft privé op jouw telefoon. De server bepaalt altijd de spelpositie.</p>
+                <label for="quest-3d-model">Origineel PAWN_DUO 3D-model (.glb)</label>
+                <input id="quest-3d-model" type="file" accept=".glb,model/gltf-binary" disabled>
+                <button type="button" id="quest-3d-load-saved" class="secondary-btn" disabled>Open eerder opgeslagen 3D-model</button>
+                <div class="quest-3d-viewport">
+                  <canvas id="quest-3d-canvas" aria-label="Draaibare originele 3D-pion met twee figuren op één gezamenlijke sokkel"></canvas>
+                  <p id="quest-3d-loading" class="quest-3d-loading">Kies het originele 3D-model om te beginnen.</p>
+                </div>
+                <label for="quest-3d-animation">Originele 3D-beweging</label>
+                <select id="quest-3d-animation" disabled><option>Laad eerst het model</option></select>
+                <button type="button" id="quest-3d-pause" class="ghost-btn" disabled>Pauzeer beweging</button>
+                <p id="quest-3d-status" class="muted" role="status" aria-live="polite">3D-model nog niet geladen. Geen serverwijziging.</p>
+                <p class="muted">Sleep om te draaien; knijp om te zoomen. De originele 3D-bron bevat nog geen Pepsi-mesh. De 2D-pion hierboven blijft ongewijzigd beschikbaar.</p>
+              </details>
+              <details class="quest-pose-management">
+                <summary>Goedgekeurde 2D-bewegingen beheren</summary>
+                <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
+                <label for="quest-pose-zip">Goedgekeurd US TWO-posepakket in één keer importeren (ZIP)</label>
+                <input id="quest-pose-zip" type="file" accept=".zip,application/zip" disabled>
+                <p class="muted">Importeer het lokaal gedownloade US TWO-posepakket. De negen scènes worden alleen op dit toestel en voor dit gekoppelde account bewaard.</p>
+                <label for="quest-pose-scene">Animatie waarvoor je frames toevoegt</label>
+                <select id="quest-pose-scene" disabled>
+                  <option value="pepsi">Bal gooien met Pepsi</option>
+                  <option value="kiss">Zoenen</option>
+                  <option value="hug">Knuffelen</option>
+                  <option value="dance">Dansen</option>
+                  <option value="walk">Wandelen</option>
+                  <option value="stars">Sterren kijken</option>
+                  <option value="five">Samen vieren</option>
+                  <option value="play">Spel en plezier</option>
+                  <option value="calm">Rustig samen</option>
+                </select>
+                <label for="quest-pose-upload">Kies 2 tot 24 originele PNG- of WebP-frames</label>
+                <input id="quest-pose-upload" type="file" accept="image/png,image/webp" multiple disabled>
+                <button type="button" id="quest-pose-remove" class="ghost-btn" disabled>Verwijder lokale beeldreeks</button>
+                <p id="quest-pose-status" class="muted" role="status" aria-live="polite">Nog geen goedgekeurde beeldframes geladen.</p>
+              </details>
+              <div class="quest-cinematic-controls" role="group" aria-label="Animatie voor de opdracht">
+                <p id="quest-cinematic-status" class="muted" role="status" aria-live="polite">De animatie verschijnt wanneer jullie een opdracht hebben.</p>
+                <div class="buttons">
+                  <button type="button" id="quest-cinematic-play" class="secondary-btn" disabled>Speel bijpassende beweging</button>
+                  <button type="button" id="quest-cinematic-stop" class="ghost-btn" disabled>Stop animatie</button>
+                </div>
+                <p class="muted">Voorlopige bewegingschoreografie met de goedgekeurde afbeelding. Echte 3D-personagebewegingen vereisen afzonderlijke 3D-modellen.</p>
+              </div>
+            </section>
             <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
             <p id="quest-pilot-network" class="muted" role="status" aria-live="polite">Netwerkstatus controleren…</p>
             <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
@@ -196,7 +262,7 @@
                 <p id="quest-pilot-conflict" class="muted">Geen synchronisatieconflict vastgesteld.</p>
                 <button id="quest-pilot-resolve" type="button" class="ghost-btn" disabled>Vastgelopen voorstel veilig annuleren</button>
               </div>
-              <button id="quest-pilot-start" type="button" class="ghost-btn" disabled>Nieuwe spelreis starten (test)</button>
+              <button id="quest-pilot-start" type="button" class="ghost-btn" disabled>Spelreis starten</button>
             </div>
             <section aria-labelledby="quest-pilot-super-heading" class="stack">
               <h4 id="quest-pilot-super-heading">Superdate · voorbereiding en toestemming</h4>
@@ -260,6 +326,11 @@
   <script src="./us-two-offline.js" defer></script>
    <script type="module" src="./app.js"></script>
    <script src="./quest-catalog.js" defer></script>
+   <script src="./quest-board.js" defer></script>
+   <script src="./quest-pose-archive.js" defer></script>
+   <script src="./quest-poses.js" defer></script>
+   <script src="./quest-cinematics.js" defer></script>
+   <script src="./quest-3d.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
 </body>
 </html>

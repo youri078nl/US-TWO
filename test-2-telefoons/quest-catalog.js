@@ -17,9 +17,10 @@ function chooseOptions(rows,{world,mode,position,history=[],limit=3,budget='max'
     if(!card||typeof card.id!=='string'||!card.id||card.id.length>150||
       typeof card.title!=='string'||!card.title.trim()||
       card.world!==world||card.category==='Flirt'||card[eligibility]!==true) continue;
-    // Existing zero-cost tasks use supplies already at home; no real-world prices implied.
-    const cost=card.estimated_cost_eur??0;
-    if(typeof cost!=='number'||!Number.isFinite(cost)||cost<0||
+    // Never classify an unknown or malformed price as a free activity.
+    // The server catalog stores whole-euro estimates for the total couple.
+    const cost=card.estimated_cost_eur;
+    if(!Number.isSafeInteger(cost)||cost<0||cost>500||
        (budget!=='max'&&cost>budget))continue;
     if(!unique.has(card.id))unique.set(card.id,{...card,estimated_cost_eur:cost});
   }

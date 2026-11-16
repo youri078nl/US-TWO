@@ -1,3 +1,34 @@
+# US TWO | actuele PWA-staat (16 november 2026)
+
+**Definitieve oplevering: één PWA/webapp voor Android en iPhone. Geen APK, native Android-app of SwiftUI-build.** Het resterende masterplan blijft ongewijzigd en is leidend via het private PWA-masterplan.
+
+## Bewijsbaar afgerond in deze werkronde
+
+- **240** bestaande en nieuwe unieke dateopdrachten in de echte Supabase-database, exact **40 per wereld**.
+- **204 gratis** opdrachten en **36 betaalde** varianten verspreid over alle zes werelden; gezamenlijke richtprijsveld `estimated_cost_eur` met grenzen 0 t/m 500.
+- De app haalt de richtprijs op in de ingelogde catalogusquery. Kies gratis, €10, €20, €40, €60, €100 of onbeperkt: het is altijd een maximum voor twee personen. Bij voldoende aanbod komen twee gratis en één passende betaalde date naar voren.
+- Elke kaart heeft een eigen ID, titel, beschrijving, speelduur, beloning, pose-ID en afzonderlijke instructies voor samen en op afstand. Eén bestaande categorie `Flirt` blijft doelbewust niet voor alle speelvormen zichtbaar totdat wederzijdse opt-in voldoet aan de privacy-eisen.
+- Alle nieuwe migraties zijn additief en de 67 oorspronkelijke datekaarten zijn behouden; de bestaande accounts en spelvoortgang zijn niet gewijzigd.
+- De Chromium- en offline-regressietests en de catalogusvalidaties zijn geslaagd. De afzonderlijke `/test-2-telefoons/`-versie 0.9.0 is door GitHub Pages gepubliceerd.
+- Het acceptatieregister heeft D07 en D08 afgevinkt. **Gewogen masterplanstand: 16,61%.** Dit is geen gereedmelding voor de gehele webapp.
+
+## Nog verplicht vóór vrijgave
+
+- Defintieve gameboardweergave en unieke goedgekeurde 2D-personages en animaties met de volledige vereiste pose-/actiecombinaties.
+- Volledige superdatecontent: achttien inhoudelijk verschillende superdates, geheime eigen voorbereiding per speler, 72-uursregel en onafhankelijke finale-/afrondingsbevestiging.
+- Metadata en filters voor materialen, fysieke mogelijkheden, allergieën, energie, grenzen en wederzijdse opt-in; daarvoor is alleen een budgetfilter onvoldoende.
+- Eén samengevoegde agenda, herinneringen, meldingen, media en export in dezelfde productieworkflow.
+- Authenticatiebeveiliging, privacycontrole, herstelproeven, langdurige offline-/updateproeven en volledige E2E-acceptatie op jullie echte Android- en iPhone-toestellen.
+- Releaseaudit en volledige acceptatie van alle 169 masterplaneisen.
+
+## Testlink
+https://youri078nl.github.io/US-TWO/test-2-telefoons/
+
+**Gebruik twee eigen testaccounts:** de testversie gebruikt echte servermutaties voor een gekoppeld paar.
+
+---
+
+## Historische ontwerp- en implementatienotities (archief)
 # US TWO – nieuwe spelreis en offline synchronisatie (proef)
 
 **Status: ontwikkelproef, niet vrijgegeven als eindversie.** Gebaseerd op openbare webapp 0.8.0; de door de gebruiker goedgekeurde 0.9.11 HTML-basis blijft afzonderlijk beschikbaar. Deze proef verandert die basis niet.

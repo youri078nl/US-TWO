@@ -8,6 +8,9 @@ on:
       - 'quest-board.js'
       - 'quest-cinematics.js'
       - 'quest-poses.js'
+      - 'quest-pose-archive.js'
+      - 'tests/quest-pose-archive.test.cjs'
+      - 'tests/quest-browser-pose-zip.cjs'
       - 'quest-3d.js'
       - 'tests/quest-browser-3d.cjs'
       - 'tests/quest-browser-pose-frames.cjs'
@@ -48,6 +51,7 @@ jobs:
           node --check quest-board.js
           node --check quest-cinematics.js
           node --check quest-poses.js
+          node --check quest-pose-archive.js
           node --check quest-3d.js
           node --check quest-pilot.js
           node --check quest-catalog.js
@@ -55,6 +59,8 @@ jobs:
           node --check service-worker.js
       - name: Install isolated browser-storage test dependency
         run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
+      - name: Verify safe ZIP pose archive parser
+        run: node tests/quest-pose-archive.test.cjs
       - name: Exercise offline browser integration
         run: node tests/quest-pilot.test.cjs
       - name: Validate authored budget catalog and shared-cost filtering
@@ -79,6 +85,8 @@ jobs:
         run: node tests/quest-browser-cinematics.cjs
       - name: Verify offline-approved frame packs, scene playback and account separation
         run: node tests/quest-browser-pose-frames.cjs
+      - name: Test private ZIP pose import in real Chromium
+        run: node tests/quest-browser-pose-zip.cjs
       - name: Verify original WebGL2 renderer safety and paired-account gating
         run: node tests/quest-browser-3d.cjs
       - name: Test durable offline replay in two real Chromium tabs

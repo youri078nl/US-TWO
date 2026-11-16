@@ -7,6 +7,8 @@ on:
       - 'quest-board.css'
       - 'quest-board.js'
       - 'quest-cinematics.js'
+      - 'quest-poses.js'
+      - 'tests/quest-browser-pose-frames.cjs'
       - 'tests/quest-browser-cinematics.cjs'
       - 'quest-pilot.js'
       - 'quest-catalog.js'
@@ -43,6 +45,7 @@ jobs:
           node --check app.js
           node --check quest-board.js
           node --check quest-cinematics.js
+          node --check quest-poses.js
           node --check quest-pilot.js
           node --check quest-catalog.js
           node --check us-two-offline.js
@@ -71,6 +74,8 @@ jobs:
           node tests/quest-browser-smoke.cjs
       - name: Check on-board animation safety in Chromium
         run: node tests/quest-browser-cinematics.cjs
+      - name: Verify offline-approved frame packs, scene playback and account separation
+        run: node tests/quest-browser-pose-frames.cjs
       - name: Test durable offline replay in two real Chromium tabs
         run: node tests/quest-browser-offline.cjs
       - name: Verify two-browser superdate consent and private preparation

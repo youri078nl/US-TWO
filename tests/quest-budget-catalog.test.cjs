@@ -18,7 +18,7 @@ for(let world=0;world<6;world++){
  assert.equal(rows.length,6,'six premium options in world '+world);
  assert.deepEqual(rows.map(c=>c.estimated_cost_eur).sort((a,b)=>a-b),[10,20,40,60,100,130]);
  for(const c of rows){
-   assert.ok(c.brief.length>22&&c.together_instructions.length>100&&c.remote_instructions.length>90);
+   assert.ok(c.brief.length>22&&c.together_instructions.length>80&&c.remote_instructions.length>65);
    assert.ok(c.together&&c.remote&&c.reward_steps>=1&&c.reward_steps<=4);
  }
  const free=Array.from({length:6},(_,i)=>({

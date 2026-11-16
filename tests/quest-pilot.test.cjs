@@ -172,7 +172,7 @@ async function main(){
    my_prep:'Mijn eigen geheime opdracht',partner_ready:false,my_ready:false,can_reveal:false,
    prep_a:'NIET TONEN PARTNER',prep_b:'OOK NIET TONEN',finale_remote:'VERBODEN FINALE'}]);
  await superTest.click('quest-pilot-refresh');
- assert.match(superTest.elements['quest-pilot-super-prep'].textContent,/Mijn eigen geheime opdracht/);
+ assert.match(superTest.elements['quest-pilot-super-prep'].textContent,/Mijn eigen geheime opdracht/,'message='+superTest.elements['quest-pilot-message'].textContent+' status='+superTest.elements['quest-pilot-super-status'].textContent+' card='+superTest.elements['quest-card-phase'].textContent);
  assert.doesNotMatch(superTest.elements['quest-pilot-super-prep'].textContent,/NIET TONEN/);
  assert.doesNotMatch(superTest.elements['quest-pilot-super-finale'].textContent,/VERBODEN FINALE/);
  assert.equal(superTest.elements['quest-pilot-super-reveal'].disabled,true);

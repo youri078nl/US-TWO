@@ -95,6 +95,7 @@ async function setup(page,user){
   await setup(page,USER);
   await page.locator('#quest-pose-status').getByText(/3 originele beeldframes/).waitFor({timeout:10000});
   await page.emulateMedia({reducedMotion:'reduce'});
+  await page.waitForFunction(()=>document.querySelector('#quest-cinematic-play').disabled,{timeout:5000});
   assert.equal(await page.locator('#quest-cinematic-play').isDisabled(),true);
   assert.equal(await page.evaluate(()=>window.USTwoCinematics.play()),false);
   assert.equal(await page.locator('#quest-world-pawn').getAttribute('data-framepack'),null);

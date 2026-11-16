@@ -260,6 +260,30 @@
             </section>
             <p id="quest-pilot-message" class="muted" role="status" aria-live="polite">Niet voor productie vrijgegeven.</p>
           </section>
+          <details id="quest-card-library" class="panel quest-card-library stack">
+            <summary>50 geïllustreerde opdrachtkaartjes bekijken</summary>
+            <p class="muted">De originele US TWO-kaarten met jullie goedgekeurde 2D-personages. Dit is een inspiratiecollectie; de kaarten geven nog geen spelpunten of automatische voortgang.</p>
+            <p id="quest-cards-status" role="status" aria-live="polite">Kaartencollectie laden…</p>
+            <label for="quest-cards-zip">50 originele afbeeldingen in één keer importeren</label>
+            <input type="file" id="quest-cards-zip" accept=".zip,application/zip" disabled>
+            <p class="muted">Gebruik het bestaande bestand US_TWO_50_kaartjes_MOBIEL.zip. Afbeeldingen blijven uitsluitend op dit toestel en bij jullie account.</p>
+            <label for="quest-cards-jpg">Alternatief voor toestellen zonder ZIP-ondersteuning: 50 JPG's</label>
+            <input type="file" id="quest-cards-jpg" accept=".jpg,image/jpeg" multiple disabled>
+            <label for="quest-cards-filter">Categorie</label>
+            <select id="quest-cards-filter" disabled><option value="all">Alle 50 kaartjes</option></select>
+            <div class="quest-card-heading">
+              <p class="muted" id="quest-card-meta"></p>
+              <h3 id="quest-card-title"></h3>
+            </div>
+            <img id="quest-card-image" class="quest-card-image" alt="" hidden>
+            <p class="muted" id="quest-cards-empty-art">De drie opdrachtstappen staan hieronder. Importeer het originele ZIP-pakket om de bijbehorende afbeelding te bekijken.</p>
+            <ol id="quest-card-steps" class="quest-card-steps"></ol>
+            <div class="quest-card-navigation">
+              <button type="button" class="secondary-btn" id="quest-cards-prev" disabled>Vorige</button>
+              <span id="quest-cards-count" aria-live="polite">1 / 50</span>
+              <button type="button" class="secondary-btn" id="quest-cards-next" disabled>Volgende</button>
+            </div>
+          </details>
         </section>
 
 
@@ -313,6 +337,9 @@
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
    <script src="./quest-calendar-ics.js" defer></script>
+   <script src="./quest-card-data.js" defer></script>
+   <script src="./quest-card-archive.js" defer></script>
+   <script src="./quest-card-gallery.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
 </body>
 </html>

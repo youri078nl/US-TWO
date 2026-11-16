@@ -7,6 +7,10 @@ on:
       - 'quest-board.css'
       - 'quest-board.js'
       - 'quest-cinematics.js'
+      - 'quest-card-data.js'
+      - 'quest-card-archive.js'
+      - 'quest-card-gallery.js'
+      - 'tests/quest-browser-card-gallery.cjs'
       - 'quest-poses.js'
       - 'quest-pose-archive.js'
       - 'tests/quest-pose-archive.test.cjs'
@@ -49,6 +53,9 @@ jobs:
           node --check app.js
           node --check quest-board.js
           node --check quest-cinematics.js
+          node --check quest-card-data.js
+          node --check quest-card-archive.js
+          node --check quest-card-gallery.js
           node --check quest-poses.js
           node --check quest-pose-archive.js
           node --check quest-pilot.js
@@ -83,6 +90,8 @@ jobs:
           node tests/quest-browser-smoke.cjs
       - name: Check on-board animation safety in Chromium
         run: node tests/quest-browser-cinematics.cjs
+      - name: Validate the original 50-card library, local ZIP import and session isolation
+        run: node tests/quest-browser-card-gallery.cjs
       - name: Verify offline-approved frame packs, scene playback and account separation
         run: node tests/quest-browser-pose-frames.cjs
       - name: Test private ZIP pose import in real Chromium

@@ -39,6 +39,7 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id)state.questCalendar=[];
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
@@ -166,7 +167,7 @@ function updateQuestCalendar(game,who){
   const id=typeof d?.id==='string'?d.id:'';
   const add=(kind,at,label)=>{
    const dt=typeof at==='string'?new Date(at):null;
-   if(dt&&Number.isFinite(dt.getTime())&&dt.getTime()>=Date.now()-86400000){
+   if(dt&&Number.isFinite(dt.getTime())){
     next.push({id:'quest:'+kind+':'+id,start_at:dt.toISOString(),title,kind,
       status:kind==='confirmed'?'accepted':'proposed',label});
    }

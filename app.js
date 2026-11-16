@@ -305,9 +305,9 @@ function renderBoard() {
   const first = Math.floor((position - 1) / 12) * 12 + 1;
   const members = (state.dashboard?.members || []).slice(0, 2);
   const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
-  const players = playerNames.map((name, i) =>
-    `<span class="board-pawn pawn-${i + 1}" title="${safe(name)}" aria-hidden="true">${safe(name.charAt(0).toLocaleUpperCase('nl-NL'))}</span>`
-  ).join('');
+  // The couple shares ONE progress marker even in the preserved legacy board.
+  // Do not render individual tokens, or they appear to have separate turns.
+  const players = '<span class="board-pawn board-pawn-duo" aria-hidden="true">♥</span>';
   const path = Array.from({length: 12}, (_, slot) => {
     const row = Math.floor(slot / 4);
     const col = slot % 4;
@@ -320,8 +320,8 @@ function renderBoard() {
   }).join('');
   $('board-position').textContent = String(position);
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
-  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
+  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Eén gezamenlijke pion op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
+  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Eén gezamenlijke pion: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : '<p class="pawns-caption">Eén gezamenlijke pion voor jullie beiden.</p>'}`;
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {

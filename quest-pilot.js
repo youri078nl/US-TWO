@@ -92,6 +92,12 @@
       : (confirmed?'Bevestigde datum: '+fmt(schedule.confirmed_at)+'. ':'Nog geen datum bevestigd. ')+
         (pending?(own?'Jouw voorstel: ':'Voorstel van je partner: ')+fmt(schedule.pending_at)
           :'Geen openstaand datumvoorstel.'));
+    const scheduleMessage=!state?.paired?'Log in met een gekoppeld account.'
+      :state.phase!=='active'?'Er is nog geen actieve opdracht om te plannen.'
+      : (confirmed?'Bevestigde datum: '+fmt(schedule.confirmed_at)+'. ':'Nog geen datum bevestigd. ')+
+         (pending?(own?'Jouw openstaande voorstel: ':'Voorstel van je partner: ')+fmt(schedule.pending_at)
+           :'Geen openstaand datumvoorstel.');
+    text('quest-pilot-agenda-schedule',scheduleMessage);
     $('quest-pilot-schedule-propose').disabled=!active||partner;
     $('quest-pilot-schedule-accept').disabled=!active||!partner;
     $('quest-pilot-schedule-reject').disabled=!active||!partner;
@@ -171,6 +177,7 @@
       showSuper([],true,'read_failed');
       for(const a of SCHEDULE_ACTIONS)$('quest-pilot-schedule-'+a).disabled=true;
       text('quest-pilot-schedule-status','De planning is niet betrouwbaar opgehaald. Ververs opnieuw.');
+      text('quest-pilot-agenda-schedule','De gezamenlijke datum kon niet betrouwbaar worden opgehaald. Ververs opnieuw.');
       // The server may be offline: show durable local queue state without another network call.
       try{
         const local=await (await ensureQueue()).state();
@@ -211,6 +218,7 @@
     text('quest-pilot-super-prep','Geheime voorbereiding verborgen.');
     text('quest-pilot-super-finale','Geheime finale verborgen.');
     text('quest-pilot-schedule-status','Planning verborgen na uitloggen.');
+    text('quest-pilot-agenda-schedule','De spelreisplanning is verborgen na uitloggen.');
     $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
@@ -233,6 +241,7 @@
     window.addEventListener?.('online',showNetworkStatus);
     window.addEventListener?.('offline',showNetworkStatus);
     window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
+    $('quest-pilot-agenda-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-budget').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;
       for(let i=0;i<3;i++){$('quest-pilot-option-'+i).disabled=true;text('quest-pilot-option-'+i,'Voorstel '+(i+1));}

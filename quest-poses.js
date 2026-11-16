@@ -50,6 +50,13 @@
   if(preview){preview.hidden=true;preview.removeAttribute('src');}
   if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl='';}
  }
+ function showPreview(){
+  const image=$('quest-world-pose-frame'),original=$('quest-world-pawn-art');
+  if(!image||!original||original.hidden||!original.getAttribute('src')||
+     playing||!frames?.length||selected!==scene||loadedKey!==key(account,scene))return;
+  if(!previewUrl)previewUrl=URL.createObjectURL(frames[0]);
+  image.src=previewUrl;image.hidden=false;
+ }
  function stop(){
   if(timer!==null){clearTimeout(timer);timer=null;}
   const preview=$('quest-world-pose-frame');
@@ -75,10 +82,7 @@
    if(saved?.frames?.length>=2&&saved.frames.length<=MAX_FRAMES&&
      saved.frames.every(f=>f instanceof Blob&&['image/png','image/webp'].includes(f.type)&&f.size<=MAX_FRAME_BYTES)){
     frames=saved.frames;loadedKey=k;
-    const image=$('quest-world-pose-frame'),original=$('quest-world-pawn-art');
-    if(image&&original&&!original.hidden&&original.getAttribute('src')&&selected===scene){
-      previewUrl=URL.createObjectURL(frames[0]);image.src=previewUrl;image.hidden=false;
-    }
+    showPreview();
     status(frames.length+' originele beeldframes op dit toestel geladen voor '+name(selected)+
       '. Deze blijven privé en veranderen de pion niet.');
    }else status('Nog geen goedgekeurde beeldreeks voor '+name(selected)+
@@ -160,7 +164,11 @@
   });
   $('quest-pose-remove')?.addEventListener('click',remove);
   window.addEventListener('us-two-session-cleared',clear);
-  window.addEventListener('us-two-pawn-art-changed',()=>{if(playing)stop();});
+  window.addEventListener('us-two-pawn-art-changed',()=>{
+    if(playing)stop();
+    if($('quest-world-pawn-art')?.hidden)hidePreview();
+    else showPreview();
+  });
   window.addEventListener('us-two-tab-changed',e=>{if(e.detail?.tab!=='game')stop();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   controls();

@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.8.8-twee-telefoons-test',
+  version: '0.8.9-twee-telefoons-test',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null };
+const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
 const STORAGE_KEY = 'us-two-two-phones-session-test-v1';
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
@@ -39,10 +39,11 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id)state.questCalendar=[];
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;
@@ -92,6 +93,7 @@ async function showApp(){
 function setTab(tab){
   if(!['home','pair','dates','game','memories','more'].includes(tab))return;
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
+  if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   window.scrollTo({top:0,behavior:'instant'});
 }
@@ -152,6 +154,34 @@ function monthStep(delta){
  state.calendarSelected=state.calendarMonth+'-01';
  renderCalendar();
 }
+// Read-only projection of the canonical new quest schedule into the legacy
+// month view. Do not create or duplicate legacy date records.
+function updateQuestCalendar(game,who){
+ const authorized=Boolean(state.session?.user?.id&&
+   state.session.user.id===who?.userId&&
+   paired()&&state.dashboard?.couple_id===who?.coupleId);
+ const next=[];
+ if(authorized&&game?.paired&&game.initialized&&game.phase==='active'){
+  const d=game.date,p=game.schedule;
+  const title=typeof d?.title==='string'&&d.title.trim()?d.title.trim():'Spelreisdate';
+  const id=typeof d?.id==='string'?d.id:'';
+  const add=(kind,at,label)=>{
+   const dt=typeof at==='string'?new Date(at):null;
+   if(dt&&Number.isFinite(dt.getTime())){
+    next.push({id:'quest:'+kind+':'+id,start_at:dt.toISOString(),title,kind,
+      status:kind==='confirmed'?'accepted':'proposed',label});
+   }
+  };
+  if(p?.status==='confirmed')add('confirmed',p.confirmed_at,'Bevestigde spelreisdate');
+  if(p?.pending_at)add('pending',p.pending_at,
+    p.pending_by===who.userId?'Eigen datumvoorstel · spelreis':'Voorstel partner · spelreis');
+ }
+ state.questCalendar=next;
+ if($('calendar-grid')&&state.tab==='dates')renderCalendar();
+}
+window.USTwoQuestCalendar=Object.freeze({update:updateQuestCalendar,clear:()=>{
+ state.questCalendar=[];if($('calendar-grid')&&state.tab==='dates')renderCalendar();
+}});
 function renderCalendar(){
  const today=amsterdamDay(new Date()),month=state.calendarMonth||today.slice(0,7);
  const [year,m]=month.split('-').map(Number);
@@ -165,7 +195,7 @@ function renderCalendar(){
  let html=['ma','di','wo','do','vr','za','zo'].map(x=>'<span class="calendar-weekday">'+x+'</span>').join('');
  const scheduled=(state.dashboard?.dates||[]).filter(d=>d.status==='proposed'||d.status==='accepted');
  const byDay=new Map();
- scheduled.forEach(d=>{
+ (paired()?scheduled.concat(state.questCalendar):scheduled).forEach(d=>{
   const date=new Date(d.start_at);
   if(!Number.isFinite(date.getTime()))return;
   const key=amsterdamDay(date);
@@ -185,7 +215,7 @@ function renderCalendar(){
  const events=(byDay.get(key)||[]).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
  const label=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
  $('calendar-day-detail').innerHTML='<h4>'+safe(label)+'</h4>'+(events.length?
-  events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.status==='accepted'?'Geaccepteerd':'Uitnodiging')+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
+  events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.kind?d.label:(d.status==='accepted'?'Geaccepteerd':'Uitnodiging'))+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
   '<p class="muted">Geen geplande afspraken op deze dag.</p>');
 }
 function renderMemories(){

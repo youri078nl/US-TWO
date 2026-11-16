@@ -161,6 +161,7 @@
     if(server.world_index!==catalogWorld||server.phase!=='choose') {catalogChoices=[];catalogWorld=null;}
     status(server,local.items,local.blocked);
     showSchedule(server,local.items,local.blocked);
+    window.USTwoQuestCalendar?.update(server,identity());
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -178,6 +179,7 @@
       for(const a of SCHEDULE_ACTIONS)$('quest-pilot-schedule-'+a).disabled=true;
       text('quest-pilot-schedule-status','De planning is niet betrouwbaar opgehaald. Ververs opnieuw.');
       text('quest-pilot-agenda-schedule','De gezamenlijke datum kon niet betrouwbaar worden opgehaald. Ververs opnieuw.');
+      window.USTwoQuestCalendar?.clear();
       // The server may be offline: show durable local queue state without another network call.
       try{
         const local=await (await ensureQueue()).state();
@@ -219,6 +221,7 @@
     text('quest-pilot-super-finale','Geheime finale verborgen.');
     text('quest-pilot-schedule-status','Planning verborgen na uitloggen.');
     text('quest-pilot-agenda-schedule','De spelreisplanning is verborgen na uitloggen.');
+    window.USTwoQuestCalendar?.clear();
     $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
@@ -241,6 +244,9 @@
     window.addEventListener?.('online',showNetworkStatus);
     window.addEventListener?.('offline',showNetworkStatus);
     window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
+    window.addEventListener?.('us-two-quest-calendar-refresh',()=>{
+      if(!loading&&window.USTwoQuestPilotBridge?.identity()?.paired)operation(refresh);
+    });
     $('quest-pilot-agenda-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-budget').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;

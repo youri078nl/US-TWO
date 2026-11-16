@@ -244,6 +244,9 @@
     window.addEventListener?.('online',showNetworkStatus);
     window.addEventListener?.('offline',showNetworkStatus);
     window.addEventListener?.('us-two-session-cleared',clearPrivateScreen);
+    window.addEventListener?.('us-two-quest-calendar-refresh',()=>{
+      if(!loading&&window.USTwoQuestPilotBridge?.identity()?.paired)operation(refresh);
+    });
     $('quest-pilot-agenda-refresh').addEventListener('click',()=>operation(refresh));
     $('quest-pilot-budget').addEventListener('change',()=>{
       catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;

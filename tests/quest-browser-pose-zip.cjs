@@ -86,7 +86,11 @@ async function setup(page,user) {
 
   const bad=Buffer.from(good);bad[40]^=0x13;
   await page.locator('#quest-pose-zip').setInputFiles({name:'bad.zip',mimeType:'application/zip',buffer:bad});
-  await page.locator('#quest-pose-status').getByText(/niet geïmporteerd/).waitFor({timeout:10000});
+  await page.locator('#quest-pose-status').getByText(/niet geïmporteerd/).waitFor({timeout:8000}).catch(async error=>{
+    throw Error('Bad package status: '+await page.locator('#quest-pose-status').textContent()+
+      '; input disabled='+await page.locator('#quest-pose-zip').isDisabled()+
+      '; '+error.message.slice(0,80));
+  });
   assert.equal(await page.evaluate(()=>window.USTwoPoseFrames.hasSelected()),true);
   console.log('PASS corrupted archive rejected without erasing existing frames');
 

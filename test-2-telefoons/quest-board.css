@@ -188,3 +188,9 @@
 .quest-card-meta span{border:1px solid #a17a4d;border-radius:99px;
   background:#3b2430;padding:7px 11px}
 @media(prefers-reduced-motion:reduce){.quest-world-scroll{scroll-behavior:auto}}
+
+/* Accessible mobile zoom. Board paths and shared pawn coordinates remain unchanged. */
+.quest-world-zoom-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.quest-world-zoom-controls button{min-width:42px;min-height:42px;touch-action:manipulation}
+#quest-world-zoom-label{min-width:52px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+@media(max-width:480px){.quest-board-navigation .quest-world-zoom-controls button{width:auto}}

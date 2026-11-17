@@ -23,6 +23,10 @@ on:
       - 'tests/quest-browser-cinematics.cjs'
       - 'tests/quest-no-3d.test.cjs'
       - 'quest-pilot.js'
+      - 'quest-questions.js'
+      - 'supabase/migrations/20261117_canonical_question_turns.sql'
+      - 'tests/quest-browser-questions.cjs'
+      - 'tests/quest-questions-contract.test.cjs'
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
       - 'tests/quest-browser-offline.cjs'
@@ -64,6 +68,7 @@ jobs:
           node --check quest-poses.js
           node --check quest-pose-archive.js
           node --check quest-pilot.js
+          node --check quest-questions.js
           node --check quest-catalog.js
           node --check us-two-offline.js
           node --check service-worker.js
@@ -79,6 +84,8 @@ jobs:
         run: node tests/quest-pilot.test.cjs
       - name: Validate authored budget catalog and shared-cost filtering
         run: node tests/quest-budget-catalog.test.cjs
+      - name: Validate canonical question contract and SQL guardrails
+        run: node tests/quest-questions-contract.test.cjs
       - name: Verify eighteen private superdate storylines
         run: node tests/quest-superdate-content.test.cjs
       - name: Reuse downloaded Playwright Chromium across CI runs
@@ -99,6 +106,8 @@ jobs:
         run: node tests/quest-browser-cinematics.cjs
       - name: Validate the original 50-card library, local ZIP import and session isolation
         run: node tests/quest-browser-card-gallery.cjs
+      - name: Verify canonical 2-player questions in Chromium
+        run: node tests/quest-browser-questions.cjs
       - name: Verify 258 canonical cards, private superdates and offline ZIP import
         run: node tests/quest-browser-full-deck.cjs
       - name: Verify offline-approved frame packs, scene playback and account separation

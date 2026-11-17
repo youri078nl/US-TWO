@@ -179,6 +179,7 @@
     window.USTwoCinematics?.update(server,identity());
     window.USTwoCardGallery?.update(identity());
     window.USTwoFullDeck?.update(identity(),server);
+    window.USTwoQuestQuestions?.update(server,identity(),local);
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -251,6 +252,7 @@
     window.USTwoCinematics?.clear();
     window.USTwoCardGallery?.clear();
     window.USTwoFullDeck?.clear();
+    window.USTwoQuestQuestions?.clear();
     $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
@@ -484,5 +486,22 @@
     }));
     text('quest-pilot-message','Proefintegratie. Tik op Serverstatus ophalen wanneer je bent ingelogd.');
   }
+  window.USTwoQuestionActions=Object.freeze({
+    send:async(payload)=>{
+      const who=identity(),q=await ensureQueue(),local=await q.state();
+      if(local.items.length||local.blocked)
+        throw Error('Eerst de bestaande offline wachtrij oplossen.');
+      const server=await window.USTwoQuestPilotBridge.read();
+      if(!server?.paired||!server.initialized||!Number.isSafeInteger(server.revision))
+        throw Error('Geen bevestigde gezamenlijke spelstand.');
+      if(!['category','submit','approve','reject','skip','cancel'].includes(payload?.action))
+        throw Error('Onbekende vragenactie.');
+      if(!window.confirm||!who.paired)throw Error('Gekoppelde account vereist.');
+      const requestId=crypto.randomUUID();
+      await q.enqueue({type:'question_action',requestId,expectedRevision:server.revision,
+        payload});
+      handleSync(await q.sync());
+    }
+  });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

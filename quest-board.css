@@ -148,3 +148,15 @@
 .quest-current-card .buttons button{flex:1 1 180px;min-width:0}
 #quest-current-card-art-status{margin:0}
 #quest-current-card-image{border:1px solid #efbc76;border-radius:11px}
+
+/* Canonical question turns; no secondary pawn or position. */
+.quest-question-panel{margin-top:16px;padding:14px;border:1px solid #cf9d58;border-radius:15px;
+ background:linear-gradient(135deg,#342136,#2b1a1c)}
+.quest-question-panel[hidden]{display:none}
+.quest-question-panel h4{color:#ffdb9c;margin:0}
+.quest-question-panel label{color:#fff0d1;font-weight:600}
+.quest-question-panel select,.quest-question-panel textarea{width:100%;max-width:100%}
+.quest-question-prompt{font-size:1.05rem;line-height:1.55;color:#ffe9c7;font-weight:700}
+.quest-question-answer{padding:12px;background:#533131;border:1px solid #8c684b;border-radius:10px;color:#fff1df;overflow-wrap:anywhere}
+.quest-question-panel .buttons{display:flex;flex-wrap:wrap;gap:8px}
+.quest-question-panel .buttons button{flex:1 1 150px;min-width:0}

@@ -142,3 +142,11 @@
 .quest-card-navigation{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .quest-card-navigation>button{flex:1;min-width:0}
 #quest-cards-count{min-width:55px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* Complete, private 258-card gallery follows the style of the approved 50. */
+#full-deck-details{margin-top:16px}
+#full-deck-details[open]>summary{margin-bottom:12px}
+#full-deck-details input,#full-deck-details select{max-width:100%;width:100%}
+#full-deck-details label:has(input[type=checkbox]){display:flex;gap:9px;align-items:center}
+#full-deck-details label input[type=checkbox]{width:19px;height:19px;flex:none;accent-color:#d79352}
+#full-deck-description{line-height:1.6;margin:10px 0 17px}

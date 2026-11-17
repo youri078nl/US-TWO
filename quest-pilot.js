@@ -177,6 +177,7 @@
     window.USTwoQuestBoard?.update(server,identity());
     window.USTwoCinematics?.update(server,identity());
     window.USTwoCardGallery?.update(identity());
+    window.USTwoFullDeck?.update(identity(),server);
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -248,6 +249,7 @@
     window.USTwoQuestBoard?.clear();
     window.USTwoCinematics?.clear();
     window.USTwoCardGallery?.clear();
+    window.USTwoFullDeck?.clear();
     $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),

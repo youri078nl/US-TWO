@@ -10,6 +10,9 @@ on:
       - 'quest-card-data.js'
       - 'quest-card-archive.js'
       - 'quest-card-gallery.js'
+      - 'quest-full-deck.js'
+      - 'catalog/quest-full-258.json'
+      - 'tests/quest-browser-full-deck.cjs'
       - 'tests/quest-browser-card-gallery.cjs'
       - 'quest-poses.js'
       - 'quest-pose-archive.js'
@@ -56,6 +59,7 @@ jobs:
           node --check quest-card-data.js
           node --check quest-card-archive.js
           node --check quest-card-gallery.js
+          node --check quest-full-deck.js
           node --check quest-poses.js
           node --check quest-pose-archive.js
           node --check quest-pilot.js
@@ -92,6 +96,8 @@ jobs:
         run: node tests/quest-browser-cinematics.cjs
       - name: Validate the original 50-card library, local ZIP import and session isolation
         run: node tests/quest-browser-card-gallery.cjs
+      - name: Verify 258 canonical cards, private superdates and offline ZIP import
+        run: node tests/quest-browser-full-deck.cjs
       - name: Verify offline-approved frame packs, scene playback and account separation
         run: node tests/quest-browser-pose-frames.cjs
       - name: Test private ZIP pose import in real Chromium

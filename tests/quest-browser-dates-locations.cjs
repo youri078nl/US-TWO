@@ -36,6 +36,9 @@ const {chromium}=require('playwright');
   await page.waitForFunction(()=>document.querySelector('#quest-world-pawn')?.dataset.tile==='3');
   assert.equal(await page.locator('.quest-board-label').count(),0);
   assert.equal(await page.locator('.quest-world-art').getAttribute('src'),'./assets/us-two-user-board.png');
+  // The portrait board is taller than the phone. Bring it into the viewport
+  // before issuing real mouse/pointer gestures; offscreen mouse moves don't fire.
+  await page.locator('#quest-world-viewport').scrollIntoViewIfNeeded();
   const rect=await page.locator('#quest-world-viewport').boundingBox();
   const initial=await page.evaluate(()=>window.USTwoBoardInteraction.getState());
   assert.ok(initial.zoom>1,'mobile board should begin slightly draggable');
@@ -44,13 +47,6 @@ const {chromium}=require('playwright');
   await page.mouse.move(rect.x+rect.width*.55,rect.y+rect.height*.48,{steps:6});
   await page.mouse.up();
   const moved=await page.evaluate(()=>window.USTwoBoardInteraction.getState());
-  const clicked=await page.evaluate(({cx,cy})=>{
-    const node=document.elementFromPoint(cx,cy);
-    const v=document.querySelector('#quest-world-viewport');
-    return {tag:node?.tagName,id:node?.id,closestButton:node?.closest('button')?.id,
-      viewport:v?.getBoundingClientRect().toJSON(),stage:document.querySelector('#quest-board-stage')?.style.transform};
-   },{cx:rect.x+rect.width*.47,cy:rect.y+rect.height*.54});
-  console.log('BOARD DRAG TEST DIAGNOSTIC',JSON.stringify({initial,moved,clicked}));
   assert.ok(Math.abs(moved.x-initial.x)>2||Math.abs(moved.y-initial.y)>2,'drag must pan the real board');
   await page.locator('#quest-board-zoom-in').click();
   const zoomed=await page.evaluate(()=>window.USTwoBoardInteraction.getState());

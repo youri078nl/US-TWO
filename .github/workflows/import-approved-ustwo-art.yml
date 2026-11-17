@@ -1,0 +1,50 @@
+name: Import approved original US TWO art
+on:
+  push:
+    paths:
+      - '.github/workflows/import-approved-ustwo-art.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-originals:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download original board and pawn without changing one pixel
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p acceptatie/assets
+          curl --fail --location --silent --show-error --retry 3 --max-time 90 \
+            'https://v3b.fal.media/files/b/0ab2ddd5/8jXfmfgIHHowXqa_i6Nvh_Romantisch%20liefdeseiland%20met%20lichtpaden%281%29.png' \
+            --output acceptatie/assets/us-two-user-board.png
+          curl --fail --location --silent --show-error --retry 3 --max-time 90 \
+            'https://v3b.fal.media/files/b/0ab2ddd5/dwfBmjTkVsXZxiIB79LGQ_downloads.png' \
+            --output acceptatie/assets/us-two-user-pawn.png
+          echo '2c11ac9a865c06973a57cf06971ea84203234b7b956255622868d127d76983f5  acceptatie/assets/us-two-user-board.png' | sha256sum --check --status
+          echo '339ee0c263a4fb34e8f7ac244daab89beaf22a88a1ba2c82800d61faabd18521  acceptatie/assets/us-two-user-pawn.png' | sha256sum --check --status
+          python3 - <<'PY'
+          import struct
+          for path,expected in [
+              ('acceptatie/assets/us-two-user-board.png',(941,1672)),
+              ('acceptatie/assets/us-two-user-pawn.png',(1149,1369))
+          ]:
+              with open(path,'rb') as f: header=f.read(24)
+              assert header[:8]==b'\x89PNG\r\n\x1a\n'
+              size=struct.unpack('>II',header[16:24])
+              assert size==expected,(path,size,expected)
+              print('Verified exact original PNG',path,size)
+          PY
+      - name: Store checked art in source repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add acceptatie/assets/us-two-user-board.png acceptatie/assets/us-two-user-pawn.png
+          git commit -m 'Store user-approved original portrait board and shared 2D pawn in app assets'
+          git push origin HEAD:main

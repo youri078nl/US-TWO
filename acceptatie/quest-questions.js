@@ -31,6 +31,8 @@
   for(const id of ['quest-question-approve','quest-question-reject'])
    $(id).disabled=!(available&&phase==='question_review'&&question.can_review);
   const text=(id,s)=>{if($(id))$(id).textContent=s};
+  if($('quest-question-card'))$('quest-question-card').hidden=!(phase==='question'||phase==='question_review');
+  text('quest-question-card-category',String(question?.category||$('quest-question-category')?.value||'Vraag'));
   text('quest-question-prompt',phase==='question'||phase==='question_review'
    ? String(question.prompt||'') : 'Kies een categorie wanneer jij aan de beurt bent.');
   text('quest-question-received',phase==='question_review'

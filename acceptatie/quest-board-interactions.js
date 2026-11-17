@@ -5,7 +5,7 @@
  'use strict';
  const $=id=>document.getElementById(id);
  const BASE=1.14,MAX=2.6;
- let zoom=BASE,x=0,y=0,drag=null;
+ let zoom=BASE,x=0,y=0,drag=null,suppressLocationClick=false;
  const viewport=()=> $('quest-world-viewport');
  const stage=()=> $('quest-board-stage');
  function clamp(){
@@ -38,6 +38,7 @@
  }
  function onDown(event){
   if(event.button!==0||event.target.closest('button'))return;
+  suppressLocationClick=false;
   if(drag)return;
   drag={id:event.pointerId,startX:event.clientX,startY:event.clientY,
     originX:x,originY:y,shifted:false};
@@ -52,11 +53,18 @@
  }
  function onUp(event){
   if(!drag||event.pointerId!==drag.id)return;
+  suppressLocationClick=drag.shifted;
   drag=null;
   try{viewport()?.releasePointerCapture?.(event.pointerId);}catch(_e){}
  }
  function bind(){
   const el=viewport();if(!el||!stage())return;
+  // A pan must never accidentally activate a location underneath the released finger.
+  el.addEventListener('click',event=>{
+   if(!suppressLocationClick)return;
+   suppressLocationClick=false;
+   event.preventDefault();event.stopImmediatePropagation();
+  },true);
   el.addEventListener('pointerdown',onDown);
   el.addEventListener('pointermove',onMove);
   el.addEventListener('pointerup',onUp);

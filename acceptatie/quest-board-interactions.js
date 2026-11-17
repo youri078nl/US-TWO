@@ -42,12 +42,15 @@
   if(drag)return;
   drag={id:event.pointerId,startX:event.clientX,startY:event.clientY,
     originX:x,originY:y,shifted:false};
-  viewport()?.setPointerCapture?.(event.pointerId);
  }
  function onMove(event){
   if(!drag||event.pointerId!==drag.id)return;
   const dx=event.clientX-drag.startX,dy=event.clientY-drag.startY;
-  if(Math.abs(dx)+Math.abs(dy)>6)drag.shifted=true;
+  if(!drag.shifted){
+   if(Math.hypot(dx,dy)<=6)return;
+   drag.shifted=true;
+   viewport()?.setPointerCapture?.(event.pointerId);
+  }
   x=drag.originX+dx;y=drag.originY+dy;
   paint();
  }
@@ -55,7 +58,7 @@
   if(!drag||event.pointerId!==drag.id)return;
   suppressLocationClick=drag.shifted;
   drag=null;
-  try{viewport()?.releasePointerCapture?.(event.pointerId);}catch(_e){}
+  try{if(viewport()?.hasPointerCapture?.(event.pointerId))viewport().releasePointerCapture(event.pointerId);}catch(_e){}
  }
  function bind(){
   const el=viewport();if(!el||!stage())return;

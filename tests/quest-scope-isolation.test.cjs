@@ -1,7 +1,8 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {IDBFactory}=require('fake-indexeddb');
-const offline=require('../us-two-offline.js');
+require('../us-two-offline.js');
+const offline=globalThis.USTwoOffline;
 (async()=>{
  const dbFactory=new IDBFactory(),names=[];
  const locks={request:async(name,_opts,fn)=>{names.push(name);return fn();}};

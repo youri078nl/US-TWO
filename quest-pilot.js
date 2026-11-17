@@ -299,7 +299,14 @@
     };
     // Do not erase a valid on-screen board by needlessly polling while offline.
     window.addEventListener?.('online',refreshVisible);
-    window.addEventListener?.('us-two-quest-game-open',refreshVisible);
+    // Explicit opening of the game (or switching account) must ALWAYS read fresh.
+    // Only passive focus/visibility/online/poll signals are throttled.
+    window.addEventListener?.('us-two-quest-game-open',()=>{
+      if(!loading&&navigator.onLine!==false&&gameVisible()){
+        lastAutomaticRefresh=Date.now();
+        operation(refresh);
+      }
+    });
     window.addEventListener?.('focus',refreshVisible);
     document.addEventListener?.('visibilitychange',refreshVisible);
     if(typeof window.setInterval==='function')window.setInterval(refreshVisible,20000);

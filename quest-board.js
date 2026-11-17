@@ -17,7 +17,8 @@
   [305,287],[437,274],[567,252],[698,219],
   [821,180]
  ];
- const MAX=(PATH.length-1), DB='us-two-private-pawn-v1',TABLE='images';
+ // Forty server steps per world, independent of the number of illustrated waypoints.
+ const CELLS_PER_WORLD=40, DB='us-two-private-pawn-v1',TABLE='images';
  let activeKey='',position=null,revision=0,privateUrl='',defaultUrl='',defaultPromise=null;
  let animationTimer=null,lastMotion=null,replaying=false;
  const artChanged=()=>window.dispatchEvent(new Event('us-two-pawn-art-changed'));
@@ -79,10 +80,13 @@
   if(privateUrl){URL.revokeObjectURL(privateUrl);privateUrl='';}
  }
  function point(step){
-  // The same route is reused visually when the next server world begins.
-  // It never changes the actual stored global game position.
-  const local=((step%(MAX+1))+(MAX+1))%(MAX+1);
-  return PATH[local];
+  // 40 server cells per illustrated world. The path is a list of anchor points.
+  // Interpolate to prevent the pawn from wrapping after only 29 tiles.
+  const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
+  const f=local*(PATH.length-1)/(CELLS_PER_WORLD-1);
+  const a=Math.floor(f),b=Math.min(PATH.length-1,a+1),t=f-a;
+  return [Math.round(PATH[a][0]*(1-t)+PATH[b][0]*t),
+          Math.round(PATH[a][1]*(1-t)+PATH[b][1]*t)];
  }
  function move(step){
   const el=$('quest-world-pawn');if(!el)return;
@@ -172,7 +176,8 @@
   $('quest-world-heading').textContent='Wereld '+world+' · '+(names[world-1]||'Samen op pad');
   $('quest-world-cell').textContent='Vakje '+next+' ♡';
   $('quest-world-position').textContent='Samen op vak '+next+' · wereld '+world+' van 6. De server bepaalt de voortgang.';
-  if(old===null||next<=old||next-old>8){
+  const crossesWorld=old!==null&&Math.floor(old/CELLS_PER_WORLD)!==Math.floor(next/CELLS_PER_WORLD);
+  if(old===null||next<=old||next-old>8||crossesWorld){
    cancelMotion();move(next);progress(next,next,0);
    if(old!==null&&next<old)lastMotion=null;
   }else{

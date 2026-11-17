@@ -55,6 +55,10 @@ const {chromium}=require('playwright');
    assert.equal(await page.locator('#quest-world-heading').textContent(),'Wereld 1 · Liefdesbos');
    assert.equal(await page.locator('#quest-world-cell').textContent(),'Vakje 3 ♡');
    assert.equal(await page.locator('#quest-world-pawn').count(),1);
+   const waypoints=await page.evaluate(()=>[0,28,29,30,39,40].map(n=>window.USTwoQuestBoard.pathPoint(n)));
+   assert.deepEqual(waypoints[0],waypoints[5],'world 2 begins at the start portal only on step 40');
+   for(const i of [2,3,4])assert.notDeepEqual(waypoints[0],waypoints[i],
+     'canonical world must not wrap early at tile '+[0,28,29,30,39,40][i]);
    assert.equal(await page.locator('#quest-world-approved-couple').isVisible(),false);
    assert.equal(await page.locator('#quest-world-approved-pepsi').isVisible(),false);
    await page.evaluate(()=>window.USTwoQuestBoard.update(

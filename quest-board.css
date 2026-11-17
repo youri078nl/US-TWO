@@ -197,7 +197,7 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-label-wellness{top:37%;right:7%}
 .quest-label-lounge{top:53%;right:6%}
 .quest-label-cafe{top:76%;right:7%}
-#quest-world-pawn.quest-world-pawn{width:17%;min-width:40px;max-width:104px;height:auto;aspect-ratio:280/212;display:grid;place-items:center;z-index:5;transform:translate(-50%,-86%);transition:left 220ms ease,top 220ms ease;filter:drop-shadow(0 4px 4px #10071cb0)}
+#quest-world-pawn.quest-world-pawn{width:13%;min-width:40px;max-width:86px;height:auto;aspect-ratio:280/212;display:grid;place-items:center;z-index:5;transform:translate(-50%,-86%);transition:left 220ms ease,top 220ms ease;filter:drop-shadow(0 4px 4px #10071cb0)}
 #quest-world-pawn[hidden]{display:none!important}
 #quest-world-pawn .quest-world-actor{position:relative;width:100%;height:100%;transform-origin:50% 78%}
 #quest-world-pawn .quest-world-actor>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}

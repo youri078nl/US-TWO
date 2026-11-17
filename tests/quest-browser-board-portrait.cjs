@@ -55,10 +55,12 @@ const {chromium}=require('playwright');
    assert.equal(await page.locator('#quest-world-heading').textContent(),'Wereld 1 · Liefdesbos');
    assert.equal(await page.locator('#quest-world-cell').textContent(),'Vakje 3 ♡');
    assert.equal(await page.locator('#quest-world-pawn').count(),1);
-   const waypoints=await page.evaluate(()=>[0,28,29,30,39,40].map(n=>window.USTwoQuestBoard.pathPoint(n)));
-   assert.deepEqual(waypoints[0],waypoints[5],'world 2 begins at the start portal only on step 40');
-   for(const i of [2,3,4])assert.notDeepEqual(waypoints[0],waypoints[i],
-     'canonical world must not wrap early at tile '+[0,28,29,30,39,40][i]);
+   const waypoints=await page.evaluate(()=>[0,28,39,40,59,60].map(n=>window.USTwoQuestBoard.pathPoint(n)));
+   assert.deepEqual(waypoints[0],waypoints[5],'world 2 begins at start portal at canonical tile 60');
+   for(const i of [1,2,3,4])assert.notDeepEqual(waypoints[0],waypoints[i],
+     'canonical world must not wrap early at tile '+[0,28,39,40,59,60][i]);
+   const gated=await page.evaluate(()=>window.USTwoQuestBoard.pathPoint(60,0));
+   assert.notDeepEqual(gated,waypoints[0],'uncompleted superdate gate holds pawn at end portal at tile 60');
    assert.equal(await page.locator('#quest-world-approved-couple').isVisible(),false);
    assert.equal(await page.locator('#quest-world-approved-pepsi').isVisible(),false);
    await page.evaluate(()=>window.USTwoQuestBoard.update(
@@ -70,6 +72,29 @@ const {chromium}=require('playwright');
    await page.locator('#quest-world-replay:not([disabled])').click();
    await page.waitForFunction(()=>document.querySelector('#quest-world-pawn').dataset.tile==='6',null,{timeout:5500});
    await page.waitForFunction(()=>!document.querySelector('#quest-world-replay').disabled,null,{timeout:5500});
+   // A reload must restore last completed animation from the server log.
+   await page.evaluate(()=>{
+    window.dispatchEvent(new Event('us-two-session-cleared'));
+    window.USTwoQuestBoard.update({paired:true,initialized:true,position:6,world_index:0,revision:4,
+      history:[{id:'date-test',from:3,to:6,steps:3}]},
+      {paired:true,userId:'00000000-0000-4000-8000-000000000011',
+       coupleId:'00000000-0000-4000-8000-000000000022'});
+   });
+   await page.locator('#quest-world-replay:not([disabled])').waitFor({timeout:5000});
+   assert.match(await page.locator('#quest-world-step-caption').textContent(),/3 → 6 · stap 3\/3 · vakje 6/);
+   // World boundary is at sixty server steps, NOT forty catalogue quests.
+   await page.evaluate(()=>{
+    window.USTwoQuestBoard.clear();
+    window.USTwoQuestBoard.update({paired:true,initialized:true,position:59,world_index:0,revision:6},
+     {paired:true,userId:'00000000-0000-4000-8000-000000000011',
+      coupleId:'00000000-0000-4000-8000-000000000022'});
+    window.USTwoQuestBoard.update({paired:true,initialized:true,position:62,world_index:1,revision:7},
+     {paired:true,userId:'00000000-0000-4000-8000-000000000011',
+      coupleId:'00000000-0000-4000-8000-000000000022'});
+   });
+   await page.waitForFunction(()=>document.querySelector('#quest-world-pawn').dataset.tile==='62',null,{timeout:5500});
+   assert.equal(await page.locator('#quest-world-heading').textContent(),'Wereld 2 · Avonturenland');
+   assert.match(await page.locator('#quest-world-step-caption').textContent(),/59 → 62 · stap 3\/3 · vakje 62/);
    await page.screenshot({path:'/tmp/us-two-board-'+width+'.png',fullPage:true});
    await page.evaluate(()=>window.dispatchEvent(new Event('us-two-session-cleared')));
    assert.equal(await page.locator('#quest-world-pawn').isVisible(),false);

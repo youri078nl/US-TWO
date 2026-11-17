@@ -1,8 +1,9 @@
-US TWO 0.13.0-bord-rc | Verticale spelbordtest, geen finale 1.0.0.
-Bron branch: c5ded089d0cfc78127b43d9929b7f7f695f5e8a6
-CI groen: https://github.com/youri078nl/US-TWO/actions/runs/44121261557
-Wijzigingen: 2:3 staand mobiel bord met roze hartjespad, originele Youri/Kim/Pepsi als één samen bewegende 2D-pion, vakjes en herhaalbare verdiende stappen.
-Account- en spelposities blijven afkomstig uit canonieke Supabase-spelstand; geen database-reset of verzonnen voortgang.
-Geen 3D. De achtergrond is opnieuw vormgegeven met behoud van referentiestijl; karakterbeelden zijn uit de oude goedgekeurde broncode overgenomen.
-De bestaande hoofdapp en eerdere /test-2-telefoons/ blijven ongemoeid.
-Niet definitief geaccepteerd: echte Android/iPhone-duotest en complete 2D framebibliotheek.
+US TWO versie 0.13.2-bord-rc
+Staand speelbord 2:3 naar de referentie van opdrachtgever, als bijna volledig mobiel schermbreed spelpaneel.
+Originele goedgekeurde figuren Youri + Kim + Pepsi vormen samen exact één sprite, nooit twee losse pionnen.
+Route: 40 server-gestuurde vakjes per wereld, juist interpolerend over het roze hartjespad. Na bevestigde opdracht voortgang vakje voor vakje. Herhaalknop voor laatste voortgang.
+AVIF plus WebP fallback beschikbaar. Images vooraf gecachet voor offline starten.
+Automatische CI en browser regressies: https://github.com/youri078nl/US-TWO/actions/runs/44122511349 (success).
+Bronbranch: c7b2859f91439d98d9c344d75fc69a03ac213b1e
+Bestaande app en tweetelefoon-test onder andere paden niet aangepast. Canonieke database-/spelpositie niet veranderd.
+Nog niet definitieve 1.0.0: echte Android/iPhone acceptatietests en volledige authentieke 2D animatieframes niet voltooid.

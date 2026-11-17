@@ -6,6 +6,9 @@ on:
       - 'styles.css'
       - 'quest-board.css'
       - 'quest-board.js'
+      - 'quest-board-interactions.js'
+      - 'quest-date-browser.js'
+      - 'tests/quest-browser-dates-locations.cjs'
       - 'quest-cinematics.js'
       - 'quest-card-data.js'
       - 'quest-card-archive.js'
@@ -63,6 +66,8 @@ jobs:
         run: |
           node --check app.js
           node --check quest-board.js
+          node --check quest-board-interactions.js
+          node --check quest-date-browser.js
           node --check quest-cinematics.js
           node --check quest-card-data.js
           node --check quest-card-archive.js
@@ -118,6 +123,8 @@ jobs:
         run: node tests/quest-browser-cinematics.cjs
       - name: Validate the original 50-card library, local ZIP import and session isolation
         run: node tests/quest-browser-card-gallery.cjs
+      - name: Test draggable board locations and dedicated Dates-to-Agenda routing
+        run: node tests/quest-browser-dates-locations.cjs
       - name: Verify canonical 2-player questions in Chromium
         run: node tests/quest-browser-questions.cjs
       - name: Verify 258 canonical cards, private superdates and offline ZIP import

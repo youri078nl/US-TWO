@@ -98,3 +98,33 @@ textarea::placeholder{color:#a89db7}
 .memory-card .buttons button{width:100%}
 #memory-form .primary-btn{width:100%}
 @media(max-width:380px){.calendar-grid{gap:3px}.calendar-day{font-size:12px;min-height:36px}.calendar-toolbar h3{font-size:17px}}
+
+/* The date collection has its OWN screen. Agenda remains the only place where
+   a partner invitation can be created or confirmed. */
+#discover-panel .quest-date-intro{border-color:#a98375;background:linear-gradient(155deg,#302039,#221b31)}
+#discover-panel .section-heading h2{color:#ffdbac}
+.quest-date-filters{display:grid;gap:7px}
+.quest-date-filters label{display:block;color:#ffe1c8;font-size:12px;font-weight:750}
+.quest-date-filters input,.quest-date-filters select{margin:0}
+.quest-date-filter-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quest-date-count{font-weight:800;color:#f0b3c8;font-size:13px}
+.quest-date-results{display:grid;grid-template-columns:1fr;gap:12px}
+.quest-date-tile{padding:16px;border-radius:17px;border:1px solid #b58675;
+  background:linear-gradient(145deg,#4b2b3d,#261e32 68%);box-shadow:inset 0 1px 4px #e7aa9d26}
+.quest-date-tile-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.quest-date-chip{border:1px solid #98707e;background:#38283e;border-radius:18px;
+  padding:5px 10px;color:#ffe3c1;font-weight:750;font-size:11px}
+.quest-date-price{font-weight:800;font-size:12px;color:#f4b5cf}
+.quest-date-tile h3{margin:12px 0 7px;color:#ffdfad;font-size:18px}
+.quest-date-tile p{margin:6px 0 12px;color:#ead8db;font-size:14px;overflow-wrap:anywhere}
+.quest-date-tile .quest-date-meta{font-size:12px;color:#f1bcce}
+.quest-date-choose{display:block;width:100%}
+.quest-date-quick{border-color:#795e72}
+.quest-date-quick>summary{cursor:pointer;padding:5px 0;font-weight:800;color:#ffdab6}
+#date-form-selected{margin:0;padding:9px 12px;border-radius:10px;border:1px solid #80647a;
+  background:#2d263d;color:#ffdebb}
+#dates-panel>.section-heading{gap:9px;flex-wrap:wrap}
+#dates-panel>.section-heading>.secondary-btn{min-height:40px;padding:9px 12px;font-size:13px}
+#bottom-nav.bottom-nav button{min-width:0;padding:4px 5px;flex:1 1 20%}
+#bottom-nav.bottom-nav{justify-content:space-between}
+@media(min-width:580px){.quest-date-results{grid-template-columns:1fr 1fr}}

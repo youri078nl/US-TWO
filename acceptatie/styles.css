@@ -154,3 +154,6 @@ textarea::placeholder{color:#a89db7}
 .quest-task-phase span{border:1px solid #74596e;background:#30273b;color:#cdbacb;padding:8px 4px;text-align:center;border-radius:9px;font-size:12px;font-weight:750}
 .quest-task-phase span.is-past{background:#493448;color:#f4c6d6;border-color:#a67892}
 .quest-task-phase span.is-current{background:#724359;color:#ffe6bd;border-color:#f3b7a3;box-shadow:inset 0 0 0 1px #f3b7a355}
+
+.quest-next-action{display:block;width:100%;margin:9px 0 12px;font-weight:800;min-height:44px}
+.quest-next-action[hidden]{display:none}

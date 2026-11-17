@@ -78,11 +78,11 @@
     if(taskProgress){
       taskProgress.hidden=state.phase!=='active';
       if(state.phase==='active'){
-        const mine=Boolean(state.my_done),partner=Boolean(state.partner_done);
+        const mine=Boolean(state.my_done);
         taskProgress.textContent=state.my_skip||state.partner_skip
           ? 'Opdracht overgeslagen. De gedeelde spelstand wordt bijgewerkt.'
-          : 'Jij: '+(mine?'afgerond ✓':'nog bezig')+' · Partner: '+(partner?'afgerond ✓':'nog bezig')+
-            (mine&&!partner?' · Wachten op je partner.':!mine&&partner?' · Jij kunt de opdracht nog afronden.':'');
+          : mine?'Jouw deel is afgerond ✓ · Wachten tot jullie allebei klaar zijn.'
+            :'Jouw deel staat nog open · Rond de opdracht af wanneer je klaar bent.';
       }
     }
     const d=state.date;

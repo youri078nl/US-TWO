@@ -9,3 +9,8 @@ Date gekozen -> Agenda wordt geopend met titel en duur ingevuld; datum/tijd en u
 Geen Supabase migratie of wijziging aan bestaande accounts.
 De bestaande hoofdapp en test-2-telefoons/ zijn niet gewijzigd.
 Open: fysieke eindacceptatie op Android/iPhone en resterende 2D frame-posecollectie.
+
+Update 17 november 2026: pan/tap-correctie in quest-board-interactions.js; een drag mag niet onbedoeld een locatie openen.
+Commits e1247d7524191c514c2267a195d624f58d535ab3 en 4d1afa1a6a8c4d9d2f592240d95893bcb3a74426.
+PWA-cache verhoogd naar v0.14.2-pan-tap-fix-rc. Nog geen bewijs van geslaagde CI of fysieke apparaatacceptatie voor deze correctie.
+Volgende stap: gerichte browsercheck pan versus tik, daarna Android+iPhone synchronisatie en releasebesluit. Originele assets en backend ongemoeid laten.

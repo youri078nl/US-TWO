@@ -8,6 +8,29 @@
  const CATEGORIES=['Liefde','Intimiteit','Elkaar kennen','Humor','Avontuur',
    'Diepgang','Durven','Verrassing','Vertrouwen'];
  let identityKey='',source=null,question=null,pending=false,loading=false,serial=0;
+ const SCENE_BY_CATEGORY={'Liefde':'kiss','Intimiteit':'hug','Elkaar kennen':'calm',
+  'Humor':'play','Avontuur':'walk','Diepgang':'stars','Durven':'five',
+  'Verrassing':'dance','Vertrouwen':'hug'};
+ const DEFAULT_ART='./assets/us-two-user-pawn.png';
+ let artKey='',artUrl='',artRevision=0;
+ function resetArt(){
+  ++artRevision;artKey='';if(artUrl){URL.revokeObjectURL(artUrl);artUrl='';}
+  const img=$('quest-question-art');if(img){img.src=DEFAULT_ART;img.alt='Goedgekeurde 2D-tekening van Youri en Kim';}
+ }
+ async function updateArt(){
+  const img=$('quest-question-art');if(!img)return;
+  const scene=SCENE_BY_CATEGORY[question?.category]||'';
+  const key=identityKey+'|'+scene;
+  if(key===artKey)return;
+  resetArt();artKey=key;
+  if(!identityKey||!scene)return;
+  const n=artRevision,who=identityKey;
+  const frame=await window.USTwoPoseFrames?.approvedStill?.(scene);
+  if(n!==artRevision||who!==identityKey||!frame)return;
+  artUrl=URL.createObjectURL(frame);img.src=artUrl;
+  img.alt='Goedgekeurde 2D-pose bij de vraagcategorie '+question.category;
+ }
+
  const show=s=>{const e=$('quest-question-status');if(e)e.textContent=s;};
  const identity=()=>window.USTwoQuestPilotBridge?.identity?.();
  const allButtons=['quest-question-start','quest-question-submit','quest-question-approve',
@@ -42,6 +65,8 @@
   const text=(id,s)=>{if($(id))$(id).textContent=s};
   if($('quest-question-card'))$('quest-question-card').hidden=!(phase==='question'||phase==='question_review');
   text('quest-question-card-category',String(question?.category||$('quest-question-category')?.value||'Vraag'));
+  if(phase==='question'||phase==='question_review')void updateArt();
+  else if(artKey)resetArt();
   text('quest-question-prompt',phase==='question'||phase==='question_review'
    ? String(question.prompt||'') : 'Kies een categorie wanneer jij aan de beurt bent.');
   text('quest-question-received',phase==='question_review'
@@ -66,6 +91,7 @@
  }
  function clear(){
   ++serial;identityKey='';source=null;question=null;pending=false;loading=false;
+  resetArt();
   if($('quest-question-answer'))$('quest-question-answer').value='';
   if($('quest-question-received'))$('quest-question-received').textContent='';
   if($('quest-question-prompt'))$('quest-question-prompt').textContent='';
@@ -78,7 +104,7 @@
    who.userId+':'+who.coupleId:'';
   if(!key||!state?.initialized){clear();return;}
   if(key!==identityKey){
-   question=null;if($('quest-question-answer'))$('quest-question-answer').value='';
+   resetArt();question=null;if($('quest-question-answer'))$('quest-question-answer').value='';
    if($('quest-question-received'))$('quest-question-received').textContent='';
   }
   identityKey=key;source=state;
@@ -138,6 +164,7 @@
   for(const [name,action]of Object.entries(bindings))
    $('quest-question-'+name).addEventListener('click',()=>act(action));
   window.addEventListener('us-two-session-cleared',clear);
+  window.addEventListener('us-two-poses-changed',()=>{resetArt();render();});
   clear();
  }
  window.USTwoQuestQuestions=Object.freeze({update,clear});

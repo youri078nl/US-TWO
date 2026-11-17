@@ -216,6 +216,16 @@
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   controls();
  }
+ async function approvedSequence(sceneName){
+  if(!account||!SCENES.includes(sceneName))return null;
+  const forAccount=account;
+  try{
+   const saved=await read(key(forAccount,sceneName));
+   if(account!==forAccount||!Array.isArray(saved?.frames)||saved.frames.length<2||saved.frames.length>MAX_FRAMES)return null;
+   return saved.frames.every(frame=>frame instanceof Blob&&['image/png','image/webp'].includes(frame.type)&&frame.size<=MAX_FRAME_BYTES)
+    ?saved.frames:null;
+  }catch(_error){return null;}
+ }
  async function approvedStill(sceneName){
   if(!account||!SCENES.includes(sceneName))return null;
   const forAccount=account;
@@ -227,6 +237,6 @@
      ['image/png','image/webp'].includes(frame.type)&&frame.size<=MAX_FRAME_BYTES?frame:null;
   }catch(_error){return null;}
  }
- window.USTwoPoseFrames=Object.freeze({update,play,stop,clear,approvedStill,hasSelected:()=>Boolean(frames&&loadedKey===key(account,scene)),sceneNames:SCENES});
+ window.USTwoPoseFrames=Object.freeze({update,play,stop,clear,approvedStill,approvedSequence,hasSelected:()=>Boolean(frames&&loadedKey===key(account,scene)),sceneNames:SCENES});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();

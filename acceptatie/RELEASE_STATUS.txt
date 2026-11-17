@@ -22,3 +22,5 @@ Correctie 0.14.4-tap-preserve-rc: pointer capture pas na >6 px drag, zodat norma
 Niet gevalideerd op fysieke telefoons of met nieuwe geautomatiseerde browsertest. Kritieke volgende stap: echte tik/drag browsercontrole en 2-apparaten sync. Release 1.0.0 nog niet gerechtvaardigd.
 
 18 november 2026: gerichte Node-regressietests toegevoegd in acceptatie/tests/board-pointer.test.cjs (tap, drag op hotspot, kleine vingerbeweging). GitHub Actions workflow .github/workflows/ustwo-board-pointer.yml toegevoegd. Commits c32fb6c5490f678b329dfdc66a016fa3dbc14002 en a732cb45fa73d04e5efd8d6b335a9ea4ee1c4602. Testuitvoering/CI-resultaat nog niet bevestigd; geen apparaatacceptatie.
+
+18 november 2026 bouwvoortgang zonder uitgebreide regressieronde: Dates heeft nu tijdsduurfilter (0.14.5, commits a670380,8f7d43a,865702c) en knop 'Wis alle filters' plus reset bij uitloggen (0.14.6-dates-filter-reset-rc, commits 8e5636e,2f71eec,7340ae4). Goedkeurde bord/pion-assets en Supabase ongewijzigd. Release 1.0.0 niet geclaimd; functionele eindcontrole later volgens gebruikerswens.

@@ -67,7 +67,7 @@ const {chromium}=require('playwright');
   ]){
    await page.locator('#'+id).click();
    await page.locator('#discover-panel:not(.hidden)').waitFor({timeout:12000});
-   await page.waitForFunction(()=>document.querySelector('#quest-date-area')?.value===location);
+   await page.waitForFunction(expected=>document.querySelector('#quest-date-area')?.value===expected,location,{timeout:12000});
    await page.waitForFunction(()=>document.querySelectorAll('.quest-date-choose').length>0,null,{timeout:12000});
    assert.equal(await page.locator('#quest-date-area').inputValue(),location);
    await page.evaluate(()=>window.__dateTest.setTab('game'));

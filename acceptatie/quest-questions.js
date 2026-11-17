@@ -13,9 +13,37 @@
   'Verrassing':'dance','Vertrouwen':'hug'};
  const DEFAULT_ART='./assets/us-two-user-pawn.png';
  let artKey='',artUrl='',artRevision=0;
+ let poseTimer=null,poseUrls=[],posePlaying=false;
+ function stopQuestionPose(){
+  if(poseTimer!==null){clearTimeout(poseTimer);poseTimer=null;}
+  posePlaying=false;poseUrls.forEach(url=>URL.revokeObjectURL(url));poseUrls=[];
+  const button=$('quest-question-play-pose');if(button)button.textContent='Speel passende 2D-pose af';
+  const img=$('quest-question-art');if(img&&artUrl)img.src=artUrl;
+ }
+ async function playQuestionPose(){
+  if(posePlaying){stopQuestionPose();return;}
+  const scene=SCENE_BY_CATEGORY[question?.category];
+  if(!scene||!identityKey||!$('quest-question-art'))return;
+  const n=artRevision,who=identityKey;
+  const frames=await window.USTwoPoseFrames?.approvedSequence?.(scene);
+  if(!frames||n!==artRevision||who!==identityKey||posePlaying)return;
+  try{poseUrls=frames.map(frame=>URL.createObjectURL(frame));}catch(_error){stopQuestionPose();return;}
+  posePlaying=true;
+  const button=$('quest-question-play-pose');if(button)button.textContent='Stop 2D-pose';
+  let index=0;
+  const tick=()=>{
+   if(!posePlaying||n!==artRevision){stopQuestionPose();return;}
+   $('quest-question-art').src=poseUrls[index++];
+   if(index<poseUrls.length)poseTimer=setTimeout(tick,200);
+   else poseTimer=setTimeout(stopQuestionPose,350);
+  };
+  tick();
+ }
+
  function resetArt(){
-  ++artRevision;artKey='';if(artUrl){URL.revokeObjectURL(artUrl);artUrl='';}
+  stopQuestionPose();++artRevision;artKey='';if(artUrl){URL.revokeObjectURL(artUrl);artUrl='';}
   const img=$('quest-question-art');if(img){img.src=DEFAULT_ART;img.alt='Goedgekeurde 2D-tekening van Youri en Kim';}
+  if($('quest-question-play-pose'))$('quest-question-play-pose').hidden=true;
  }
  async function updateArt(){
   const img=$('quest-question-art');if(!img)return;
@@ -28,6 +56,7 @@
   const frame=await window.USTwoPoseFrames?.approvedStill?.(scene);
   if(n!==artRevision||who!==identityKey||!frame)return;
   artUrl=URL.createObjectURL(frame);img.src=artUrl;
+  if($('quest-question-play-pose'))$('quest-question-play-pose').hidden=false;
   img.alt='Goedgekeurde 2D-pose bij de vraagcategorie '+question.category;
  }
 
@@ -163,6 +192,7 @@
   const bindings={start:'category',submit:'submit',approve:'approve',reject:'reject',skip:'skip',cancel:'cancel'};
   for(const [name,action]of Object.entries(bindings))
    $('quest-question-'+name).addEventListener('click',()=>act(action));
+  $('quest-question-play-pose')?.addEventListener('click',playQuestionPose);
   window.addEventListener('us-two-session-cleared',clear);
   window.addEventListener('us-two-poses-changed',()=>{resetArt();render();});
   clear();

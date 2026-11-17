@@ -216,6 +216,17 @@
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   controls();
  }
- window.USTwoPoseFrames=Object.freeze({update,play,stop,clear,hasSelected:()=>Boolean(frames&&loadedKey===key(account,scene)),sceneNames:SCENES});
+ async function approvedStill(sceneName){
+  if(!account||!SCENES.includes(sceneName))return null;
+  const forAccount=account;
+  try{
+   const saved=await read(key(forAccount,sceneName));
+   if(account!==forAccount)return null;
+   const frame=saved?.frames?.[0];
+   return saved?.frames?.length>=2&&frame instanceof Blob&&
+     ['image/png','image/webp'].includes(frame.type)&&frame.size<=MAX_FRAME_BYTES?frame:null;
+  }catch(_error){return null;}
+ }
+ window.USTwoPoseFrames=Object.freeze({update,play,stop,clear,approvedStill,hasSelected:()=>Boolean(frames&&loadedKey===key(account,scene)),sceneNames:SCENES});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
 })();

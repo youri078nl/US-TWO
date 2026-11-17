@@ -20,3 +20,5 @@ Releaseblokkade blijft: live publicatie, mobiele pan/tap acceptatie en synchroni
 
 Correctie 0.14.4-tap-preserve-rc: pointer capture pas na >6 px drag, zodat normale hotspot-taps niet door pointer capture naar viewport worden omgeleid. GitHub codecommit b3021f92ea91e84e9b9017d7416126c9905648ef, cachecommit f904682f36faa3207e3d0b8fd4f129d341a9bd22.
 Niet gevalideerd op fysieke telefoons of met nieuwe geautomatiseerde browsertest. Kritieke volgende stap: echte tik/drag browsercontrole en 2-apparaten sync. Release 1.0.0 nog niet gerechtvaardigd.
+
+18 november 2026: gerichte Node-regressietests toegevoegd in acceptatie/tests/board-pointer.test.cjs (tap, drag op hotspot, kleine vingerbeweging). GitHub Actions workflow .github/workflows/ustwo-board-pointer.yml toegevoegd. Commits c32fb6c5490f678b329dfdc66a016fa3dbc14002 en a732cb45fa73d04e5efd8d6b335a9ea4ee1c4602. Testuitvoering/CI-resultaat nog niet bevestigd; geen apparaatacceptatie.

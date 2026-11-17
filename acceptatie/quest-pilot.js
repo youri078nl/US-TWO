@@ -36,8 +36,23 @@
     return queue;
   }
   function status(state, items, blocked) {
-    if(!state?.paired){text('quest-pilot-status','Nog niet gekoppeld.');return;}
+    if(!state?.paired){text('quest-pilot-status','Nog niet gekoppeld.');
+      if($('quest-task-phase'))$('quest-task-phase').hidden=true;
+      if($('quest-pilot-task-progress'))$('quest-pilot-task-progress').hidden=true;
+      return;}
     const phase=state.initialized?(state.phase||'onbekend'):'nog niet gestart';
+    const tracker=$('quest-task-phase');
+    if(tracker){
+      tracker.hidden=!state.initialized||!['choose','approval','active'].includes(state.phase);
+      const order=['choose','approval','active'],current=order.indexOf(state.phase);
+      for(const part of tracker.querySelectorAll('[data-phase]')){
+        const i=order.indexOf(part.dataset.phase);
+        part.classList.toggle('is-current',i===current);
+        part.classList.toggle('is-past',i<current);
+        if(i===current)part.setAttribute('aria-current','step');
+        else part.removeAttribute('aria-current');
+      }
+    }
     const who=window.USTwoQuestPilotBridge?.identity();
     const turn=state.turn_user===who?.userId;
     const guidance= !state.initialized

@@ -21,6 +21,15 @@
   const ok=question?.paired&&question.initialized&&question.revision===source.revision;
   const phase=ok?question.phase:'unavailable';
   const myTurn=Boolean(question?.your_turn);
+  const turnIndicator=$('quest-question-turn-indicator');
+  if(turnIndicator){
+   turnIndicator.hidden=!ok;
+   turnIndicator.textContent=!ok?'':phase==='idle'
+    ? source.phase==='choose'?(myTurn?'Jij kiest de volgende vraag':'Je partner kiest de volgende vraag'):'Eerst de lopende opdracht afronden'
+    :phase==='question'?(myTurn?'Jij beantwoordt de vraag':'Je partner beantwoordt de vraag')
+    :phase==='question_review'?(question.can_review?'Jij beoordeelt het antwoord':'Je partner beoordeelt jouw antwoord')
+    :'Wachten op de gezamenlijke spelstand';
+  }
   const available=!loading&&!pending&&ok;
   $('quest-question-start').disabled=!(available&&phase==='idle'&&source.phase==='choose'&&myTurn);
   $('quest-question-category').disabled=!(available&&phase==='idle');
@@ -61,6 +70,7 @@
   if($('quest-question-received'))$('quest-question-received').textContent='';
   if($('quest-question-prompt'))$('quest-question-prompt').textContent='';
   if($('quest-question-panel'))$('quest-question-panel').hidden=true;
+  if($('quest-question-turn-indicator'))$('quest-question-turn-indicator').hidden=true;
   render();
  }
  async function update(state,who,local){

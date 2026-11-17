@@ -14,3 +14,6 @@ Update 17 november 2026: pan/tap-correctie in quest-board-interactions.js; een d
 Commits e1247d7524191c514c2267a195d624f58d535ab3 en 4d1afa1a6a8c4d9d2f592240d95893bcb3a74426.
 PWA-cache verhoogd naar v0.14.2-pan-tap-fix-rc. Nog geen bewijs van geslaagde CI of fysieke apparaatacceptatie voor deze correctie.
 Volgende stap: gerichte browsercheck pan versus tik, daarna Android+iPhone synchronisatie en releasebesluit. Originele assets en backend ongemoeid laten.
+
+Vervolgcorrectie: verslepen mag ook beginnen op een locatie-hotspot; pointerdown negeert locatieknoppen niet meer. Commit e392ee8372956c3f0440e0149489b82dad3029c9; cache v0.14.3-hotspot-pan-rc commit 9794706a091f9009655bf6073571c4c8e10f1404.
+Releaseblokkade blijft: live publicatie, mobiele pan/tap acceptatie en synchronisatie op beide apparaten nog niet bevestigd. Geen 1.0.0 claim.

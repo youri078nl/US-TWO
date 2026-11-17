@@ -1,10 +1,13 @@
-US TWO 0.13.3-bord-rc | 17 november 2026
-Testversie voor Android en iPhone, nog GEEN officiële 1.0.0.
-Bron commit: 2b2c684d76bb0d66838b09578ea93463061f57a7
-Automatische tests: https://github.com/youri078nl/US-TWO/actions/runs/44141533540 (success)
-Bord: 2:3 verticale wereldkaart, uitsluitend goedgekeurde 2D Youri/Kim/Pepsi-pion.
-Fix: 60 bewegingen per wereld overeenkomstig Supabase us_two_private.quest_world.
-Fix: replay uit canonieke voltooiingshistorie, dus na browser-herstart beschikbaar.
-Fix: elke verdiende stap, inclusief wereldgrenzen; geen nieuwe serveracties of lokale puntenboekhouding.
-De bestaande US TWO hoofdpagina en test-2-telefoons zijn ongemoeid.
-Open: volledige echte Android+iPhone acceptatie, overige originele poseframes en consent.
+US TWO 0.14.0-original-art-rc | Werkende acceptatieversie
+Bron: be6956bb3ba4bdf9352a7cc68335f1d822e932b1
+GitHub Actions browser tests: https://github.com/youri078nl/US-TWO/actions/runs/44159854904 (success)
+Bord: de exacte door gebruiker aangeleverde 941x1672 PNG. Geen herschaling van de bron, bijsnijden of JPEG/WebP-detailverlies.
+Pion: de exacte originele transparante 1149x1369 PNG van Youri, Kim en Pepsi, geen compositing op 280px.
+De originele PNG's zijn met SHA-256 geverifieerd en staan onder acceptatie/assets:
+  us-two-user-board.png SHA256 2c11ac9a865c06973a57cf06971ea84203234b7b956255622868d127d76983f5
+  us-two-user-pawn.png SHA256 339ee0c263a4fb34e8f7ac244daab89beaf22a88a1ba2c82800d61faabd18521
+Wereld: server-authoritatieve positie en beweging in 60 stappen, 2D.
+Over elkaar vallende oude HTML-locatiebadges verwijderd: namen zijn in de originele afbeelding ingebakken.
+Status-/Herhaalbalk is naar onder de afbeelding verplaatst om de volledige tekening zichtbaar te houden.
+De bestaande root en test-2-telefoons zijn niet overschreven.
+Geen 1.0.0-label voor fysieke Android+iPhone acceptatietest en overige eindcriteria.

@@ -150,15 +150,8 @@
                 </div>
                 <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Verticaal spelbord met één gezamenlijk bewegende pion">
                   <picture class="quest-board-art-picture">
-                    <source srcset="./assets/ustwo-board-portrait.avif" type="image/avif">
-                    <img class="quest-world-art" src="./assets/ustwo-board-portrait.webp" width="480" height="720" alt="Fantasywereld met gouden roze hartjespad, poorten en datebestemmingen" loading="eager">
+                    <img class="quest-world-art" src="./assets/us-two-user-board.png" width="941" height="1672" alt="Het originele US TWO-liefdeseiland: lichtpaden, vliegveld, bioscoop en woonkamer, met een gouden portaal" loading="eager" fetchpriority="high" decoding="async">
                   </picture>
-                  <div class="quest-board-label quest-label-airport">✈ Vliegveld</div>
-                  <div class="quest-board-label quest-label-beach">☀ Strand</div>
-                  <div class="quest-board-label quest-label-cinema">▣ Bioscoop</div>
-                  <div class="quest-board-label quest-label-wellness">✿ Wellness</div>
-                  <div class="quest-board-label quest-label-lounge">♡ Woonkamer</div>
-                  <div class="quest-board-label quest-label-cafe">☕ Café</div>
                   <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor Youri, Kim en Pepsi" hidden>
                     <div id="quest-world-actor" class="quest-world-actor">
                       <img id="quest-world-approved-couple" class="quest-world-approved-couple" src="./assets/approved-youri-kim.webp" alt="" aria-hidden="true">
@@ -170,10 +163,10 @@
                     <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
                     <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
                   </div>
-                  <div class="quest-board-replay" aria-label="Voortgang op het bord">
-                    <span id="quest-world-step-caption">Huidige positie laden…</span>
-                    <button type="button" id="quest-world-replay" disabled>↻ Herhaal</button>
-                  </div>
+                </div>
+                <div class="quest-board-replay" aria-label="Voortgang op het bord">
+                  <span id="quest-world-step-caption">Huidige positie laden…</span>
+                  <button type="button" id="quest-world-replay" disabled>↻ Herhaal</button>
                 </div>
                 <div class="quest-board-caption">De pion beweegt na een voltooide opdracht. Jullie bevestigen allebei, zonder dobbelsteen.</div>
               </div>

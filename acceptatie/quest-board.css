@@ -185,11 +185,11 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-board-card-header strong{white-space:nowrap}
 .quest-board-card-header #quest-world-heading{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .quest-board-card-header #quest-world-cell{flex:none;color:#ffddba}
-#quest-world-viewport.quest-world-viewport{width:100%;height:auto;min-height:0;aspect-ratio:2/3;position:relative;overflow:hidden;border:0;border-radius:0;background:radial-gradient(circle at 50% 35%,#43234f,#130c26);isolation:isolate}
+#quest-world-viewport.quest-world-viewport{width:100%;height:auto;min-height:0;aspect-ratio:941/1672;position:relative;overflow:hidden;border:0;border-radius:0;background:radial-gradient(circle at 50% 35%,#43234f,#130c26);isolation:isolate}
 .quest-board-art-picture,.quest-board-art-picture>.quest-world-art{
   position:absolute;inset:0;display:block;width:100%;height:100%
 }
-.quest-board-art-picture>.quest-world-art{object-fit:cover;object-position:center;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.quest-board-art-picture>.quest-world-art{object-fit:contain;object-position:center;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .quest-board-label{position:absolute;z-index:3;max-width:34%;min-height:32px;display:flex;align-items:center;justify-content:center;text-align:center;padding:7px 9px;background:#191324ed;border:1px solid #e0b991;border-radius:14px;box-shadow:0 4px 13px #06040e8f;white-space:nowrap;font-size:clamp(10px,2.75vw,13px);font-weight:750;color:#ffe0ae;pointer-events:none}
 .quest-label-airport{top:19%;left:12%}
 .quest-label-beach{top:17%;right:9%}
@@ -197,7 +197,7 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-label-wellness{top:37%;right:7%}
 .quest-label-lounge{top:53%;right:6%}
 .quest-label-cafe{top:76%;right:7%}
-#quest-world-pawn.quest-world-pawn{width:13%;min-width:40px;max-width:86px;height:auto;aspect-ratio:280/212;display:grid;place-items:center;z-index:5;transform:translate(-50%,-86%);transition:left 220ms ease,top 220ms ease;filter:drop-shadow(0 4px 4px #10071cb0)}
+#quest-world-pawn.quest-world-pawn{width:15%;min-width:40px;max-width:94px;height:auto;aspect-ratio:1149/1369;display:grid;place-items:center;z-index:5;transform:translate(-50%,-86%);transition:left 220ms ease,top 220ms ease;filter:drop-shadow(0 4px 4px #10071cb0)}
 #quest-world-pawn[hidden]{display:none!important}
 #quest-world-pawn .quest-world-actor{position:relative;width:100%;height:100%;transform-origin:50% 78%}
 #quest-world-pawn .quest-world-actor>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
@@ -207,7 +207,7 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #quest-world-pawn[data-framepack="true"] #quest-world-approved-couple,
 #quest-world-pawn[data-framepack="true"] #quest-world-approved-pepsi{display:none!important}
 #quest-world-pawn .quest-world-heart{width:44%;font-size:clamp(14px,3vw,28px)}
-.quest-board-replay{position:absolute;z-index:6;bottom:3%;left:26%;right:4%;min-width:0;min-height:43px;display:flex;align-items:center;justify-content:space-between;gap:5px;background:#181125ef;border:1px solid #d7a879;border-radius:22px;color:#f7d9ab;box-shadow:0 5px 15px #05030ea8;padding:4px 6px 4px 10px;font-size:clamp(9px,2.45vw,12px);font-weight:700}
+.quest-board-replay{position:relative;z-index:6;bottom:auto;left:auto;right:auto;width:100%;min-width:0;min-height:43px;display:flex;align-items:center;justify-content:space-between;gap:5px;background:#181125ef;border:1px solid #d7a879;border-radius:22px;color:#f7d9ab;box-shadow:0 5px 15px #05030ea8;padding:4px 6px 4px 10px;font-size:clamp(9px,2.45vw,12px);font-weight:700}
 .quest-board-replay span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #quest-pilot #quest-world-replay{flex:none;width:auto;min-width:0;min-height:33px;height:33px;margin:0;padding:5px 9px;border:1px solid #c49c8c;border-radius:19px;background:linear-gradient(155deg,#684455,#452c43);color:#fce3c5;box-shadow:none;font-size:clamp(9px,2.4vw,12px)}
 #quest-world-replay:disabled{opacity:.55}
@@ -222,6 +222,22 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
   #quest-pilot{padding:7px;border-radius:23px}
   .quest-board-card-header{padding:8px 10px;min-height:47px}
   .quest-board-label{padding:6px 7px;min-height:28px}
-  .quest-board-replay{left:27%;right:3%}
+  .quest-board-replay{left:auto;right:auto;width:100%}
 }
 @media(prefers-reduced-motion:reduce){#quest-world-pawn{transition:none!important}}
+
+/* Original user-supplied 941x1672 photo-illustration, exactly preserved.
+   Never crop the original artwork or duplicate its baked-in location labels. */
+#quest-world-viewport .quest-board-art-picture{overflow:hidden}
+#quest-world-viewport .quest-world-art{image-rendering:auto;object-fit:contain;object-position:50% 50%}
+#quest-world-pawn #quest-world-pawn-art{image-rendering:auto;object-fit:contain}
+#quest-board-card>.quest-board-replay{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 10px;border-left:0;border-right:0;border-bottom:0;
+  border-radius:0;background:linear-gradient(135deg,#23172e,#34223d);
+  font-size:clamp(11px,3.1vw,14px);box-shadow:none
+}
+@media(max-width:420px){
+  #quest-world-pawn.quest-world-pawn{width:16%;max-width:75px}
+  #quest-board-card>.quest-board-replay{min-height:49px}
+}

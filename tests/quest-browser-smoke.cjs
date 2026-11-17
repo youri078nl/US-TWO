@@ -28,11 +28,11 @@ const {chromium}=require('playwright');
       {id:'b',title:'Mini-festival',world:0,category:'Spel',together:true,remote:true,reward_steps:2,minutes:30,estimated_cost_eur:0},
       {id:'c',title:'Wandeling',world:0,category:'Buiten',together:true,remote:false,reward_steps:4,minutes:60,estimated_cost_eur:0}
     ];
-    window.__requests=[];window.__questReads=0;window.__questReadStacks=[];
+    window.__requests=[];window.__questReads=0;
     window.__setTestGame=changes=>{game={...game,...changes};};
     window.USTwoQuestPilotBridge={
       identity:()=>({paired:true,userId,coupleId:'00000000-0000-4000-8000-000000000002'}),
-      read:async()=>{window.__questReads++;window.__questReadStacks.push(new Error('quest read '+window.__questReads).stack);return {...game};},
+      read:async()=>{window.__questReads++;return {...game};},
       readSuper:async()=>[],
       catalog:async()=>cards,
       call:async(name,args)=>{
@@ -51,8 +51,7 @@ const {chromium}=require('playwright');
   await page.getByText(/Nieuwe serverreis: vak 12/).waitFor();
   assert.match(await page.locator('#quest-journey-guidance').textContent(),/Jij bent aan de beurt/);
   await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
-  const autoReads=await page.evaluate(()=>({n:window.__questReads,stack:window.__questReadStacks}));console.log('READ TRACE',JSON.stringify(autoReads));
-  assert.equal(autoReads.n,1,'opening the game triggers one read-only refresh');
+  assert.equal(await page.evaluate(()=>window.__questReads),1,'opening the game triggers one read-only refresh');
   await page.locator('#quest-pilot-refresh').click();
   await page.waitForFunction(()=>!document.querySelector('#quest-pilot-refresh').disabled);
   assert.equal(await page.evaluate(()=>window.__questReads),2,'manual refresh must not query twice');
@@ -71,7 +70,8 @@ const {chromium}=require('playwright');
   page.on('dialog',dialog=>dialog.accept());
   await page.locator('#quest-pilot-option-0').click();
   await page.getByText(/status: approval/).waitFor();
-  const requests=await page.evaluate(()=>window.__requests);
+  const requests=await page.evaluate(()=>window.__requests.filter(r=>r.name==='us_quest_action'));
+  // Read-only question status RPCs are not mutating quest actions.
   assert.equal(requests.length,1);
   assert.equal(requests[0].name,'us_quest_action');
   assert.equal(requests[0].args.p_date_id,'a');

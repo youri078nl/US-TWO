@@ -75,8 +75,50 @@
           <div class="panel inset stack" id="pair-controls"><h3>Jullie verbinden</h3><p class="muted">Maak eerst je profiel aan.</p></div>
         </section>
 
+        <section id="discover-panel" class="tab-panel hidden" aria-label="Dates ontdekken">
+          <div class="section-heading"><div><span class="eyebrow">KIES JULLIE VOLGENDE DATE</span><h2>Dates ontdekken</h2></div></div>
+          <div class="panel inset stack quest-date-intro">
+            <h3>Een date voor ieder moment ♡</h3>
+            <p class="muted">Ontdek alle gewone opdrachten en bonusdates. Je kunt ook rechtstreeks op een plek op het speelbord tikken, zoals Bos, Strand of Woonkamer.</p>
+            <div class="quest-date-filters">
+              <label for="quest-date-search">Zoeken</label>
+              <input id="quest-date-search" type="search" placeholder="Bijvoorbeeld wandelen, film of romantisch" autocomplete="off">
+              <label for="quest-date-area">Plek</label>
+              <select id="quest-date-area"><option value="all">Alle plekken</option></select>
+              <label for="quest-date-category">Categorie</label>
+              <select id="quest-date-category"><option value="all">Alle categorieën</option></select>
+              <div class="quest-date-filter-pair">
+                <div><label for="quest-date-budget">Maximaal budget</label>
+                  <select id="quest-date-budget"><option value="all">Alles</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select></div>
+                <div><label for="quest-date-mode">Samen of op afstand</label>
+                  <select id="quest-date-mode"><option value="all">Alles</option><option value="together">Samen</option><option value="remote">Op afstand</option></select></div>
+              </div>
+            </div>
+            <p id="quest-date-status" class="muted" role="status" aria-live="polite">Open dit scherm om de collectie te laden.</p>
+            <p id="quest-date-count" class="quest-date-count" aria-live="polite"></p>
+            <div id="quest-date-results" class="quest-date-results" aria-label="Beschikbare datekaarten"></div>
+            <button type="button" id="quest-date-more" class="secondary-btn" hidden>Toon meer dates</button>
+            <p class="muted">Een date kiezen opent de Agenda. Niets wordt verstuurd voordat je zelf een datum kiest en bevestigt. Bonuskaarten geven geen automatische spelstappen.</p>
+          </div>
+          <details class="panel inset quest-date-quick">
+            <summary>Ook 12 snelle date-ideeën</summary>
+          <div class="panel inset stack" id="date-ideas">
+            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
+            <div class="idea-filters">
+              <label for="idea-budget">Maximaal budget</label>
+              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
+              <label for="idea-place">Locatie</label>
+              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
+            </div>
+            <div id="idea-results" class="stack" aria-live="polite"></div>
+            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
+          </div>
+
+          </details>
+        </section>
+
         <section id="dates-panel" class="tab-panel hidden" aria-label="Agenda">
-          <div class="section-heading"><div><span class="eyebrow">TIJD VOOR IETS LEUKS</span><h2>Onze dates</h2></div></div>
+          <div class="section-heading"><div><span class="eyebrow">SAMEN IETS PLANNEN</span><h2>Onze agenda</h2></div><button type="button" class="secondary-btn" data-action="open-discover">Kies een date</button></div>
           <section class="panel inset stack" aria-labelledby="quest-agenda-schedule-heading">
             <h3 id="quest-agenda-schedule-heading">Date uit jullie spelreis</h3>
             <p id="quest-pilot-agenda-schedule" role="status" aria-live="polite">Open de agenda na het inloggen om jullie gezamenlijke spelreisdatum te bekijken.</p>
@@ -98,22 +140,12 @@
           </div>
           <div class="panel inset stack"><h3>Nodig elkaar uit</h3><p class="muted">Een voorstel blijft open totdat de ander reageert.</p>
             <form id="date-form">
+              <p id="date-form-selected" class="muted" aria-live="polite">Kies een date op het aparte Dates-scherm of vul zelf een activiteit in.</p>
               <label for="date-title">Wat gaan jullie doen?</label><input id="date-title" maxlength="120" required placeholder="Bijvoorbeeld een verrassingswandeling">
               <label for="date-when">Wanneer?</label><input id="date-when" type="datetime-local" required>
               <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="30">30 minuten</option><option value="45">45 minuten</option><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
               <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
             </form>
-          </div>
-          <div class="panel inset stack" id="date-ideas">
-            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
-            <div class="idea-filters">
-              <label for="idea-budget">Maximaal budget</label>
-              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
-              <label for="idea-place">Locatie</label>
-              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
-            </div>
-            <div id="idea-results" class="stack" aria-live="polite"></div>
-            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
           </div>
           <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div>
           <div class="panel inset stack hidden" id="date-change-editor" aria-labelledby="date-change-heading">
@@ -148,7 +180,8 @@
                   <strong id="quest-world-heading">Wereld 1 · Liefdesbos</strong>
                   <strong id="quest-world-cell">Vakje 0 ♡</strong>
                 </div>
-                <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Verticaal spelbord met één gezamenlijk bewegende pion">
+                <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Sleepbaar speelbord met aanklikbare locaties">
+                  <div id="quest-board-stage" class="quest-board-stage">
                   <picture class="quest-board-art-picture">
                     <img class="quest-world-art" src="./assets/us-two-user-board.png" width="941" height="1672" alt="Het originele US TWO-liefdeseiland: lichtpaden, vliegveld, bioscoop en woonkamer, met een gouden portaal" loading="eager" fetchpriority="high" decoding="async">
                   </picture>
@@ -162,6 +195,22 @@
                     </div>
                     <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
                     <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
+                  </div>
+                  <div class="quest-board-hitmap" aria-label="Kies een plek op het speelbord">
+                    <button type="button" id="quest-location-airport" class="quest-location-hit" data-location="airport" aria-label="Vliegveld: bekijk avontuurlijke dates"></button>
+                    <button type="button" id="quest-location-beach" class="quest-location-hit" data-location="beach" aria-label="Strand: bekijk buiten- en stranddates"></button>
+                    <button type="button" id="quest-location-cinema" class="quest-location-hit" data-location="cinema" aria-label="Bioscoop: bekijk film- en theaterdates"></button>
+                    <button type="button" id="quest-location-wellness" class="quest-location-hit" data-location="wellness" aria-label="Wellness: bekijk ontspannende dates"></button>
+                    <button type="button" id="quest-location-living" class="quest-location-hit" data-location="living" aria-label="Woonkamer: bekijk dates voor thuis"></button>
+                    <button type="button" id="quest-location-cafe" class="quest-location-hit" data-location="cafe" aria-label="Café: bekijk eet- en gespreksdates"></button>
+                    <button type="button" id="quest-location-forest" class="quest-location-hit quest-location-forest" data-location="forest" aria-label="Bos: bekijk bos- en natuurdates">🌲 Bos</button>
+                  </div>
+                  </div>
+                  <div class="quest-board-map-controls" role="group" aria-label="Speelbord bedienen">
+                    <button type="button" id="quest-board-zoom-in" aria-label="Speelbord inzoomen">+</button>
+                    <button type="button" id="quest-board-zoom-out" aria-label="Speelbord uitzoomen">−</button>
+                    <button type="button" id="quest-board-center" aria-label="Breng de pion in beeld">◎</button>
+                    <span id="quest-board-zoom-level" aria-live="polite">114%</span>
                   </div>
                 </div>
                 <div class="quest-board-replay" aria-label="Voortgang op het bord">
@@ -404,10 +453,10 @@
       </div>
     </main>
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
-      <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
+      <button type="button" class="active" data-tab="game"><span class="nav-icon">♙</span>Speelbord</button>
+      <button type="button" data-tab="discover"><span class="nav-icon">♡</span>Dates</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
-      <button type="button" data-tab="game"><span class="nav-icon">♙</span>Speelbord</button>
-      <button type="button" data-tab="memories"><span class="nav-icon">♡</span>Momenten</button>
+      <button type="button" data-tab="memories"><span class="nav-icon">✧</span>Momenten</button>
       <button type="button" data-tab="more"><span class="nav-icon">☷</span>Meer</button>
     </nav>
   </div>
@@ -417,6 +466,7 @@
    <script type="module" src="./app.js"></script>
    <script src="./quest-catalog.js" defer></script>
    <script src="./quest-board.js" defer></script>
+   <script src="./quest-board-interactions.js" defer></script>
    <script src="./quest-pose-archive.js" defer></script>
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
@@ -427,5 +477,6 @@
    <script src="./quest-full-deck.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
    <script src="./quest-questions.js" defer></script>
+   <script src="./quest-date-browser.js" defer></script>
 </body>
 </html>

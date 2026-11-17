@@ -241,3 +241,36 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
   #quest-world-pawn.quest-world-pawn{width:16%;max-width:75px}
   #quest-board-card>.quest-board-replay{min-height:49px}
 }
+
+/* US TWO 0.14.1: interactive transparent hit zones over the already baked-in
+   labels of the original untouched 941x1672 PNG. All transforms are visual only. */
+#quest-world-viewport.quest-world-viewport{touch-action:none;cursor:grab;overscroll-behavior:contain}
+#quest-world-viewport:active{cursor:grabbing}
+#quest-board-stage{position:absolute;inset:0;width:100%;height:100%;transform-origin:center center;
+  will-change:transform}
+#quest-board-stage .quest-board-art-picture,#quest-board-stage .quest-world-art{width:100%;height:100%}
+#quest-board-hitmap,.quest-board-hitmap{position:absolute;inset:0;z-index:6;pointer-events:none}
+#quest-pilot .quest-location-hit{position:absolute;min-height:0;margin:0;padding:0;border:0;border-radius:11px;
+  background:transparent;box-shadow:none;color:transparent;font-size:0;pointer-events:auto;
+  touch-action:none;outline-offset:2px}
+#quest-pilot .quest-location-hit:focus-visible{outline:3px solid #fff2b8;background:#ffbb8429}
+#quest-location-airport{left:9%;top:14.5%;width:31%;height:7.5%}
+#quest-location-beach{right:7%;top:17%;width:31%;height:7.5%}
+#quest-location-cinema{left:5%;top:40%;width:32%;height:8%}
+#quest-location-wellness{right:6%;top:33%;width:29%;height:8%}
+#quest-location-living{right:4%;top:60%;width:35%;height:8%}
+#quest-location-cafe{right:12%;top:75%;width:28%;height:8%}
+#quest-pilot #quest-location-forest{right:4%;top:7%;width:25%;height:6%;border:1px solid #e1b78e;
+  border-radius:999px;background:#1b2136ed;color:#ffdaaf;font-size:clamp(11px,2.8vw,14px);
+  font-weight:800;text-shadow:0 1px 4px #160c1b;box-shadow:0 4px 10px #06040e88}
+.quest-board-map-controls{position:absolute;left:8px;top:8px;z-index:9;display:flex;align-items:center;
+  gap:4px;max-width:74%;padding:4px;border:1px solid #cba16d;border-radius:13px;
+  background:#1b1429e8;color:#fce1b1}
+#quest-pilot .quest-board-map-controls button{width:35px;height:35px;min-height:35px;min-width:35px;
+  padding:0;margin:0;border:1px solid #95687a;border-radius:9px;
+  background:#34233f;color:#ffe6bd;box-shadow:none;font-size:23px;font-weight:750}
+#quest-board-zoom-level{font-size:10px;font-weight:800;min-width:28px;text-align:center}
+@media(max-width:380px){
+  .quest-board-map-controls{gap:2px;left:5px;top:5px;padding:3px}
+  #quest-pilot .quest-board-map-controls button{width:30px;height:32px;min-height:32px;min-width:30px}
+}

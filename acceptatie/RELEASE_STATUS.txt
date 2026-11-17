@@ -1,13 +1,11 @@
-US TWO 0.14.0-original-art-rc | Werkende acceptatieversie
-Bron: be6956bb3ba4bdf9352a7cc68335f1d822e932b1
-GitHub Actions browser tests: https://github.com/youri078nl/US-TWO/actions/runs/44159854904 (success)
-Bord: de exacte door gebruiker aangeleverde 941x1672 PNG. Geen herschaling van de bron, bijsnijden of JPEG/WebP-detailverlies.
-Pion: de exacte originele transparante 1149x1369 PNG van Youri, Kim en Pepsi, geen compositing op 280px.
-De originele PNG's zijn met SHA-256 geverifieerd en staan onder acceptatie/assets:
-  us-two-user-board.png SHA256 2c11ac9a865c06973a57cf06971ea84203234b7b956255622868d127d76983f5
-  us-two-user-pawn.png SHA256 339ee0c263a4fb34e8f7ac244daab89beaf22a88a1ba2c82800d61faabd18521
-Wereld: server-authoritatieve positie en beweging in 60 stappen, 2D.
-Over elkaar vallende oude HTML-locatiebadges verwijderd: namen zijn in de originele afbeelding ingebakken.
-Status-/Herhaalbalk is naar onder de afbeelding verplaatst om de volledige tekening zichtbaar te houden.
-De bestaande root en test-2-telefoons zijn niet overschreven.
-Geen 1.0.0-label voor fysieke Android+iPhone acceptatietest en overige eindcriteria.
+US TWO 0.14.1-dates-locaties-rc | 17 november 2026
+Nieuwe acceptatieversie (nog geen definitieve 1.0.0).
+Bron: 2303cc5b606e7151ceea8a70f25a5cc3847aef85
+Volledige automatische Chromium regressie: https://github.com/youri078nl/US-TWO/actions/runs/44180927241 (success)
+Nieuw: apart tabblad Dates naast Agenda met 240 officiële + 50 bonuskaarten, zoeken, budget, categorie en samen/op-afstand.
+Nieuw: klikbare 2D-kaartplekken Bos, Woonkamer, Vliegveld, Strand, Bioscoop, Wellness en Café; de originele high-res 941x1672 PNG blijft ongewijzigd.
+Nieuw: drag/zoom/centreren van dezelfde oorspronkelijke board, zonder spelmutaties of extra stappen.
+Date gekozen -> Agenda wordt geopend met titel en duur ingevuld; datum/tijd en uitnodiging blijven expliciet door gebruiker te bevestigen.
+Geen Supabase migratie of wijziging aan bestaande accounts.
+De bestaande hoofdapp en test-2-telefoons/ zijn niet gewijzigd.
+Open: fysieke eindacceptatie op Android/iPhone en resterende 2D frame-posecollectie.

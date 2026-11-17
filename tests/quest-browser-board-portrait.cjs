@@ -21,8 +21,8 @@ const {chromium}=require('playwright');
    await page.waitForFunction(()=>{
     const board=document.querySelector('.quest-world-art');
     const pawn=document.querySelector('#quest-world-pawn-art');
-    return board?.complete&&board.naturalWidth===480&&board.naturalHeight===720&&
-      !pawn.hidden&&pawn.complete&&pawn.naturalWidth>=200&&pawn.naturalHeight>=170;
+    return board?.complete&&board.naturalWidth===941&&board.naturalHeight===1672&&
+      !pawn.hidden&&pawn.complete&&pawn.naturalWidth===1149&&pawn.naturalHeight===1369;
    },null,{timeout:15000});
    const image=await page.evaluate(()=>{
     const v=document.querySelector('#quest-world-viewport').getBoundingClientRect();
@@ -36,22 +36,26 @@ const {chromium}=require('playwright');
      pixelWidth:art.naturalWidth,pixelHeight:art.naturalHeight,
      hidden:pawn.hidden,caption:document.getElementById('quest-world-step-caption').textContent};
    });
-   assert.ok(Math.abs(image.ratio-1.5)<0.03,'2:3 portrait board expected');
+   assert.ok(Math.abs(image.ratio-1672/941)<0.03,'original 941:1672 portrait board expected');
    assert.ok(image.scroll<=image.client+1,'mobile page must not horizontally overflow');
    assert.ok(image.cardWidth>=width-60,'board must be nearly full width');
    assert.equal(image.tile,'3');
    assert.equal(image.hidden,false);
-   assert.match(image.board,/ustwo-board-portrait\.(avif|webp)/);
+   assert.match(image.board,/us-two-user-board\.png/);
+   assert.equal(await page.locator('.quest-board-label').count(),0,
+     'location names are already baked into the user source art: no duplicate labels');
    // Browsers without AVIF must still display the exact portrait board in WebP.
    const fallback=await page.evaluate(async()=>{
-     const res=await fetch('./assets/ustwo-board-portrait.webp');
+     const res=await fetch('./assets/us-two-user-board.png');
      if(!res.ok)return {ok:false};
      const bitmap=await createImageBitmap(await res.blob());
      const out={ok:true,w:bitmap.width,h:bitmap.height};
      bitmap.close();return out;
    });
-   assert.deepEqual(fallback,{ok:true,w:480,h:720});
-   assert.match(image.pawnSrc,/^blob:/);
+   assert.deepEqual(fallback,{ok:true,w:941,h:1672});
+   assert.match(image.pawnSrc,/us-two-user-pawn\.png$/);
+   assert.ok(image.pixelWidth===1149&&image.pixelHeight===1369,
+     'exact supplied high resolution transparent 2D characters must be displayed');
    assert.equal(await page.locator('#quest-world-heading').textContent(),'Wereld 1 · Liefdesbos');
    assert.equal(await page.locator('#quest-world-cell').textContent(),'Vakje 3 ♡');
    assert.equal(await page.locator('#quest-world-pawn').count(),1);
@@ -101,6 +105,6 @@ const {chromium}=require('playwright');
    assert.deepEqual(errors,[]);
    await page.close();
   }
-  console.log('PASS 320/390px US TWO portrait board, genuine Youri+Kim+Pepsi sprite, server-based tile motion, replay and logout');
+  console.log('PASS 320/390px original 941x1672 portrait board, exact 1149x1369 user-supplied pawn, server-based tile motion, replay and logout');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});

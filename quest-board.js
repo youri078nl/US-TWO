@@ -5,23 +5,23 @@
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id);
- // Coordinates measured on the approved 1024x1536 portrait path,
- // starting at the bottom portal and following the connected heart tiles.
+ // The author's original art is 941x1672. Waypoints follow its PINK heart
+ // tiles from the lower-right gold portal, around the cinema, towards the airport.
+ // They are IMAGE coordinates, not screen pixels, so mobile scaling is exact.
+ const ART_WIDTH=941, ART_HEIGHT=1672;
  const PATH=[
-  [158,1426],[260,1443],[417,1411],[563,1384],
-  [433,1315],[304,1286],[244,1202],[283,1130],
-  [410,1070],[570,1028],[712,989],[746,904],
-  [624,868],[488,831],[335,788],[268,727],
-  [350,675],[511,643],[608,578],[622,508],
-  [563,453],[444,418],[315,393],[255,334],
-  [305,287],[437,274],[567,252],[698,219],
-  [821,180]
+  [810,1000],[783,982],[743,958],[687,930],[625,916],
+  [569,894],[509,872],[449,851],[396,825],[348,802],
+  [311,769],[288,736],[297,697],[328,662],[374,634],
+  [418,603],[442,572],[443,543],[419,513],[388,481],
+  [351,454],[348,423],[373,402],[412,382],[458,364],
+  [518,346],[580,331],[648,329],[710,341],[777,369],[839,399]
  ];
  // Supabase us_two_private.quest_world uses SIXTY steps per world, NOT 40.
  // The 40 authored quests per world are a catalogue size, not route length.
  const CELLS_PER_WORLD=60, DB='us-two-private-pawn-v1',TABLE='images';
  const WORLD_NAMES=['Liefdesbos','Avonturenland','Samen sterk','Droomwereld','Sterrenreis','Onze toekomst'];
- let activeKey='',position=null,worldIndex=null,revision=0,privateUrl='',defaultUrl='',defaultPromise=null;
+ let activeKey='',position=null,worldIndex=null,revision=0,privateUrl='',defaultPromise=null;
  let animationTimer=null,lastMotion=null,replaying=false;
  const artChanged=()=>window.dispatchEvent(new Event('us-two-pawn-art-changed'));
  function storage(){
@@ -50,24 +50,15 @@
   });
  }
  async function defaultArt(){
-  if(defaultUrl)return defaultUrl;
   if(defaultPromise)return defaultPromise;
-  defaultPromise=(async()=>{
-   const [couple,dog]=await Promise.all([
-    loadBitMap('./assets/approved-youri-kim.webp'),
-    loadBitMap('./assets/approved-pepsi.webp')
-   ]);
-   const canvas=document.createElement('canvas');canvas.width=280;canvas.height=212;
-   const ctx=canvas.getContext('2d');
-   if(!ctx)throw Error('Geen 2D-tekenvlak beschikbaar');
-   // Both ORIGINAL images retain their precise appearance and transparency.
-   // Composite into ONE sprite, never a second pawn or dog on a different tile.
-   ctx.clearRect(0,0,280,212);
-   ctx.drawImage(couple,14,8,195,187);
-   ctx.drawImage(dog,183,73,81,137);
-   const png=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Sprite niet gemaakt')),'image/png'));
-   defaultUrl=URL.createObjectURL(png);return defaultUrl;
-  })().catch(error=>{defaultPromise=null;throw error;});
+  const src='./assets/us-two-user-pawn.png';
+  // Use the exact 1149x1369 transparent original. Previously compositing two
+  // small thumbnails onto a 280px canvas noticeably reduced facial detail.
+  defaultPromise=loadBitMap(src).then(img=>{
+   if(img.naturalWidth!==1149||img.naturalHeight!==1369)
+    throw Error('Onjuist formaat van de originele pion');
+   return src;
+  }).catch(error=>{defaultPromise=null;throw error;});
   return defaultPromise;
  }
  function showImage(url){
@@ -100,8 +91,8 @@
  function move(step,serverWorld=null){
   const el=$('quest-world-pawn');if(!el)return;
   const [x,y]=point(step,serverWorld);el.hidden=false;
-  el.style.left=(x/1024*100).toFixed(4)+'%';
-  el.style.top=(y/1536*100).toFixed(4)+'%';
+  el.style.left=(x/ART_WIDTH*100).toFixed(4)+'%';
+  el.style.top=(y/ART_HEIGHT*100).toFixed(4)+'%';
   el.dataset.tile=String(step);
  }
  function cancelMotion(){
@@ -148,7 +139,7 @@
    const url=await defaultArt();
    if(token!==revision||key!==activeKey)return;
    showImage(url);
-   if(status)status.textContent='Goedgekeurde Youri-, Kim- en Pepsi-pion actief.';
+   if(status)status.textContent='Jouw originele scherpe Youri-, Kim- en Pepsi-pion actief.';
   }catch(_error){
    if(token===revision&&key===activeKey){
     // Never replace approved people with invented stock characters.

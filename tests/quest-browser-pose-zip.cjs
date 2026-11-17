@@ -49,6 +49,9 @@ async function setup(page,user) {
    date:{id:'demo-zip',title:'Samen dansen'}};
   document.getElementById('app-view').classList.remove('hidden');
   document.getElementById('game-panel').classList.remove('hidden');
+  // Production only reveals the approved pawn after a paired server state.
+  // This fixture supplies that state without modifying the live database.
+  document.getElementById('quest-world-pawn').hidden=false;
   const img=document.getElementById('quest-world-pawn-art');
   img.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==';
   img.hidden=false;

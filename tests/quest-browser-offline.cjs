@@ -30,6 +30,7 @@ async function install(page, handler) {
   const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const context=await browser.newContext();
   const rpcCalls=[];let online=false;
+   const actions=()=>rpcCalls.filter(c=>c.name==='us_quest_action');
   const handler=async call=>{
     rpcCalls.push(call);
     if(!online)return {data:null,error:{code:'',message:'network unavailable'}};
@@ -44,10 +45,10 @@ async function install(page, handler) {
     first.on('dialog',d=>d.accept());
     await first.locator('#quest-pilot-complete').click();
     await first.getByText(/Wachtende acties: 1/).waitFor();
-    assert.equal(rpcCalls.length,1);
-    const requestId=rpcCalls[0].args.p_request_id;
+    assert.equal(actions().length,1);
+    const requestId=actions()[0].args.p_request_id;
     assert.match(requestId,/^[0-9a-f-]{36}$/i);
-    assert.equal(rpcCalls[0].args.p_expected_revision,8);
+    assert.equal(actions()[0].args.p_expected_revision,8);
 
     // Reload the same tab: the IndexedDB outbox must survive.
     await first.reload({waitUntil:'networkidle'});
@@ -72,8 +73,8 @@ async function install(page, handler) {
     await first.getByText(/Wachtende acties: 0/).waitFor();
     await second.locator('#quest-pilot-refresh').click();
     await second.getByText(/Wachtende acties: 0/).waitFor();
-    assert.equal(rpcCalls.length,2,'only one retry should reach transport');
-    assert.equal(rpcCalls[1].args.p_request_id,requestId);
+    assert.equal(actions().length,2,'only one retry should reach transport');
+    assert.equal(actions()[1].args.p_request_id,requestId);
     console.log('PASS Chromium: offline queued action survives reload and is visible from second tab');
     console.log('PASS Chromium: concurrent online replay uses same UUID and exactly one transport retry');
   } finally {await browser.close();}

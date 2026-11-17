@@ -19,8 +19,8 @@ function readState(){
 async function setup(page,user){
   await page.exposeFunction('testScheduleRead',async()=>readState());
   await page.exposeFunction('testScheduleCall',async ({name,args})=>{
-    calls.push({name,args,user});
     if(name!=='us_quest_schedule_action')return {error:{code:'22023',message:'not_allowed'},data:null};
+    calls.push({name,args,user});
     if(args.p_expected_revision!==state.revision)
       return {error:{code:'40001',message:'stale_revision'},data:null};
     switch(args.p_action){

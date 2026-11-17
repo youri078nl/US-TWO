@@ -1,0 +1,151 @@
+name: Quest offline pilot tests
+on:
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'styles.css'
+      - 'quest-board.css'
+      - 'quest-board.js'
+      - 'quest-board-interactions.js'
+      - 'quest-date-browser.js'
+      - 'tests/quest-browser-dates-locations.cjs'
+      - 'quest-cinematics.js'
+      - 'quest-card-data.js'
+      - 'quest-card-archive.js'
+      - 'quest-card-gallery.js'
+      - 'quest-full-deck.js'
+      - 'catalog/quest-full-258.json'
+      - 'tests/quest-browser-full-deck.cjs'
+      - 'tests/quest-browser-card-gallery.cjs'
+      - 'quest-poses.js'
+      - 'quest-pose-archive.js'
+      - 'tests/quest-pose-archive.test.cjs'
+      - 'tests/quest-browser-pose-zip.cjs'
+      - 'tests/quest-browser-pose-frames.cjs'
+      - 'tests/quest-scope-isolation.test.cjs'
+      - 'tests/quest-browser-cinematics.cjs'
+      - 'tests/quest-no-3d.test.cjs'
+      - 'quest-pilot.js'
+      - 'quest-questions.js'
+      - 'supabase/migrations/20261117_canonical_question_turns.sql'
+      - 'tests/quest-browser-questions.cjs'
+      - 'tests/quest-browser-login-onboarding.cjs'
+      - 'tests/quest-browser-board-portrait.cjs'
+      - 'assets/**'
+      - 'tests/quest-questions-contract.test.cjs'
+      - 'quest-catalog.js'
+      - 'tests/quest-browser-smoke.cjs'
+      - 'tests/quest-browser-offline.cjs'
+      - 'tests/quest-browser-superdate.cjs'
+      - 'tests/quest-browser-schedule.cjs'
+      - 'tests/quest-browser-month-calendar.cjs'
+      - 'tests/quest-budget-catalog.test.cjs'
+      - 'supabase/migrations/20261116_premium_catalog_36.sql'
+      - 'supabase/migrations/20261116_complete_240_catalog.sql'
+      - 'supabase/catalog/*.json'
+      - 'supabase/migrations/20261116_superdate_templates_18.sql'
+      - 'tests/quest-superdate-content.test.cjs'
+      - 'us-two-offline.js'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'tests/quest-pilot.test.cjs'
+      - '.github/workflows/quest-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check script syntax
+        run: |
+          node --check app.js
+          node --check quest-board.js
+          node --check quest-board-interactions.js
+          node --check quest-date-browser.js
+          node --check quest-cinematics.js
+          node --check quest-card-data.js
+          node --check quest-card-archive.js
+          node --check quest-card-gallery.js
+          node --check quest-full-deck.js
+          node --check quest-poses.js
+          node --check quest-pose-archive.js
+          node --check quest-pilot.js
+          node --check quest-questions.js
+          node --check quest-catalog.js
+          node --check us-two-offline.js
+          node --check service-worker.js
+      - name: Ensure deprecated 3D viewer cannot appear in the PWA
+        run: node tests/quest-no-3d.test.cjs
+      - name: Install isolated browser-storage test dependency
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
+      - name: Verify account, outbox and cache isolation between staging and production scopes
+        run: node tests/quest-scope-isolation.test.cjs
+      - name: Verify safe ZIP pose archive parser
+        run: node tests/quest-pose-archive.test.cjs
+      - name: Exercise offline browser integration
+        run: node tests/quest-pilot.test.cjs
+      - name: Validate authored budget catalog and shared-cost filtering
+        run: node tests/quest-budget-catalog.test.cjs
+      - name: Validate canonical question contract and SQL guardrails
+        run: node tests/quest-questions-contract.test.cjs
+      - name: Verify eighteen private superdate storylines
+        run: node tests/quest-superdate-content.test.cjs
+      - name: Reuse downloaded Playwright Chromium across CI runs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-1.56.1
+      - name: Install Chromium browser test dependency
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test real login routing and persistent mobile session in Chromium
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-login-http.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER 2>/dev/null || true' EXIT
+          sleep 2
+          node tests/quest-browser-login-onboarding.cjs
+      - name: Run actual Chromium interface smoke test
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-http.log 2>&1 &
+          sleep 2
+          node tests/quest-browser-smoke.cjs
+      - name: Check mobile portrait board, genuine shared pawn and server-reward animation
+        run: node tests/quest-browser-board-portrait.cjs
+      - name: Check on-board animation safety in Chromium
+        run: node tests/quest-browser-cinematics.cjs
+      - name: Validate the original 50-card library, local ZIP import and session isolation
+        run: node tests/quest-browser-card-gallery.cjs
+      - name: Test draggable board locations and dedicated Dates-to-Agenda routing
+        run: node tests/quest-browser-dates-locations.cjs
+      - name: Verify canonical 2-player questions in Chromium
+        run: node tests/quest-browser-questions.cjs
+      - name: Verify 258 canonical cards, private superdates and offline ZIP import
+        run: node tests/quest-browser-full-deck.cjs
+      - name: Verify offline-approved frame packs, scene playback and account separation
+        run: node tests/quest-browser-pose-frames.cjs
+      - name: Test private ZIP pose import in real Chromium
+        run: node tests/quest-browser-pose-zip.cjs
+      - name: Test durable offline replay in two real Chromium tabs
+        run: node tests/quest-browser-offline.cjs
+      - name: Verify two-browser superdate consent and private preparation
+        run: node tests/quest-browser-superdate.cjs
+      - name: Verify two-browser shared date planning and partner acceptance
+        run: node tests/quest-browser-schedule.cjs
+      - name: Verify canonical game dates in the existing month calendar
+        run: node tests/quest-browser-month-calendar.cjs
+      - name: Attach mobile board screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-two-portrait-board-preview
+          path: /tmp/us-two-board-*.png
+          if-no-files-found: ignore
+          retention-days: 7

@@ -8,11 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="US TWO">
   <meta name="description" content="Jullie eigen plek voor dates, verrassingen en geheime uitdagingen.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://vuigivzwkxelsisbjjlk.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://vuigivzwkxelsisbjjlk.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./quest-board.css">
   <title>US TWO | Samen op avontuur</title>
 </head>
 <body>
@@ -74,8 +75,58 @@
           <div class="panel inset stack" id="pair-controls"><h3>Jullie verbinden</h3><p class="muted">Maak eerst je profiel aan.</p></div>
         </section>
 
+        <section id="discover-panel" class="tab-panel hidden" aria-label="Dates ontdekken">
+          <div class="section-heading"><div><span class="eyebrow">KIES JULLIE VOLGENDE DATE</span><h2>Dates ontdekken</h2></div></div>
+          <div class="panel inset stack quest-date-intro">
+            <h3>Een date voor ieder moment ♡</h3>
+            <p class="muted">Ontdek alle gewone opdrachten en bonusdates. Je kunt ook rechtstreeks op een plek op het speelbord tikken, zoals Bos, Strand of Woonkamer.</p>
+            <div class="quest-date-filters">
+              <label for="quest-date-search">Zoeken</label>
+              <input id="quest-date-search" type="search" placeholder="Bijvoorbeeld wandelen, film of romantisch" autocomplete="off">
+              <label for="quest-date-area">Plek</label>
+              <select id="quest-date-area"><option value="all">Alle plekken</option></select>
+              <label for="quest-date-category">Categorie</label>
+              <select id="quest-date-category"><option value="all">Alle categorieën</option></select>
+              <div class="quest-date-filter-pair">
+                <div><label for="quest-date-budget">Maximaal budget</label>
+                  <select id="quest-date-budget"><option value="all">Alles</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select></div>
+                <div><label for="quest-date-mode">Samen of op afstand</label>
+                  <select id="quest-date-mode"><option value="all">Alles</option><option value="together">Samen</option><option value="remote">Op afstand</option></select></div>
+              </div>
+            </div>
+            <p id="quest-date-status" class="muted" role="status" aria-live="polite">Open dit scherm om de collectie te laden.</p>
+            <p id="quest-date-count" class="quest-date-count" aria-live="polite"></p>
+            <div id="quest-date-results" class="quest-date-results" aria-label="Beschikbare datekaarten"></div>
+            <button type="button" id="quest-date-more" class="secondary-btn" hidden>Toon meer dates</button>
+            <p class="muted">Een date kiezen opent de Agenda. Niets wordt verstuurd voordat je zelf een datum kiest en bevestigt. Bonuskaarten geven geen automatische spelstappen.</p>
+          </div>
+          <details class="panel inset quest-date-quick">
+            <summary>Ook 12 snelle date-ideeën</summary>
+          <div class="panel inset stack" id="date-ideas">
+            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
+            <div class="idea-filters">
+              <label for="idea-budget">Maximaal budget</label>
+              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
+              <label for="idea-place">Locatie</label>
+              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
+            </div>
+            <div id="idea-results" class="stack" aria-live="polite"></div>
+            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
+          </div>
+
+          </details>
+        </section>
+
         <section id="dates-panel" class="tab-panel hidden" aria-label="Agenda">
-          <div class="section-heading"><div><span class="eyebrow">TIJD VOOR IETS LEUKS</span><h2>Onze dates</h2></div></div>
+          <div class="section-heading"><div><span class="eyebrow">SAMEN IETS PLANNEN</span><h2>Onze agenda</h2></div><button type="button" class="secondary-btn" data-action="open-discover">Kies een date</button></div>
+          <section class="panel inset stack" aria-labelledby="quest-agenda-schedule-heading">
+            <h3 id="quest-agenda-schedule-heading">Date uit jullie spelreis</h3>
+            <p id="quest-pilot-agenda-schedule" role="status" aria-live="polite">Open de agenda na het inloggen om jullie gezamenlijke spelreisdatum te bekijken.</p>
+            <button id="quest-pilot-agenda-refresh" class="secondary-btn" type="button">Spelreisdatum verversen</button>
+            <button id="quest-calendar-export" class="secondary-btn" type="button" disabled>Download bevestigde dates (.ics)</button>
+            <p class="muted">Importeer het gedownloade bestand in je telefoonagenda. Alleen bevestigde afspraken worden geëxporteerd; voorstellen en geheime voorbereidingen niet.</p>
+            <p class="muted">Deze afspraak komt rechtstreeks uit de gezamenlijke nieuwe spelreis. De bestaande agenda en uitnodigingen hieronder blijven afzonderlijk beschikbaar.</p>
+          </section>
 
           <div class="panel inset stack" id="calendar-panel">
             <div class="calendar-toolbar">
@@ -89,22 +140,12 @@
           </div>
           <div class="panel inset stack"><h3>Nodig elkaar uit</h3><p class="muted">Een voorstel blijft open totdat de ander reageert.</p>
             <form id="date-form">
+              <p id="date-form-selected" class="muted" aria-live="polite">Kies een date op het aparte Dates-scherm of vul zelf een activiteit in.</p>
               <label for="date-title">Wat gaan jullie doen?</label><input id="date-title" maxlength="120" required placeholder="Bijvoorbeeld een verrassingswandeling">
               <label for="date-when">Wanneer?</label><input id="date-when" type="datetime-local" required>
               <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="30">30 minuten</option><option value="45">45 minuten</option><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
               <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
             </form>
-          </div>
-          <div class="panel inset stack" id="date-ideas">
-            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
-            <div class="idea-filters">
-              <label for="idea-budget">Maximaal budget</label>
-              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
-              <label for="idea-place">Locatie</label>
-              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
-            </div>
-            <div id="idea-results" class="stack" aria-live="polite"></div>
-            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
           </div>
           <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div>
           <div class="panel inset stack hidden" id="date-change-editor" aria-labelledby="date-change-heading">
@@ -128,9 +169,254 @@
         </section>
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
-          <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
-          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
-          <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
+          <div class="section-heading quest-game-title"><div><span class="eyebrow">SAMEN OP PAD</span><h2>Jullie avontuur</h2></div></div>
+          <section class="panel inset stack" id="quest-pilot" aria-labelledby="quest-pilot-heading">
+            <h3 id="quest-pilot-heading">Jullie gezamenlijke spelreis</h3>
+            <p class="muted">Eén gedeelde pion, één serverstand en één route. Deze testversie gebruikt uitsluitend de nieuwe spelreis.</p>
+            <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
+            <section class="quest-board-section stack" aria-label="Officieel verticaal speelbord">
+              <div id="quest-board-card" class="quest-board-card">
+                <div class="quest-board-card-header">
+                  <strong id="quest-world-heading">Wereld 1 · Liefdesbos</strong>
+                  <strong id="quest-world-cell">Vakje 0 ♡</strong>
+                </div>
+                <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Sleepbaar speelbord met aanklikbare locaties">
+                  <div id="quest-board-stage" class="quest-board-stage">
+                  <picture class="quest-board-art-picture">
+                    <img class="quest-world-art" src="./assets/us-two-user-board.png" width="941" height="1672" alt="Het originele US TWO-liefdeseiland: lichtpaden, vliegveld, bioscoop en woonkamer, met een gouden portaal" loading="eager" fetchpriority="high" decoding="async">
+                  </picture>
+                  <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor Youri, Kim en Pepsi" hidden>
+                    <div id="quest-world-actor" class="quest-world-actor">
+                      <img id="quest-world-approved-couple" class="quest-world-approved-couple" src="./assets/approved-youri-kim.webp" alt="" aria-hidden="true">
+                      <img id="quest-world-approved-pepsi" class="quest-world-approved-pepsi" src="./assets/approved-pepsi.webp" alt="" aria-hidden="true">
+                      <img id="quest-world-pawn-art" alt="De origineel goedgekeurde gezamenlijke pion" hidden>
+                      <img id="quest-world-pose-frame" alt="" aria-hidden="true" hidden>
+                      <span id="quest-world-fallback" class="quest-world-heart" aria-hidden="true" hidden>♥</span>
+                    </div>
+                    <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
+                    <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
+                  </div>
+                  <div class="quest-board-hitmap" aria-label="Kies een plek op het speelbord">
+                    <button type="button" id="quest-location-airport" class="quest-location-hit" data-location="airport" aria-label="Vliegveld: bekijk avontuurlijke dates"></button>
+                    <button type="button" id="quest-location-beach" class="quest-location-hit" data-location="beach" aria-label="Strand: bekijk buiten- en stranddates"></button>
+                    <button type="button" id="quest-location-cinema" class="quest-location-hit" data-location="cinema" aria-label="Bioscoop: bekijk film- en theaterdates"></button>
+                    <button type="button" id="quest-location-wellness" class="quest-location-hit" data-location="wellness" aria-label="Wellness: bekijk ontspannende dates"></button>
+                    <button type="button" id="quest-location-living" class="quest-location-hit" data-location="living" aria-label="Woonkamer: bekijk dates voor thuis"></button>
+                    <button type="button" id="quest-location-cafe" class="quest-location-hit" data-location="cafe" aria-label="Café: bekijk eet- en gespreksdates"></button>
+                    <button type="button" id="quest-location-forest" class="quest-location-hit quest-location-forest" data-location="forest" aria-label="Bos: bekijk bos- en natuurdates">🌲 Bos</button>
+                  </div>
+                  </div>
+                  <div class="quest-board-map-controls" role="group" aria-label="Speelbord bedienen">
+                    <button type="button" id="quest-board-zoom-in" aria-label="Speelbord inzoomen">+</button>
+                    <button type="button" id="quest-board-zoom-out" aria-label="Speelbord uitzoomen">−</button>
+                    <button type="button" id="quest-board-center" aria-label="Breng de pion in beeld">◎</button>
+                    <span id="quest-board-zoom-level" aria-live="polite">114%</span>
+                  </div>
+                </div>
+                <div class="quest-board-replay" aria-label="Voortgang op het bord">
+                  <span id="quest-world-step-caption">Huidige positie laden…</span>
+                  <button type="button" id="quest-world-replay" disabled>↻ Herhaal</button>
+                </div>
+                <div class="quest-board-caption">De pion beweegt na een voltooide opdracht. Jullie bevestigen allebei, zonder dobbelsteen.</div>
+              </div>
+              <p id="quest-world-position" class="quest-screenreader" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
+              <details class="quest-board-art-options">
+                <summary>2D-pion en bewegingen beheren</summary>
+                <p class="muted">De goedgekeurde Youri-, Kim- en Pepsi-pionnen staan standaard op het bord. Een zelf gekozen origineel blijft alleen op dit toestel.</p>
+                <label for="quest-world-art-upload">Eigen originele pion (PNG/WebP)</label>
+                <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
+                <p id="quest-world-art-status" class="muted" role="status" aria-live="polite">Goedgekeurde figuren worden automatisch gebruikt.</p>
+                <details class="quest-pose-management">
+                <summary>Goedgekeurde 2D-bewegingen beheren</summary>
+                <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
+                <label for="quest-pose-zip">Goedgekeurd US TWO-posepakket in één keer importeren (ZIP)</label>
+                <input id="quest-pose-zip" type="file" accept=".zip,application/zip" disabled>
+                <p class="muted">Importeer het lokaal gedownloade US TWO-posepakket. De negen scènes worden alleen op dit toestel en voor dit gekoppelde account bewaard.</p>
+                <label for="quest-pose-scene">Animatie waarvoor je frames toevoegt</label>
+                <select id="quest-pose-scene" disabled>
+                  <option value="pepsi">Bal gooien met Pepsi</option>
+                  <option value="kiss">Zoenen</option>
+                  <option value="hug">Knuffelen</option>
+                  <option value="dance">Dansen</option>
+                  <option value="walk">Wandelen</option>
+                  <option value="stars">Sterren kijken</option>
+                  <option value="five">Samen vieren</option>
+                  <option value="play">Spel en plezier</option>
+                  <option value="calm">Rustig samen</option>
+                </select>
+                <label for="quest-pose-upload">Kies 2 tot 24 originele PNG- of WebP-frames</label>
+                <input id="quest-pose-upload" type="file" accept="image/png,image/webp" multiple disabled>
+                <button type="button" id="quest-pose-remove" class="ghost-btn" disabled>Verwijder lokale beeldreeks</button>
+                <p id="quest-pose-status" class="muted" role="status" aria-live="polite">Nog geen goedgekeurde beeldframes geladen.</p>
+              </details>
+              </details>
+              <div class="quest-cinematic-controls" role="group" aria-label="Animatie voor de opdracht">
+                <p id="quest-cinematic-status" class="muted" role="status" aria-live="polite">De animatie verschijnt wanneer jullie een opdracht hebben.</p>
+                <div class="buttons">
+                  <button type="button" id="quest-cinematic-play" class="secondary-btn" disabled>Speel bijpassende beweging</button>
+                  <button type="button" id="quest-cinematic-stop" class="ghost-btn" disabled>Stop animatie</button>
+                </div>
+                <p class="muted">Bewegingen gebruiken uitsluitend de goedgekeurde 2D-personages en beschikbare poseframes.</p>
+              </div>
+            
+            </section>
+            <p id="quest-journey-guidance" class="quest-journey-guidance" role="status" aria-live="polite">De spelreisstatus verschijnt na het inloggen.</p>
+            <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
+            <p id="quest-pilot-network" class="muted" role="status" aria-live="polite">Netwerkstatus controleren…</p>
+            <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
+            <section id="quest-current-card" class="quest-current-card" aria-label="Officiële kaart bij de actuele opdracht" hidden>
+              <p class="eyebrow">JULLIE ACTUELE KAART</p>
+              <h4 id="quest-current-card-title"></h4>
+              <p id="quest-current-card-meta" class="muted"></p>
+              <img id="quest-current-card-image" class="quest-card-image" alt="" hidden>
+              <p id="quest-current-card-art-status" class="muted">De originele afbeelding verschijnt na importeren van het 258-kaartenpakket.</p>
+              <div class="buttons">
+                <button type="button" id="quest-current-open-library" class="secondary-btn">Bekijk de kaart in de collectie</button>
+                <button type="button" id="quest-current-show-animation" class="secondary-btn">Bekijk de 2D-animatie</button>
+              </div>
+            </section>
+            <p id="quest-pilot-instructions" class="muted" aria-live="polite">De opdrachtinstructies verschijnen zodra jullie een opdracht hebben gekozen.</p>
+            <section id="quest-question-panel" class="quest-question-panel stack" aria-label="Om de beurt vragen beantwoorden" hidden>
+              <h4>Jullie vragenronde</h4>
+              <p class="muted">Eén gezamenlijke spelstand. Alleen na goedkeuring door je partner verdienen jullie 3 of 5 stappen. Geen dobbelsteen.</p>
+              <p id="quest-question-status" role="status" aria-live="polite">Vragenstand ophalen…</p>
+              <label for="quest-question-category">Kies een categorie</label>
+              <select id="quest-question-category" disabled></select>
+              <button id="quest-question-start" type="button" class="secondary-btn" disabled>Start deze vraag</button>
+              <p id="quest-question-prompt" class="quest-question-prompt"></p>
+              <p id="quest-question-received" class="quest-question-answer" hidden></p>
+              <label for="quest-question-answer">Jouw antwoord</label>
+              <textarea id="quest-question-answer" rows="3" maxlength="1500" placeholder="Typ jouw antwoord voor je partner" disabled hidden></textarea>
+              <div class="buttons">
+                <button id="quest-question-submit" type="button" class="secondary-btn" disabled hidden>Antwoord versturen</button>
+                <button id="quest-question-approve" type="button" class="secondary-btn" disabled hidden>Antwoord goedkeuren</button>
+                <button id="quest-question-reject" type="button" class="ghost-btn" disabled hidden>Opnieuw beantwoorden</button>
+                <button id="quest-question-skip" type="button" class="ghost-btn" disabled hidden>Vraag overslaan</button>
+                <button id="quest-question-cancel" type="button" class="ghost-btn" disabled hidden>Vraag annuleren</button>
+              </div>
+              <p class="muted">Categorie Erotiek blijft gesloten totdat wederzijdse toestemming technisch is vastgelegd.</p>
+            </section>
+
+            <section class="stack" aria-labelledby="quest-schedule-heading">
+              <h4 id="quest-schedule-heading">Date samen plannen</h4>
+              <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>
+              <label for="quest-pilot-schedule-time">Voorgestelde datum en tijd</label>
+              <input id="quest-pilot-schedule-time" type="datetime-local" aria-label="Date voorstellen voor datum en tijd" />
+              <button id="quest-pilot-schedule-propose" type="button" class="secondary-btn" disabled>Datum voorstellen</button>
+              <button id="quest-pilot-schedule-accept" type="button" class="secondary-btn" disabled>Datum accepteren</button>
+              <button id="quest-pilot-schedule-reject" type="button" class="ghost-btn" disabled>Datum afwijzen</button>
+              <button id="quest-pilot-schedule-cancel" type="button" class="ghost-btn" disabled>Mijn datumvoorstel intrekken</button>
+              <p class="muted">Alleen de partner mag jouw voorstel bevestigen. De planning wordt op beide telefoons opgeslagen; het bestaande agendascherm blijft vooralsnog apart.</p>
+            </section>
+            <div class="stack" id="quest-pilot-catalog">
+              <h4>Kies een nieuwe opdracht</h4>
+              <label for="quest-pilot-mode">Hoe spelen jullie?</label>
+              <select id="quest-pilot-mode" aria-label="Speelvorm"><option value="samen">Samen</option><option value="afstand">Op afstand</option></select>
+              <label for="quest-pilot-budget">Maximale kosten voor jullie samen</label>
+              <select id="quest-pilot-budget" aria-label="Maximaal datebudget">
+                <option value="0">Gratis (€0)</option>
+                <option value="10">Maximaal €10</option>
+                <option value="20">Maximaal €20</option>
+                <option value="40">Maximaal €40</option>
+                <option value="60">Maximaal €60</option>
+                <option value="100">Maximaal €100</option>
+                <option value="max">Onbeperkt</option>
+              </select>
+              <p class="muted">Dit is een maximum, geen verplicht uit te geven bedrag. Gratis dates blijven bij elk budget beschikbaar. Richtprijzen zijn voor twee personen.</p>
+              <button id="quest-pilot-load-catalog" class="secondary-btn" type="button" disabled>Toon drie voorstellen</button>
+              <div id="quest-pilot-options" class="stack" role="group" aria-label="Beschikbare opdrachten">
+                <button id="quest-pilot-option-0" type="button" class="secondary-btn" disabled>Voorstel 1</button>
+                <button id="quest-pilot-option-1" type="button" class="secondary-btn" disabled>Voorstel 2</button>
+                <button id="quest-pilot-option-2" type="button" class="secondary-btn" disabled>Voorstel 3</button>
+              </div>
+            </div>
+            <div class="stack" id="quest-pilot-actions" aria-label="Opdrachtacties">
+              <button id="quest-pilot-accept" type="button" class="secondary-btn" disabled>Voorstel accepteren</button>
+              <button id="quest-pilot-reject" type="button" class="ghost-btn" disabled>Voorstel afwijzen</button>
+              <button id="quest-pilot-cancel" type="button" class="ghost-btn" disabled>Eigen voorstel intrekken</button>
+              <button id="quest-pilot-complete" type="button" class="secondary-btn" disabled>Mijn voltooiing bevestigen</button>
+              <button id="quest-pilot-skip" type="button" class="ghost-btn" disabled>Opdracht samen overslaan</button>
+            </div>
+            <div class="stack">
+              <button id="quest-pilot-refresh" type="button" class="secondary-btn">Serverstatus ophalen</button>
+              <button id="quest-pilot-sync" type="button" class="secondary-btn" disabled>Wachtende acties opnieuw versturen</button>
+              <div class="stack" id="quest-pilot-recovery" aria-live="polite">
+                <p id="quest-pilot-conflict" class="muted">Geen synchronisatieconflict vastgesteld.</p>
+                <button id="quest-pilot-resolve" type="button" class="ghost-btn" disabled>Vastgelopen voorstel veilig annuleren</button>
+              </div>
+              <button id="quest-pilot-start" type="button" class="ghost-btn" disabled>Spelreis starten</button>
+            </div>
+            <section aria-labelledby="quest-pilot-super-heading" class="stack">
+              <h4 id="quest-pilot-super-heading">Superdate · voorbereiding en toestemming</h4>
+              <p id="quest-pilot-super-status" role="status" aria-live="polite">Nog geen superdategegevens geladen.</p>
+              <p id="quest-pilot-super-consent" class="muted" role="status" aria-live="polite">Bevestigingen worden opgehaald.</p>
+              <p id="quest-pilot-super-timing" class="muted">Voorbereidingstijd wordt opgehaald.</p>
+              <p id="quest-pilot-super-prep" class="muted">Alleen jouw voorbereiding wordt hier weergegeven.</p>
+              <p id="quest-pilot-super-finale" class="muted">De gezamenlijke finale blijft verborgen totdat beide spelers akkoord geven.</p>
+              <button id="quest-pilot-super-ready" type="button" class="secondary-btn" disabled>Mijn voorbereiding is klaar</button>
+              <button id="quest-pilot-super-reveal" type="button" class="secondary-btn" disabled>Toestemming geven om finale te openen</button>
+              <button id="quest-pilot-super-done" type="button" class="secondary-btn" disabled>Superdate afgerond</button>
+              <button id="quest-pilot-super-skip" type="button" class="ghost-btn" disabled>Superdate samen overslaan</button>
+            </section>
+            <p id="quest-pilot-message" class="muted" role="status" aria-live="polite">Niet voor productie vrijgegeven.</p>
+          </section>
+          <details id="full-deck-details" class="panel quest-card-library stack">
+            <summary>Volledige collectie · 240 opdrachten + 18 superdates</summary>
+            <p class="muted">Zes werelden met elk 40 officiële opdrachten en 18 superdates. De superdatekaartjes tonen geen geheime voorbereidingen. De echte serverstand bepaalt jullie spelvoortgang.</p>
+            <p id="full-deck-status" role="status" aria-live="polite">De volledige collectie wordt geladen…</p>
+            <label for="full-deck-zip">Originele 258 kaartafbeeldingen privé op dit toestel importeren</label>
+            <input id="full-deck-zip" type="file" accept=".zip,application/zip" disabled>
+            <p class="muted">Gebruik het mobiele pakket <strong>US_TWO_258_KAARTEN_MOBIEL.zip</strong>. Het grote drukpakket is niet voor import bedoeld. Er wordt geen afbeelding naar de server verstuurd.</p>
+            <label for="full-deck-world">Kies jullie wereld</label>
+            <select id="full-deck-world">
+              <option value="all">Alle 258 kaarten</option>
+              <option value="0">Wereld 1 · 40 opdrachten</option>
+              <option value="1">Wereld 2 · 40 opdrachten</option>
+              <option value="2">Wereld 3 · 40 opdrachten</option>
+              <option value="3">Wereld 4 · 40 opdrachten</option>
+              <option value="4">Wereld 5 · 40 opdrachten</option>
+              <option value="5">Wereld 6 · 40 opdrachten</option>
+              <option value="superdate">18 superdates · geheim</option>
+            </select>
+            <label for="full-deck-search">Zoek een opdracht</label>
+            <input id="full-deck-search" type="search" placeholder="Titel of beschrijving" maxlength="120">
+            <label><input id="full-deck-follow" type="checkbox"> Actieve opdracht automatisch tonen</label>
+            <div class="quest-card-heading">
+              <p id="full-deck-meta" class="muted"></p>
+              <h3 id="full-deck-title"></h3>
+            </div>
+            <img id="full-deck-image" class="quest-card-image" alt="" hidden>
+            <p id="full-deck-description" class="muted">Opdrachtbeschrijving laden…</p>
+            <div class="quest-card-navigation">
+              <button type="button" id="full-deck-prev" class="secondary-btn" disabled>Vorige</button>
+              <span id="full-deck-count" aria-live="polite">0 / 258</span>
+              <button type="button" id="full-deck-next" class="secondary-btn" disabled>Volgende</button>
+            </div>
+          </details>
+          <details id="quest-card-library" class="panel quest-card-library stack">
+            <summary>50 geïllustreerde opdrachtkaartjes bekijken</summary>
+            <p class="muted">De originele US TWO-kaarten met jullie goedgekeurde 2D-personages. Dit is een inspiratiecollectie; de kaarten geven nog geen spelpunten of automatische voortgang.</p>
+            <p id="quest-cards-status" role="status" aria-live="polite">Kaartencollectie laden…</p>
+            <label for="quest-cards-zip">50 originele afbeeldingen in één keer importeren</label>
+            <input type="file" id="quest-cards-zip" accept=".zip,application/zip" disabled>
+            <p class="muted">Gebruik het bestaande bestand US_TWO_50_kaartjes_MOBIEL.zip. Afbeeldingen blijven uitsluitend op dit toestel en bij jullie account.</p>
+            <label for="quest-cards-jpg">Alternatief voor toestellen zonder ZIP-ondersteuning: 50 JPG's</label>
+            <input type="file" id="quest-cards-jpg" accept=".jpg,image/jpeg" multiple disabled>
+            <label for="quest-cards-filter">Categorie</label>
+            <select id="quest-cards-filter" disabled><option value="all">Alle 50 kaartjes</option></select>
+            <div class="quest-card-heading">
+              <p class="muted" id="quest-card-meta"></p>
+              <h3 id="quest-card-title"></h3>
+            </div>
+            <img id="quest-card-image" class="quest-card-image" alt="" hidden>
+            <p class="muted" id="quest-cards-empty-art">De drie opdrachtstappen staan hieronder. Importeer het originele ZIP-pakket om de bijbehorende afbeelding te bekijken.</p>
+            <ol id="quest-card-steps" class="quest-card-steps"></ol>
+            <div class="quest-card-navigation">
+              <button type="button" class="secondary-btn" id="quest-cards-prev" disabled>Vorige</button>
+              <span id="quest-cards-count" aria-live="polite">1 / 50</span>
+              <button type="button" class="secondary-btn" id="quest-cards-next" disabled>Volgende</button>
+            </div>
+          </details>
         </section>
 
 
@@ -167,15 +453,30 @@
       </div>
     </main>
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
-      <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
+      <button type="button" class="active" data-tab="game"><span class="nav-icon">♙</span>Speelbord</button>
+      <button type="button" data-tab="discover"><span class="nav-icon">♡</span>Dates</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
-      <button type="button" data-tab="game"><span class="nav-icon">◇</span>Spel</button>
-      <button type="button" data-tab="memories"><span class="nav-icon">♡</span>Momenten</button>
+      <button type="button" data-tab="memories"><span class="nav-icon">✧</span>Momenten</button>
       <button type="button" data-tab="more"><span class="nav-icon">☷</span>Meer</button>
     </nav>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="update-bar" class="update-bar hidden" role="status"><span>Een nieuwe versie van US TWO staat klaar.</span><button id="apply-update" type="button">Bijwerken</button></div>
-  <script type="module" src="./app.js"></script>
+  <script src="./us-two-offline.js" defer></script>
+   <script type="module" src="./app.js"></script>
+   <script src="./quest-catalog.js" defer></script>
+   <script src="./quest-board.js" defer></script>
+   <script src="./quest-board-interactions.js" defer></script>
+   <script src="./quest-pose-archive.js" defer></script>
+   <script src="./quest-poses.js" defer></script>
+   <script src="./quest-cinematics.js" defer></script>
+   <script src="./quest-calendar-ics.js" defer></script>
+   <script src="./quest-card-data.js" defer></script>
+   <script src="./quest-card-archive.js" defer></script>
+   <script src="./quest-card-gallery.js" defer></script>
+   <script src="./quest-full-deck.js" defer></script>
+   <script src="./quest-pilot.js" defer></script>
+   <script src="./quest-questions.js" defer></script>
+   <script src="./quest-date-browser.js" defer></script>
 </body>
 </html>

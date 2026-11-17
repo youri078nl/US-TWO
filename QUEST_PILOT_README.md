@@ -1,0 +1,105 @@
+# US TWO | actuele PWA-staat (16 november 2026)
+
+**Definitieve oplevering: één PWA/webapp voor Android en iPhone. Geen APK, native Android-app of SwiftUI-build.** Het resterende masterplan blijft ongewijzigd en is leidend via het private PWA-masterplan.
+
+## Bewijsbaar afgerond in deze werkronde
+
+- **240** bestaande en nieuwe unieke dateopdrachten in de echte Supabase-database, exact **40 per wereld**.
+- **204 gratis** opdrachten en **36 betaalde** varianten verspreid over alle zes werelden; gezamenlijke richtprijsveld `estimated_cost_eur` met grenzen 0 t/m 500.
+- De app haalt de richtprijs op in de ingelogde catalogusquery. Kies gratis, €10, €20, €40, €60, €100 of onbeperkt: het is altijd een maximum voor twee personen. Bij voldoende aanbod komen twee gratis en één passende betaalde date naar voren.
+- Elke kaart heeft een eigen ID, titel, beschrijving, speelduur, beloning, pose-ID en afzonderlijke instructies voor samen en op afstand. Eén bestaande categorie `Flirt` blijft doelbewust niet voor alle speelvormen zichtbaar totdat wederzijdse opt-in voldoet aan de privacy-eisen.
+- Alle nieuwe migraties zijn additief en de 67 oorspronkelijke datekaarten zijn behouden; de bestaande accounts en spelvoortgang zijn niet gewijzigd.
+- De Chromium- en offline-regressietests en de catalogusvalidaties zijn geslaagd. De afzonderlijke `/test-2-telefoons/`-versie 0.9.0 is door GitHub Pages gepubliceerd.
+- Het acceptatieregister heeft D07 en D08 afgevinkt. **Gewogen masterplanstand: 16,61%.** Dit is geen gereedmelding voor de gehele webapp.
+
+## Nog verplicht vóór vrijgave
+
+- Defintieve gameboardweergave en unieke goedgekeurde 2D-personages en animaties met de volledige vereiste pose-/actiecombinaties.
+- Volledige superdatecontent: achttien inhoudelijk verschillende superdates, geheime eigen voorbereiding per speler, 72-uursregel en onafhankelijke finale-/afrondingsbevestiging.
+- Metadata en filters voor materialen, fysieke mogelijkheden, allergieën, energie, grenzen en wederzijdse opt-in; daarvoor is alleen een budgetfilter onvoldoende.
+- Eén samengevoegde agenda, herinneringen, meldingen, media en export in dezelfde productieworkflow.
+- Authenticatiebeveiliging, privacycontrole, herstelproeven, langdurige offline-/updateproeven en volledige E2E-acceptatie op jullie echte Android- en iPhone-toestellen.
+- Releaseaudit en volledige acceptatie van alle 169 masterplaneisen.
+
+## Testlink
+https://youri078nl.github.io/US-TWO/test-2-telefoons/
+
+**Gebruik twee eigen testaccounts:** de testversie gebruikt echte servermutaties voor een gekoppeld paar.
+
+---
+
+## Historische ontwerp- en implementatienotities (archief)
+# US TWO – nieuwe spelreis en offline synchronisatie (proef)
+
+**Status: ontwikkelproef, niet vrijgegeven als eindversie.** Gebaseerd op openbare webapp 0.8.0; de door de gebruiker goedgekeurde 0.9.11 HTML-basis blijft afzonderlijk beschikbaar. Deze proef verandert die basis niet.
+
+## Nieuwe onderdelen
+- `us-two-offline.js`: browserbundel van de vijf modules uit de private branch `feature/masterplan-release-hardening-20261115`. Bevat geen geheimen.
+- `quest-pilot.js`: opt-in paneel in Spel voor het nieuwe canonieke `us_quest_state`-serverprotocol.
+- Bestaande login/RPC-functies bieden een beperkte brug voor de nieuwe serverprotocol-test. Er worden geen sessietokens in de offline-wachtrij gezet.
+- Testknop `Nieuwe spelreis starten` verschijnt alleen voor gekoppelde accounts wanneer de nieuwe serverreis nog niet bestaat. Vraagt extra bevestiging.
+- Schrijven gaat via IndexedDB-wachtrij, Web Locks en bestaande idempotente RPC; herstart-/netwerkherstel vereist nog echte apparaten.
+- `tests/quest-pilot.test.cjs`: 6 gerichte checks, inclusief offline-herzending met dezelfde UUID, lokaal wachtrijbewijs en niet-gekoppelde accountblokkade.
+- GitHub Actions `quest-pilot.yml` voert syntax- en scenario-tests uit.
+
+## Belangrijke grenzen
+1. **Niet naar `main` samenvoegen zonder review en apparaatacceptatie.** De proef staat in een afzonderlijke featurebranch.
+2. De nieuwe serverreis is niet hetzelfde als het oudere bord: er vindt **geen stilzwijgende migratie** van spelposities plaats.
+3. De knop `Nieuwe spelreis starten` heeft, na expliciete bevestiging, invloed op de gedeelde **nieuwe** serverreis. Hij verandert het bestaande bord niet.
+4. In de proef worden nog geen cataloguskeuze, superdate-afronding, privévoorbereidingen of complete dateflow via het nieuwe protocol aangeboden.
+5. Offline gegevens in IndexedDB zijn niet versleuteld. Bewaar geen wachtwoorden, tokens of geheime voorbereidingen.
+6. Browserregressies zijn gesimuleerd met fake-indexeddb en RPC-stubs. **Geen echte browser-, Supabase-authenticatie- of tweetelefoon-E2E-test** uitgevoerd.
+7. Bij revisieconflict blokkeert de wachtrij. De gebruiker mag niet blind lokaal wissen: eerst canonieke serverstatus ophalen en herstelplan toetsen.
+8. Het uiteindelijke native Android-/iPhone-integratiewerk en volledige UI-herontwerp ontbreken nog.
+
+## Testinstructies na review
+- Open de testbranch in een geïsoleerde previewomgeving, met uitsluitend openbare/publishable Supabase-clientgegevens.
+- Log in als gekoppelde speler; ga naar Spel en tik `Serverstatus ophalen`.
+- Controleer de serverpositie en revisie zonder wijzigingen.
+- Test met een gescheiden testkoppel de startknop, daarna met offline/online en twee vensters.
+- Controleer dat de bestaande dates/agenda/2D-animaties onaangetast blijven.
+- Pas na onafhankelijke testresultaten beslissen of nieuwe protocolacties in het hoofdspel mogen worden geïntegreerd.
+
+## Verificatie
+`node tests/quest-pilot.test.cjs` met `fake-indexeddb@6.2.5` en de GitHub Actions-workflow.
+
+Voortgangspercentage in het private acceptatieregister blijft **14,54%**. De proef telt niet als voltooide cross-platform integratie.
+
+## Nieuwe opdracht- en superdatebediening (15 november 2026)
+
+- Het proefpaneel biedt afzonderlijke, vanuit de **actuele** serverstatus gevalideerde knoppen: voorstel accepteren, afwijzen, eigen voorstel intrekken, persoonlijke voltooiing bevestigen en samen overslaan.
+- Een gebruikersactie wordt in IndexedDB bewaard met een unieke verzoek-ID en de revision van de daadwerkelijke serverstatus. De server blijft beslissen of een actie toegestaan is.
+- Een openstaande/belaste wachtrij blokkeert nieuwe spelmutaties. De interface vervangt de verouderde spelstand nooit automatisch.
+- Het paneel vraagt `us_quest_super_state` op. Het toont uitsluitend `my_prep` en nooit `prep_a` of `prep_b`; de finale wordt alleen getoond bij serverstatus `revealed` of `completed`.
+- Ready, reveal, done en skip worden met de eigen **superdate-revisie** via `us_quest_super_action` verzonden. Eén onthullingsakkoord opent de finale niet.
+- Bij het wisselen van account of bij een fout met serverstatus worden eerder getoonde geheime details uit de proefweergave gewist.
+- Er is geen nieuwe datecatalogus-selector of nieuw voorstel via de nieuwe serverreis geïmplementeerd: daarvoor is nog een veilig cataloguscontract nodig.
+- De mock-integratietests dekken nu 14 scenario's. De tests bewijzen geen echte HTTP/JWT-authenticatie, niet dat een Android/iPhone tegelijk gekoppeld zijn en geen live servermutaties.
+
+**Vrijgavebeleid:** concept-PR blijft open. Geen wijziging aan `main` en geen nieuwe claim van mobiele eindacceptatie. De bewezen projectscore blijft 14,54%.
+
+## Geverifieerde catalogus- en browseruitbreiding
+
+- Live Supabase-catalogusstructuur gecontroleerd: 67 bestaande opdrachten in werelden 0 t/m 5. De huidige catalogus is dus **nog geen** vereiste bibliotheek van 240 unieke activiteiten.
+- Catalogus wordt voor een aangemeld, gekoppeld account via de bestaande authenticatielaag en de RLS-beveiligde catalogustabel opgehaald. Filters: huidige wereld, afstand/samen, uitgesloten `Flirt`-categorie (de server weigert die categorie bij `propose`).
+- De spelende partner ziet maximaal drie unieke voorstellen. `quest-catalog.js` sorteert en roteert deterministisch op de serverpositie en geeft voorrang aan nog niet recent gebruikte opdrachten; deze selectie is **advies**, de server blijft de beslissende autoriteit.
+- Voorstel verzenden is alleen toegestaan bij fase `choose`, juiste `turn_user`, passende wereld en een lege, niet-geblokkeerde wachtrij. De API krijgt de serverrevisie, bestaande opdracht-ID en expliciete speelvorm.
+- Uitloggen maakt getoonde persoonlijke voorbereidingen en finales direct onzichtbaar. De accountgebonden wachtrij blijft duurzaam bewaard om acties niet kwijt te raken.
+- GitHub CI voert nu twintig gerichte script-/domeinchecks en een **echte headless Chromium-bedieningstest** uit. Die browserproef gebruikt gesimuleerde Supabase-antwoorden, niet de persoonlijke accounts of echte servermutaties.
+- Het proefproject blijft een draft-PR, niet de standaard GitHub Pages-versie en niet de native Android/iOS-app.
+
+### Releaseblokkades
+- Geen tweetelefoon-acceptatie of daadwerkelijke iOS/Android-synchronisatie met elk een eigen account.
+- Geen volledige catalogus van 240 oorspronkelijke, voldoende onderscheiden activiteiten of 60 gecontroleerde animatieclips.
+- Geen bewezen offline herstel in echte Safari/Chrome na langdurige offline periode.
+- Geen productieacceptatie, beveiligingsaudit, herstelproef of volledige native release.
+
+**De officiële gewogen voortgang blijft 14,54%.** Technische testuitbreidingen worden niet automatisch als voltooide masterplaneisen meegeteld.
+
+## Budgetfilter voor dates (15 november 2026)
+
+- Instelbaar maximum **gratis (€0), €10, €20, €40, €60, €100 of onbeperkt**. Dit betreft het **gezamenlijke totale** datebudget en is nooit een minimumbesteding.
+- Bestaande activiteiten blijven beschikbaar als gratis uitvoering met al aanwezige spullen. Wanneer toekomstige activiteiten een expliciete `estimated_cost_eur` hebben, verwijdert het filter alle suggesties boven het gekozen plafond. Ontbrekende kosten gelden voor de bestaande gratis opdrachten als €0; dit is geen actuele winkelprijsclaim.
+- Bij een betaalbudget en voldoende aanbod kiest het algoritme standaard **twee gratis en één betaalde opdracht**. Bij €0 uitsluitend gratis. Als er geen passende betaalde opdrachten bestaan, mogen alle drie gratis zijn.
+- Dit is voorlopig een browserproef. De bestaande Supabase-catalogus heeft nog geen kostencolom of nieuwe betaalde opdrachtkaarten. De daadwerkelijke uitwerking van prijsklassen voor meerdere werelden en financieel gecontroleerde richtprijzen blijft een afzonderlijke release-eis. Niet suggereren dat er al echte betaalde opdrachten live beschikbaar zijn.
+- Het wijzigen van de budgetselectie maakt verouderde voorstellen ongeldig. Serveracties blijven onderworpen aan aparte partneracceptatie en revisiecontrole.

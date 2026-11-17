@@ -1,12 +1,13 @@
 const CONFIG = Object.freeze({
-  version: '0.8.0',
+  version: '0.14.1-dates-locaties-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, board: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null };
-const STORAGE_KEY = 'us-two-web-session-v1';
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
+// Keep preview and production credentials separate on the same GitHub Pages origin.
+const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
 const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'});
@@ -39,10 +40,11 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id)state.questCalendar=[];
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY)}
+function clearSession(){state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;
@@ -87,34 +89,60 @@ function showRecovery(kind) {
 async function showApp(){
   $('auth-view').classList.add('hidden');$('app-view').classList.remove('hidden');$('bottom-nav').classList.remove('hidden');$('refresh-btn').classList.remove('hidden');
   $('date-today').textContent=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
-  setTab('home');await syncAll();
+  // Begin with a safe shell while fetching identity. After successful dashboard
+  // hydration, go directly to the actual game (or pairing for an unpaired user).
+  // Do not misroute if Supabase is unavailable and the dashboard is unknown.
+  setTab('home');
+  await syncAll();
+  if(state.session&&state.dashboard)setTab(paired()?'game':'pair');
 }
 function setTab(tab){
-  if(!['home','pair','dates','game','memories','more'].includes(tab))return;
+  if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
+  if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
+  if(tab==='game'&&state.session)window.dispatchEvent(new Event('us-two-quest-game-open'));
+  window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab}}));
   window.scrollTo({top:0,behavior:'instant'});
 }
+// Read-only date discovery routes; only the existing date form submits invitations.
+window.USTwoDateBridge=Object.freeze({
+  open:()=>setTab('discover'),
+  choose:({title,minutes,source}={})=>{
+    if(!state.session){toast('Log eerst in.',true);return;}
+    if(!paired()){setTab('pair');toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
+    const picked=String(title||'').trim().slice(0,120);
+    if(!picked)return;
+    $('date-title').value=picked;
+    const options=[...$('date-duration').options].map(x=>Number(x.value));
+    const chosenMinutes=Math.max(15,Math.min(240,Number(minutes)||60));
+    $('date-duration').value=String(options.reduce((a,b)=>
+      Math.abs(b-chosenMinutes)<Math.abs(a-chosenMinutes)?b:a,options[0]));
+    $('date-form-selected').textContent='Gekozen date: '+picked+'. Kies een datum en tijd. Alleen Verzenden maakt een uitnodiging.';
+    setTab('dates');
+    $('date-form').scrollIntoView({behavior:'instant',block:'center'});
+  }
+});
 async function syncAll({quiet=false}={}) {
   if(!state.session||pollBusy)return;pollBusy=true;
   try{
-    const [d,b,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_board_state'),rpc('us_memory_list').catch(()=>null)]);
-    state.dashboard=d;state.board=b;
+    const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
+    state.dashboard=d;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();if(!quiet)connection(true);
   }catch(e){if(!quiet)toast(failText(e),true)}finally{pollBusy=false}
 }
-function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderBoard();renderHome()}
+function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
 function renderHome(){
-  const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];const b=state.board||{};
+  const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];
   $('couple-banner').innerHTML=paired()?'<span class="dot"></span><span>Jullie zijn gekoppeld 💞</span>':`<span class="dot"></span><span>${m.length?'Wachten op jouw partner':'Koppel jullie accounts om te starten'}</span>`;
   $('welcome-note').textContent=paired()?'Een kleine verrassing kan een gewone dag bijzonder maken.':'Twee accounts, één avontuur. Nodig je partner uit om te beginnen.';
   const next=[...list].filter(x=>x.status!=='declined'&&x.status!=='cancelled'&&new Date(x.start_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at))[0];
   let cards='';
   if(!paired()){cards+=`<div class="card"><span class="eyebrow">EERSTE STAP</span><h3>Verbind jullie accounts</h3><p class="muted">Gebruik een koppelcode zodat jullie samen kunnen plannen en spelen.</p><button class="secondary-btn" data-action="open-pair">Naar koppelen</button></div>`}
   else {cards+=`<div class="card"><span class="eyebrow">VOLGENDE DATE</span><h3>${next?safe(next.title):'Tijd voor een nieuwe afspraak?'}</h3><p class="muted">${next?timeFmt.format(new Date(next.start_at)):'Plan iets leuks, ook als het maar een halfuurtje is.'}</p><button class="secondary-btn" data-action="open-dates">Bekijk agenda</button></div>`;
-    cards+=`<div class="card"><span class="eyebrow">HET SPEELBORD</span><h3>Vakje ${Number(b.position)||1}</h3><p class="muted">${b.round?'Jullie hebben een opdracht openstaan.':'Jullie volgende avontuur ligt klaar.'}</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
+    cards+=`<div class="card"><span class="eyebrow">JULLIE SPELREIS</span><h3>Samen verder spelen</h3><p class="muted">Bekijk jullie gezamenlijke wereld, opdrachten en de actuele serverstand.</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
   $('home-cards').innerHTML=cards;
 }
 function renderPair(){
@@ -152,6 +180,34 @@ function monthStep(delta){
  state.calendarSelected=state.calendarMonth+'-01';
  renderCalendar();
 }
+// Read-only projection of the canonical new quest schedule into the legacy
+// month view. Do not create or duplicate legacy date records.
+function updateQuestCalendar(game,who){
+ const authorized=Boolean(state.session?.user?.id&&
+   state.session.user.id===who?.userId&&
+   paired()&&state.dashboard?.couple_id===who?.coupleId);
+ const next=[];
+ if(authorized&&game?.paired&&game.initialized&&game.phase==='active'){
+  const d=game.date,p=game.schedule;
+  const title=typeof d?.title==='string'&&d.title.trim()?d.title.trim():'Spelreisdate';
+  const id=typeof d?.id==='string'?d.id:'';
+  const add=(kind,at,label)=>{
+   const dt=typeof at==='string'?new Date(at):null;
+   if(dt&&Number.isFinite(dt.getTime())){
+    next.push({id:'quest:'+kind+':'+id,start_at:dt.toISOString(),title,kind,
+      status:kind==='confirmed'?'accepted':'proposed',label});
+   }
+  };
+  if(p?.status==='confirmed')add('confirmed',p.confirmed_at,'Bevestigde spelreisdate');
+  if(p?.pending_at)add('pending',p.pending_at,
+    p.pending_by===who.userId?'Eigen datumvoorstel · spelreis':'Voorstel partner · spelreis');
+ }
+ state.questCalendar=next;
+ if($('calendar-grid')&&state.tab==='dates')renderCalendar();
+}
+window.USTwoQuestCalendar=Object.freeze({update:updateQuestCalendar,clear:()=>{
+ state.questCalendar=[];if($('calendar-grid')&&state.tab==='dates')renderCalendar();
+}});
 function renderCalendar(){
  const today=amsterdamDay(new Date()),month=state.calendarMonth||today.slice(0,7);
  const [year,m]=month.split('-').map(Number);
@@ -164,8 +220,12 @@ function renderCalendar(){
  const count=Math.ceil((first+days)/7)*7;
  let html=['ma','di','wo','do','vr','za','zo'].map(x=>'<span class="calendar-weekday">'+x+'</span>').join('');
  const scheduled=(state.dashboard?.dates||[]).filter(d=>d.status==='proposed'||d.status==='accepted');
+ const confirmed=paired()?(state.dashboard?.dates||[]).filter(d=>d.status==='accepted')
+   .concat(state.questCalendar.filter(d=>d.status==='accepted'&&d.kind==='confirmed')):[];
+ const exportButton=$('quest-calendar-export');
+ if(exportButton)exportButton.disabled=!confirmed.some(d=>typeof d.start_at==='string'&&Number.isFinite(new Date(d.start_at).getTime()));
  const byDay=new Map();
- scheduled.forEach(d=>{
+ (paired()?scheduled.concat(state.questCalendar):scheduled).forEach(d=>{
   const date=new Date(d.start_at);
   if(!Number.isFinite(date.getTime()))return;
   const key=amsterdamDay(date);
@@ -185,7 +245,7 @@ function renderCalendar(){
  const events=(byDay.get(key)||[]).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
  const label=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
  $('calendar-day-detail').innerHTML='<h4>'+safe(label)+'</h4>'+(events.length?
-  events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.status==='accepted'?'Geaccepteerd':'Uitnodiging')+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
+  events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.kind?d.label:(d.status==='accepted'?'Geaccepteerd':'Uitnodiging'))+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
   '<p class="muted">Geen geplande afspraken op deze dag.</p>');
 }
 function renderMemories(){
@@ -267,84 +327,10 @@ function openDateChangeEditor(id){
   $('date-change-editor').classList.remove('hidden');
   $('date-change-editor').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function renderBoard() {
-  const board = state.board || {};
-  const position = Math.max(1, Number(board.position) || 1);
-  const round = board.round || null;
-  const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
-  const first = Math.floor((position - 1) / 12) * 12 + 1;
-  const members = (state.dashboard?.members || []).slice(0, 2);
-  const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
-  const players = playerNames.map((name, i) =>
-    `<span class="board-pawn pawn-${i + 1}" title="${safe(name)}" aria-hidden="true">${safe(name.charAt(0).toLocaleUpperCase('nl-NL'))}</span>`
-  ).join('');
-  const path = Array.from({length: 12}, (_, slot) => {
-    const row = Math.floor(slot / 4);
-    const col = slot % 4;
-    const number = first + row * 4 + (row % 2 ? 3 - col : col);
-    const isCurrent = number === position;
-    const isTarget = number === activeCell;
-    const isSuper = number % 20 === 0;
-    const completed = number < position;
-    return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
-  }).join('');
-  $('board-position').textContent = String(position);
-  $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
-  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
-  $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
-
-  if (!paired()) {
-    $('round-detail').innerHTML = '<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';
-    return;
-  }
-  if (!round) {
-    $('round-detail').innerHTML = '<h3>Klaar voor de volgende opdracht?</h3><p class="muted">Jullie krijgen ieder een andere, geheime voorbereiding. De gezamenlijke opdracht verschijnt pas nadat de start is bevestigd.</p><label for="prep-days">Voorbereidingstijd</label><select id="prep-days"><option value="1">1 dag</option><option value="2">2 dagen</option><option value="3" selected>3 dagen</option><option value="4">4 dagen</option><option value="5">5 dagen</option><option value="7">7 dagen</option></select><p class="muted">Bij superopdrachten is minstens 3 dagen voorbereiding vereist.</p><button class="primary-btn" data-action="board-begin">Begin de volgende opdracht</button>';
-    return;
-  }
-  const isPreparing = round.status === 'preparing';
-  const isActive = round.status === 'active';
-  let html = `<span class="tag ${round.is_super ? 'pending' : 'active'}">${round.is_super ? '✦ Superopdracht' : 'Missie op vakje ' + Number(round.cell)}</span><h3>${safe(round.title)}</h3>`;
-  if (isPreparing) {
-    const bothReady = Boolean(round.my_ready && round.partner_ready);
-    const count = Number(Boolean(round.my_ready)) + Number(Boolean(round.partner_ready));
-    const startAt = new Date(round.prep_until);
-    const deadline = Number.isFinite(startAt.getTime()) ? timeFmt.format(startAt) : 'het afgesproken moment';
-    const countdownHours = Number.isFinite(startAt.getTime()) ? Math.max(0, Math.ceil((startAt.getTime() - Date.now()) / 3600000)) : null;
-    const untilText = countdownHours === null ? '' : countdownHours > 0 ? ` (nog ongeveer ${countdownHours} uur)` : ' (tijd bereikt, synchroniseren…)';
-    html += `<div class="prep-progress"><span class="eyebrow">VOORBEREIDING</span><strong>${count}/2 klaar</strong><div class="prep-track"><span style="width:${count * 50}%"></span></div><p class="muted">Startmoment: <strong class="countdown">${safe(deadline)}</strong>${untilText}</p></div>`;
-    html += `<div class="task-box"><span class="eyebrow">ALLEEN VOOR JOU</span><p>${safe(round.my_assignment)}</p></div>`;
-    html += `<div class="readiness"><span class="ready-line${round.my_ready ? ' ready' : ''}">${round.my_ready ? '✓' : '○'} Jij: ${round.my_ready ? 'klaar' : 'nog voorbereiden'}</span><span class="ready-line${round.partner_ready ? ' ready' : ''}">${round.partner_ready ? '✓' : '○'} Partner: ${round.partner_ready ? 'klaar' : 'nog voorbereiden'}</span></div>`;
-    if (!round.my_ready) html += '<button class="primary-btn" data-action="board-ready">Ik ben voorbereid</button>';
-    if (round.can_confirm_start && !round.my_start_confirmed) {
-      html += '<p class="muted">De voorbereidingstijd is voorbij. Jullie mogen nu allebei de start bevestigen.</p><button class="primary-btn" data-action="board-confirm">Ik wil starten</button>';
-    } else if (round.my_start_confirmed) {
-      html += '<p class="muted">Jij hebt de start bevestigd. De gezamenlijke missie verschijnt na de bevestiging van je partner.</p>';
-    } else if (bothReady) {
-      html += '<p class="muted">Jullie zijn allebei klaar! De knop ‘Ik wil starten’ verschijnt na het startmoment. Dat wordt door de server bewaakt.</p>';
-    } else {
-      html += '<p class="muted">Beiden moeten voorbereid zijn en de voorbereidingstijd moet verstreken zijn voordat jullie kunnen starten.</p>';
-    }
-  } else if (isActive) {
-    html += `<div class="task-box"><span class="eyebrow">DE GEZAMENLIJKE MISSIE</span><p>${safe(round.shared_challenge)}</p></div>`;
-    if (round.my_completed) html += '<span class="tag active">Jij hebt de opdracht afgerond ✓</span>';
-    else html += '<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';
-    if (round.partner_completed) html += '<p class="muted">Je partner heeft de opdracht al afgerond.</p>';
-  }
-  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
-  else if (round.my_skip_requested) html += '<p class="muted">Jij hebt voorgesteld om over te slaan. Je partner moet dat ook bevestigen.</p>';
-  $('round-detail').innerHTML = html;
-}
 async function runAction(action,extra={}){
   if(state.working)return;
-  const b=state.board?.round;
-  const id=extra.id;const uid=state.session?.user?.id;
+  const id=extra.id;
   const operations={
-    'board-begin':()=>rpc('us_board_begin',{p_prep_days:Number($('prep-days')?.value)||3,p_request_id:crypto.randomUUID()}),
-    'board-ready':()=>rpc('us_board_ready',{p_round_id:b.id}),
-    'board-confirm':()=>rpc('us_board_confirm_start',{p_round_id:b.id}),
-    'board-complete':()=>rpc('us_board_complete',{p_round_id:b.id}),
-    'board-skip':()=>rpc('us_board_skip',{p_round_id:b.id}),
     'mem-share':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'shared',p_expected_revision:Number(extra.revision)}),
     'mem-private':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'private',p_expected_revision:Number(extra.revision)}),
     'mem-delete':()=>rpc('us_memory_delete',{p_memory_id:id,p_expected_revision:Number(extra.revision)}),
@@ -356,7 +342,7 @@ async function runAction(action,extra={}){
     'create-code':async()=>{const v=await rpc('us_create_pair');state.pairCode=v.code;return v;},
   };
   if(!operations[action])return;
-  if((action.startsWith('board-')&&!b&&action!=='board-begin')||((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id)))return;
+  if((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id))return;
   setBusy(true);
   try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Opgeslagen en gesynchroniseerd.');}
   catch(e){toast(failText(e),true)}finally{setBusy(false)}
@@ -408,7 +394,24 @@ function bind(){
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;window.USTwoDateBridge.choose({title:item[0],minutes:item[1],source:'inspiratie'});return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  $('quest-calendar-export').addEventListener('click',()=>{
+    if(!paired()||!state.session?.user?.id){toast('Log eerst in met een gekoppeld account.',true);return;}
+    const confirmed=(state.dashboard?.dates||[]).filter(d=>d.status==='accepted')
+      .concat(state.questCalendar.filter(d=>d.status==='accepted'&&d.kind==='confirmed'));
+    if(!confirmed.length){toast('Er zijn nog geen bevestigde dates om te exporteren.',true);return;}
+    if(!window.USTwoCalendarIcs?.calendar){toast('Agenda-export is niet geladen. Ververs de app.',true);return;}
+    try{
+      const ics=window.USTwoCalendarIcs.calendar(confirmed);
+      const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+      const href=URL.createObjectURL(blob);
+      const link=document.createElement('a');
+      link.href=href;link.download='US-TWO-bevestigde-dates.ics';
+      document.body.appendChild(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(href),3000);
+      toast('Agenda-export aangemaakt. Importeer het bestand in je telefoonagenda.');
+    }catch(err){toast('Agenda-export mislukt: '+failText(err),true);}
+  });
   $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
   $('date-change-form').addEventListener('submit',async e=>{
     e.preventDefault();
@@ -512,4 +515,31 @@ async function boot(){
     }).catch(()=>{});
   }
 }
+/* Staging-only bridge: the pilot reuses the existing token-refreshing RPC client.
+ * Never copy access tokens into offline storage or expose them to the pilot. */
+window.USTwoQuestPilotBridge = Object.freeze({
+  identity: () => ({
+    userId: state.session?.user?.id || '',
+    coupleId: state.dashboard?.couple_id || '',
+    paired: paired()
+  }),
+  read: () => rpc('us_quest_state'),
+  readSuper: () => rpc('us_quest_super_state'),
+  catalog: async (world, mode) => {
+    if(!Number.isInteger(world)||world<0||world>5||!['afstand','samen'].includes(mode))
+      throw Error('Ongeldige catalogusselectie.');
+    if(!paired())throw Error('Koppel eerst jullie accounts.');
+    if(!state.session)throw Error('Log eerst in.');
+    if(state.session.expires_at<Date.now()/1000+80)await freshToken();
+    const type=mode==='afstand'?'remote':'together';
+    const query='/rest/v1/us_quest_catalog?select=id,title,category,minutes,reward_steps,brief,remote,together,world,estimated_cost_eur&world=eq.'+world+'&category=neq.Flirt&'+type+'=eq.true&order=id.asc&limit=50';
+    const call=()=>request(query,{headers:{Authorization:'Bearer '+state.session.access_token}});
+    try{return await call();}
+    catch(e){if(e.status===401){await freshToken();return call();}throw e;}
+  },
+  call: async (name, args) => {
+    try { return {data:await rpc(name,args),error:null}; }
+    catch(e) { return {data:null,error:{code:String(e?.code??e?.status??''),message:String(e?.message||e)}}; }
+  }
+});
 boot();

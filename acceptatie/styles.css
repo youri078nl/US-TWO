@@ -142,3 +142,6 @@ textarea::placeholder{color:#a89db7}
 .quest-world-progress-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#ef8db5,#ffd5a6);transition:width .18s ease}
 #quest-world-progress-label{font-size:12px;color:#f6d7d8;font-weight:700}
 @media(prefers-reduced-motion:reduce){.quest-world-progress-fill{transition:none}}
+
+.quest-question-turn-indicator{padding:10px 13px;border-radius:12px;border:1px solid #bd8b9e;background:#493043;color:#ffe4c5;font-size:14px;font-weight:800;text-align:center}
+.quest-question-turn-indicator[hidden]{display:none}

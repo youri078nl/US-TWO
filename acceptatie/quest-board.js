@@ -87,6 +87,11 @@
   const world=Number.isInteger(serverWorld)?serverWorld:Math.floor(step/CELLS_PER_WORLD)%6;
   $('quest-world-heading').textContent='Wereld '+(world+1)+' · '+(WORLD_NAMES[world]||'Samen op pad');
   $('quest-world-cell').textContent='Vakje '+step+' ♡';
+  const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
+  const progress=$('quest-world-progress-fill');
+  if(progress)progress.style.width=(local/CELLS_PER_WORLD*100).toFixed(2)+'%';
+  const label=$('quest-world-progress-label');
+  if(label)label.textContent=local+' van '+CELLS_PER_WORLD+' stappen · volgende wereld over '+(CELLS_PER_WORLD-local);
  }
  function move(step,serverWorld=null){
   const el=$('quest-world-pawn');if(!el)return;

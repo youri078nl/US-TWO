@@ -1,7 +1,7 @@
-US TWO 0.11.1-rc
-Isolatiepad: /US-TWO/acceptatie/
-Bron: 44abc3a1fa7b48d2682db271c5227cff1ed79078
-Bron-PR: https://github.com/youri078nl/US-TWO/pull/1
-Geautomatiseerde CI: https://github.com/youri078nl/US-TWO/actions/runs/44074123734
-Let op: testversie, geen vrijgegeven versie 1.0.0.
-Gebruik bij voorkeur een apart gekoppeld testpaar. Originele 2D-pion en kaartafbeeldingen worden per toestel lokaal geïmporteerd.
+US TWO 0.12.0-quiz-rc | Acceptatietest, geen release 1.0.0
+GitHub-code: bc4a3b59ecc681744cb57cf3976b332afca5ee0c
+CI: https://github.com/youri078nl/US-TWO/actions/runs/44083101573 (success)
+Supabase migratie: 20261117122745 canonical_question_turns_shared_position_20261117
+Nieuw: gedeelde vraagbeurten met goedkeuring via dezelfde canonical us_quest_games positie; geen tweede pion of dubbele voortgang.
+Categorie Erotiek voorlopig gesloten tot wederzijdse opt-in.
+Gebruik aparte testaccounts. Niet getest: echte Android+iPhone eindacceptatie, originele volledige 2D poseframes.

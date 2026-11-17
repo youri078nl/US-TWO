@@ -179,6 +179,7 @@
     window.USTwoCinematics?.update(server,identity());
     window.USTwoCardGallery?.update(identity());
     window.USTwoFullDeck?.update(identity(),server);
+    window.USTwoQuestQuestions?.update(server,identity(),local);
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
       showSuper(superdates,local.items.length>0,local.blocked);
@@ -251,6 +252,7 @@
     window.USTwoCinematics?.clear();
     window.USTwoCardGallery?.clear();
     window.USTwoFullDeck?.clear();
+    window.USTwoQuestQuestions?.clear();
     $('quest-pilot-schedule-time').value='';
     for(const id of ['quest-pilot-start','quest-pilot-sync','quest-pilot-resolve','quest-pilot-load-catalog',
       ...Array.from({length:3},(_,i)=>'quest-pilot-option-'+i),
@@ -284,12 +286,27 @@
         !panel.classList.contains('hidden')&&
         Boolean(window.USTwoQuestPilotBridge?.identity()?.paired);
     };
+    // Focus, tab and visibility events can arrive together on Android/iOS.
+    // Coalesce them instead of triggering several identical authenticated RPCs.
+    let lastAutomaticRefresh=0;
     const refreshVisible=()=>{
-      if(!loading&&navigator.onLine!==false&&gameVisible())operation(refresh);
+      const now=Date.now();
+      if(!loading&&navigator.onLine!==false&&gameVisible()&&
+         now-lastAutomaticRefresh>=2500){
+        lastAutomaticRefresh=now;
+        operation(refresh);
+      }
     };
     // Do not erase a valid on-screen board by needlessly polling while offline.
     window.addEventListener?.('online',refreshVisible);
-    window.addEventListener?.('us-two-quest-game-open',refreshVisible);
+    // Explicit opening of the game (or switching account) must ALWAYS read fresh.
+    // Only passive focus/visibility/online/poll signals are throttled.
+    window.addEventListener?.('us-two-quest-game-open',()=>{
+      if(!loading&&navigator.onLine!==false&&gameVisible()){
+        lastAutomaticRefresh=Date.now();
+        operation(refresh);
+      }
+    });
     window.addEventListener?.('focus',refreshVisible);
     document.addEventListener?.('visibilitychange',refreshVisible);
     if(typeof window.setInterval==='function')window.setInterval(refreshVisible,20000);
@@ -484,5 +501,25 @@
     }));
     text('quest-pilot-message','Proefintegratie. Tik op Serverstatus ophalen wanneer je bent ingelogd.');
   }
+  window.USTwoQuestionActions=Object.freeze({
+    send:async(payload)=>{
+      const who=identity(),q=await ensureQueue(),local=await q.state();
+      if(local.items.length||local.blocked)
+        throw Error('Eerst de bestaande offline wachtrij oplossen.');
+      const server=await window.USTwoQuestPilotBridge.read();
+      if(!server?.paired||!server.initialized||!Number.isSafeInteger(server.revision))
+        throw Error('Geen bevestigde gezamenlijke spelstand.');
+      if(!['category','submit','approve','reject','skip','cancel'].includes(payload?.action))
+        throw Error('Onbekende vragenactie.');
+      if(!window.confirm||!who.paired)throw Error('Gekoppelde account vereist.');
+      const requestId=crypto.randomUUID();
+      await q.enqueue({type:'question_action',requestId,expectedRevision:server.revision,
+        payload});
+      handleSync(await q.sync());
+      // A successful mutation must refresh immediately; focus-event throttling
+      // applies only to passive polling, never to explicit user actions.
+      await refresh();
+    }
+  });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

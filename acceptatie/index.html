@@ -208,6 +208,27 @@
               </div>
             </section>
             <p id="quest-pilot-instructions" class="muted" aria-live="polite">De opdrachtinstructies verschijnen zodra jullie een opdracht hebben gekozen.</p>
+            <section id="quest-question-panel" class="quest-question-panel stack" aria-label="Om de beurt vragen beantwoorden" hidden>
+              <h4>Jullie vragenronde</h4>
+              <p class="muted">Eén gezamenlijke spelstand. Alleen na goedkeuring door je partner verdienen jullie 3 of 5 stappen. Geen dobbelsteen.</p>
+              <p id="quest-question-status" role="status" aria-live="polite">Vragenstand ophalen…</p>
+              <label for="quest-question-category">Kies een categorie</label>
+              <select id="quest-question-category" disabled></select>
+              <button id="quest-question-start" type="button" class="secondary-btn" disabled>Start deze vraag</button>
+              <p id="quest-question-prompt" class="quest-question-prompt"></p>
+              <p id="quest-question-received" class="quest-question-answer" hidden></p>
+              <label for="quest-question-answer">Jouw antwoord</label>
+              <textarea id="quest-question-answer" rows="3" maxlength="1500" placeholder="Typ jouw antwoord voor je partner" disabled hidden></textarea>
+              <div class="buttons">
+                <button id="quest-question-submit" type="button" class="secondary-btn" disabled hidden>Antwoord versturen</button>
+                <button id="quest-question-approve" type="button" class="secondary-btn" disabled hidden>Antwoord goedkeuren</button>
+                <button id="quest-question-reject" type="button" class="ghost-btn" disabled hidden>Opnieuw beantwoorden</button>
+                <button id="quest-question-skip" type="button" class="ghost-btn" disabled hidden>Vraag overslaan</button>
+                <button id="quest-question-cancel" type="button" class="ghost-btn" disabled hidden>Vraag annuleren</button>
+              </div>
+              <p class="muted">Categorie Erotiek blijft gesloten totdat wederzijdse toestemming technisch is vastgelegd.</p>
+            </section>
+
             <section class="stack" aria-labelledby="quest-schedule-heading">
               <h4 id="quest-schedule-heading">Date samen plannen</h4>
               <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>
@@ -386,5 +407,6 @@
    <script src="./quest-card-gallery.js" defer></script>
    <script src="./quest-full-deck.js" defer></script>
    <script src="./quest-pilot.js" defer></script>
+   <script src="./quest-questions.js" defer></script>
 </body>
 </html>

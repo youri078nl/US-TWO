@@ -10,7 +10,7 @@ var modules={
  * adapter implementing load() and save(snapshot), scoped to one authenticated user.
  * No automatic conflict resolution: server revision conflicts require fresh data.
  */
-const TYPES = new Set(['quest_action', 'super_action', 'schedule_action']);
+const TYPES = new Set(['quest_action', 'super_action', 'schedule_action','question_action']);
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function validate(item) {
@@ -191,7 +191,9 @@ const SPECS = Object.freeze({
   super_action: {name:'us_quest_super_action',keys:['cell','action'],
     params:{cell:'p_cell',action:'p_action'}},
   schedule_action: {name:'us_quest_schedule_action',keys:['action','time'],
-    params:{action:'p_action',time:'p_time'}}
+    params:{action:'p_action',time:'p_time'}},
+  question_action: {name:'us_quest_question_action',keys:['action','category','answer'],
+    params:{action:'p_action',category:'p_category',answer:'p_answer'}}
 });
 function makeRpcSender(supabase) {
   if (!supabase || typeof supabase.rpc!=='function') throw Error('supabase_client_required');

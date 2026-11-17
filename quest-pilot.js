@@ -29,6 +29,7 @@
     queue=window.USTwoOffline.createBrowserQueue({
       supabase:{rpc:(name,args)=>window.USTwoQuestPilotBridge.call(name,args)},
       userId:who.userId,coupleId:who.coupleId,
+      scope:new URL('./',location.href).pathname,
       locks:navigator.locks,indexedDBFactory:indexedDB
     });
     queueFor=key;

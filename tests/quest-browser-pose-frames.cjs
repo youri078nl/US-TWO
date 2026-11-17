@@ -68,6 +68,11 @@ async function setup(page,user){
   const original=await page.locator('#quest-world-pawn-art').getAttribute('src');
   assert.equal(await page.locator('#quest-world-pose-frame').isHidden(),false);
   assert.match(await page.locator('#quest-world-pose-frame').getAttribute('src'),/^blob:/);
+  // A blob: URL in src is not sufficient: CSP could still block its actual pixels.
+  await page.waitForFunction(()=>{
+   const img=document.querySelector('#quest-world-pose-frame');
+   return img&&!img.hidden&&img.complete&&img.naturalWidth===24&&img.naturalHeight===24;
+  },{timeout:8000});
   await page.locator('#quest-cinematic-play').click();
   await page.locator('#quest-world-pawn[data-framepack="true"]').waitFor();
   assert.match(await page.locator('#quest-world-pose-frame').getAttribute('src'),/^blob:/);

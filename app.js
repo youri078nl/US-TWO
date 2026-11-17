@@ -1,12 +1,13 @@
 const CONFIG = Object.freeze({
-  version: '0.10.1-pilot',
+  version: '0.11.0-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
 const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
-const STORAGE_KEY = 'us-two-web-session-v1';
+// Keep preview and production credentials separate on the same GitHub Pages origin.
+const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
 const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'});

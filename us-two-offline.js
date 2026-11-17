@@ -233,7 +233,7 @@ module.exports={makeRpcSender};
 // Never fall back to an unsafe unlocked write: Web Locks require HTTPS/localhost.
 const {Outbox}=require('./outbox.cjs');
 
-function createCoordinatedOutbox({store,identity,locks}={}) {
+function createCoordinatedOutbox({store,identity,locks,scope=''}={}) {
   if(!locks || typeof locks.request !== 'function') throw Error('web_locks_required');
   if(!store || typeof store.load!=='function' || typeof store.save!=='function')
     throw Error('durable_store_required');
@@ -241,7 +241,7 @@ function createCoordinatedOutbox({store,identity,locks}={}) {
       typeof identity.coupleId!=='string'||!identity.coupleId)
     throw Error('identity_required');
   // JSON array produces stable, collision-free namespace within the origin.
-  const lockName='us-two-outbox:'+JSON.stringify([identity.userId,identity.coupleId]);
+  const lockName='us-two-outbox:'+JSON.stringify(scope?[scope,identity.userId,identity.coupleId]:[identity.userId,identity.coupleId]);
   async function exclusive(work) {
     // Reload INSIDE the lock to prevent lost updates from stale tab snapshots.
     return locks.request(lockName,{mode:'exclusive'},async()=>{
@@ -271,10 +271,13 @@ const {makeRpcSender}=require('./rpc-transport.cjs');
  * Requires HTTPS/Web Locks + IndexedDB and a verified Supabase client session.
  * No timers, background work or automatic retries are started.
  */
-function createBrowserQueue({supabase,userId,coupleId,locks,indexedDBFactory}={}) {
+function createBrowserQueue({supabase,userId,coupleId,locks,indexedDBFactory,scope=''}={}) {
   if(!supabase || typeof supabase.rpc!=='function') throw Error('supabase_client_required');
-  const store=createIndexedDbStore({indexedDBFactory,userId,coupleId});
-  const queue=createCoordinatedOutbox({store,identity:{userId,coupleId},locks});
+  if(typeof scope!=='string'||scope.length>256)throw Error('invalid_app_scope');
+  // A path-scoped database prevents a staging tab replaying production outbox actions.
+  const dbName=scope?'us-two-offline-outbox-v1::'+scope:undefined;
+  const store=createIndexedDbStore({indexedDBFactory,userId,coupleId,dbName});
+  const queue=createCoordinatedOutbox({store,identity:{userId,coupleId},locks,scope});
   const send=makeRpcSender(supabase);
   return Object.freeze({
     enqueue:action=>queue.enqueue(action),

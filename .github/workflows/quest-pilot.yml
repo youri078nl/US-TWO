@@ -19,6 +19,7 @@ on:
       - 'tests/quest-pose-archive.test.cjs'
       - 'tests/quest-browser-pose-zip.cjs'
       - 'tests/quest-browser-pose-frames.cjs'
+      - 'tests/quest-scope-isolation.test.cjs'
       - 'tests/quest-browser-cinematics.cjs'
       - 'tests/quest-no-3d.test.cjs'
       - 'quest-pilot.js'
@@ -70,6 +71,8 @@ jobs:
         run: node tests/quest-no-3d.test.cjs
       - name: Install isolated browser-storage test dependency
         run: npm install --no-save --ignore-scripts --no-audit --no-fund fake-indexeddb@6.2.5
+      - name: Verify account, outbox and cache isolation between staging and production scopes
+        run: node tests/quest-scope-isolation.test.cjs
       - name: Verify safe ZIP pose archive parser
         run: node tests/quest-pose-archive.test.cjs
       - name: Exercise offline browser integration

@@ -163,6 +163,12 @@
               </div>
               <div class="quest-board-navigation">
                 <p class="muted">Veeg <strong>links/rechts én omhoog/omlaag</strong> over de kaart. De kaart is ongeveer twee telefoonschermen hoog.</p>
+                <div class="quest-world-zoom-controls" role="group" aria-label="Speelbord vergroten en verkleinen">
+                  <button type="button" class="secondary-btn" id="quest-world-zoom-out" aria-label="Zoom uit">−</button>
+                  <output id="quest-world-zoom-label" aria-live="polite">100%</output>
+                  <button type="button" class="secondary-btn" id="quest-world-zoom-in" aria-label="Zoom in">+</button>
+                  <button type="button" class="secondary-btn" id="quest-world-zoom-reset">Normaal</button>
+                </div>
                 <button type="button" class="secondary-btn" id="quest-world-find-pawn">Ga naar onze pion</button>
               </div>
               <p id="quest-world-position" class="muted" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>

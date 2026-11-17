@@ -33,6 +33,9 @@ const offline=globalThis.USTwoOffline;
   assert.equal(responded,false,'one US TWO app must not hijack another scope');
  }
  const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('app.js','utf8');
+ const worker=fs.readFileSync('service-worker.js','utf8');
+ for(const match of html.matchAll(/<script[^>]+src="\.\/([^"]+)"/g))
+   assert.ok(worker.includes("'./"+match[1]+"'"),'offline shell must cache script '+match[1]);
  assert.match(html,/img-src 'self' data: blob:/,'local approved JPG and pose frames must pass CSP');
  assert.match(app,/STORAGE_KEY = 'us-two-web-session-v2:' \+ new URL\('\.\/',location\.href\)\.pathname/,'auth tokens scoped by app path');
  console.log('PASS separate app scopes isolate JWT sessions, IndexedDB outbox, Web Locks, SW caches and fetch interception');

@@ -111,6 +111,10 @@
    const instructionText=mode==='remote'&&c.remote?c.remoteInstructions||c.description
     :c.instructions||c.description;
    instructions.textContent=instructionText||'Geen aanvullende uitleg beschikbaar.';
+   if(mode==='all'&&c.together&&c.remote&&c.remoteInstructions){
+    const togetherHeading=document.createElement('strong');togetherHeading.textContent='Samen';
+    details.insertBefore(togetherHeading,instructions);
+   }
    if(mode==='all'&&c.together&&c.remote&&c.remoteInstructions&&c.remoteInstructions!==instructionText){
     const remoteHeading=document.createElement('strong');remoteHeading.textContent='Op afstand';
     const remoteDetail=document.createElement('p');remoteDetail.textContent=c.remoteInstructions;

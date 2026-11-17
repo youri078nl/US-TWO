@@ -1,0 +1,19 @@
+name: US TWO targeted board pointer checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'acceptatie/quest-board-interactions.js'
+      - 'acceptatie/tests/board-pointer.test.cjs'
+      - '.github/workflows/ustwo-board-pointer.yml'
+  workflow_dispatch:
+jobs:
+  pointer-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check acceptatie/quest-board-interactions.js
+      - run: node --test acceptatie/tests/board-pointer.test.cjs

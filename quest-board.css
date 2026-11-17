@@ -58,18 +58,6 @@
 #quest-world-actor #quest-world-pose-frame{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:contain;object-position:center bottom;pointer-events:none}
 #quest-world-actor #quest-world-pose-frame[hidden]{display:none}
 
-/* Independent 3D WebGL preview of the ORIGINAL private rig. The canonical board remains unchanged. */
-.quest-3d-details{border:1px solid #a98b70;border-radius:12px;padding:10px 12px;background:#251d35;color:#ffe8cf}
-.quest-3d-details summary{min-height:40px;font-weight:700;cursor:pointer}
-.quest-3d-details label{display:block;font-size:13px;margin:10px 0 4px}
-.quest-3d-details input,.quest-3d-details select{max-width:100%;width:100%}
-.quest-3d-details button{margin:9px 4px 9px 0}
-.quest-3d-viewport{position:relative;width:100%;aspect-ratio:16/10;min-height:190px;border-radius:12px;overflow:hidden;background:#0b0917}
-#quest-3d-canvas{display:block;width:100%;height:100%;touch-action:none}
-.quest-3d-loading{position:absolute;inset:0;display:grid;place-items:center;text-align:center;margin:0;padding:16px;background:#11101ccb;color:#f6e7d1}
-.quest-3d-loading[hidden]{display:none}
-@media(prefers-reduced-motion:reduce){#quest-3d-canvas{animation:none!important}}
-
 /* Visual identity taken from the user-supplied US TWO task and pose references.
  * These styles affect the pilot game/pose controls only; board art, coordinates,
  * character imagery and the canonical game logic remain untouched. */
@@ -150,3 +138,13 @@
 #full-deck-details label:has(input[type=checkbox]){display:flex;gap:9px;align-items:center}
 #full-deck-details label input[type=checkbox]{width:19px;height:19px;flex:none;accent-color:#d79352}
 #full-deck-description{line-height:1.6;margin:10px 0 17px}
+
+/* Canonical quest task card, tied to exact server catalog ID. No placeholder 3D art. */
+.quest-current-card{display:grid;gap:10px;border:1px solid #dcab63;border-radius:16px;padding:14px;
+ background:linear-gradient(140deg,#542a21,#241727);box-shadow:inset 0 1px 0 #f5ce8844}
+.quest-current-card[hidden]{display:none}
+.quest-current-card h4{margin:0;color:#ffe3ad}
+.quest-current-card .buttons{display:flex;flex-wrap:wrap;gap:9px}
+.quest-current-card .buttons button{flex:1 1 180px;min-width:0}
+#quest-current-card-art-status{margin:0}
+#quest-current-card-image{border:1px solid #efbc76;border-radius:11px}

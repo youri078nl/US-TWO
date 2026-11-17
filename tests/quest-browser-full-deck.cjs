@@ -59,10 +59,43 @@ function packed(){
   await page.locator('#full-deck-zip').setInputFiles({name:'US_TWO_258_KAARTEN_MOBIEL.zip',mimeType:'application/zip',buffer:packed()});
   await page.getByText(/Alle 258 2D-kaarten privé geïmporteerd/).waitFor({timeout:30000});
   assert.equal(await page.locator('#full-deck-image').evaluate(el=>el.src.startsWith('blob:')),true);
+  // The active server quest ID, not the card title, determines the matching original illustration.
+  const accountA={paired:true,userId:'user-a',coupleId:'pair'};
+  await page.evaluate(identity=>window.USTwoFullDeck.update(identity,{
+    paired:true,initialized:true,phase:'active',mode:'samen',date:{id:'free_dag_01',title:'De stille fototocht'}
+  }),accountA);
+  assert.equal(await page.locator('#quest-current-card').isVisible(),true);
+  assert.equal(await page.locator('#quest-current-card-title').textContent(),'De stille fototocht');
+  assert.equal(await page.locator('#quest-current-card-image').evaluate(el=>el.src.startsWith('blob:')),true);
+  await page.locator('#quest-current-open-library').click();
+  assert.equal(await page.locator('#full-deck-details').evaluate(el=>el.open),true);
+  assert.equal(await page.locator('#full-deck-title').textContent(),'De stille fototocht');
+  await page.evaluate(identity=>window.USTwoFullDeck.update(identity,{
+    paired:true,initialized:true,phase:'active',mode:'afstand',date:{id:'not-a-real-card',title:'De stille fototocht'}
+  }),accountA);
+  assert.equal(await page.locator('#quest-current-card').isVisible(),false,
+    'Do not guess illustration from a coincidentally matching title');
+  await page.evaluate(identity=>window.USTwoFullDeck.update(identity,{
+    paired:true,initialized:true,phase:'approval',mode:'afstand',date:{id:'free_dag_02',title:'Het omgekeerde interview'}
+  }),accountA);
+  assert.equal(await page.locator('#quest-current-card').isVisible(),true);
+  assert.match(await page.locator('#quest-current-card-meta').textContent(),/Voorstel wacht op goedkeuring/);
+  await page.evaluate(identity=>window.USTwoFullDeck.update(identity,{
+    paired:true,initialized:true,phase:'choose',date:null
+  }),accountA);
+  assert.equal(await page.locator('#quest-current-card').isVisible(),false,
+    'Choosing a new task must clear the previous private card');
+  await page.evaluate(identity=>window.USTwoFullDeck.update(identity,{
+    paired:true,initialized:true,phase:'active',mode:'samen',date:{id:'free_dag_01'}
+  }),accountA);
+  assert.equal(await page.locator('#quest-current-card').isVisible(),true);
   await page.evaluate(()=>window.USTwoFullDeck.update({paired:true,userId:'user-b',coupleId:'pair'},null));
   await page.getByText(/Importeer het mobiele ZIP-pakket/).waitFor();
   assert.equal(await page.locator('#full-deck-image').isVisible(),false);
+  assert.equal(await page.locator('#quest-current-card-image').isVisible(),false,
+    'The partner account must never see the previous account\'s local JPG');
   await page.evaluate(()=>window.dispatchEvent(new Event('us-two-session-cleared')));
+  assert.equal(await page.locator('#quest-current-card').isVisible(),false);
   assert.equal(await page.locator('#full-deck-zip').isDisabled(),true);
   assert.deepEqual(errors,[]);
   console.log('PASS full 258-card gallery: 240+18, superdate privacy, world filtering, verified ZIP, account isolation and logout');

@@ -9,6 +9,7 @@
  const MAX_ARCHIVE=38_000_000, MAX_JPEG=500_000;
  const STORE='collection', DB='us-two-full-deck-258-v1';
  let cards=[],filtered=[],selected=0,account='',images=null,imageURL='',generation=0,loading=false;
+ let activeState=null,activeImageURL='',activeImageIndex=-1,activeImageBlob=null;
  const say=s=>{if($('full-deck-status'))$('full-deck-status').textContent=s;};
  const nameOf=i=>i<240?('US_TWO_W'+(Math.floor(i/40)+1)+'_'+String(i%40+1).padStart(2,'0')+'.jpg'):'US_TWO_SUPERDATE_'+String(i-239).padStart(2,'0')+'.jpg';
  const u16=(dv,n)=>dv.getUint16(n,true),u32=(dv,n)=>dv.getUint32(n,true);
@@ -79,6 +80,47 @@
   const pic=$('full-deck-image');
   if(pic){pic.hidden=true;pic.removeAttribute('src');}
  }
+ function clearActiveImage(){
+  if(activeImageURL){URL.revokeObjectURL(activeImageURL);activeImageURL='';}
+  activeImageBlob=null;activeImageIndex=-1;
+  const pic=$('quest-current-card-image');
+  if(pic){pic.hidden=true;pic.removeAttribute('src');pic.alt='';}
+ }
+ function renderActive(){
+  const panel=$('quest-current-card'),pic=$('quest-current-card-image');
+  if(!panel||!pic)return;
+  const state=activeState;
+  const active=Boolean(account&&state?.paired&&state.initialized&&
+    ['approval','active'].includes(state.phase)&&typeof state.date?.id==='string');
+  const idx=active?cards.findIndex(card=>!card.superdate&&card.id===state.date.id):-1;
+  if(idx<0){
+   panel.hidden=true;
+   clearActiveImage();
+   return;
+  }
+  const card=cards[idx], blob=images?.[idx];
+  panel.hidden=false;
+  $('quest-current-card-title').textContent=card.title;
+  $('quest-current-card-meta').textContent=
+    'Wereld '+(card.world+1)+' · '+card.minutes+' min · '+
+    (state.phase==='approval'?'Voorstel wacht op goedkeuring':'Opdracht actief')+
+    ' · '+(state.mode==='afstand'?'op afstand':'samen');
+  if(blob instanceof Blob&&blob.type==='image/jpeg'){
+   if(activeImageIndex!==idx||activeImageBlob!==blob||!activeImageURL){
+    clearActiveImage();
+    activeImageURL=URL.createObjectURL(blob);
+    activeImageIndex=idx;activeImageBlob=blob;
+    pic.src=activeImageURL;
+   }
+   pic.alt='Origineel US TWO-opdrachtkaartje: '+card.title;
+   pic.hidden=false;
+   $('quest-current-card-art-status').textContent='Goedgekeurde 2D-kaart, privé opgeslagen op dit toestel.';
+  }else{
+   clearActiveImage();
+   $('quest-current-card-art-status').textContent=
+     'De opdracht is beschikbaar. Importeer het originele 258-kaartenpakket voor de afbeelding.';
+  }
+ }
  function filter(){
   const world=$('full-deck-world')?.value||'all',search=($('full-deck-search')?.value||'').toLocaleLowerCase('nl').trim();
   filtered=cards.map((c,i)=>({c,i})).filter(({c})=>(world==='all'||world===String(c.world))&&(!search||(c.title+' '+(c.brief||'')).toLocaleLowerCase('nl').includes(search))).map(({i})=>i);
@@ -116,16 +158,18 @@
    if(Array.isArray(saved?.pictures)&&saved.pictures.length===258&&saved.pictures.every(x=>x instanceof Blob)){
     images=saved.pictures;say('258 originele 2D-kaarten lokaal beschikbaar.');
    }else say('De 258 opdrachtteksten zijn beschikbaar. Importeer het mobiele ZIP-pakket voor de afbeeldingen.');
-   render();
+   render();renderActive();
   }catch(_err){if(n===generation)say('Kaartgegevens werken; lokale afbeeldingopslag is niet beschikbaar.');}
  }
  function update(identity,state){
   const key=identity?.paired&&identity.userId&&identity.coupleId?identity.userId+':'+identity.coupleId:'';
   if(key!==account){
-   account=key;++generation;images=null;clearImage();
+   account=key;++generation;images=null;clearImage();clearActiveImage();
    $('full-deck-zip').disabled=!key||loading;
    if(key)load(key);else{say('Log in op jullie gekoppelde accounts om afbeeldingen te importeren.');render();}
   }
+  activeState=key&&state?.paired?state:null;
+  renderActive();
   if(state?.date?.id&&cards.length){
    const idx=cards.findIndex(c=>!c.superdate&&c.id===state.date.id);
    if(idx>=0&&$('full-deck-follow')?.checked){
@@ -134,7 +178,7 @@
   }
  }
  function clear(){
-  ++generation;account='';images=null;loading=false;clearImage();
+  ++generation;account='';images=null;activeState=null;loading=false;clearImage();clearActiveImage();
   if($('full-deck-zip'))$('full-deck-zip').disabled=true;
   say('Kaartafbeeldingen verborgen na uitloggen.');
   render();
@@ -148,7 +192,7 @@
    if(account!==key||generation!==n)return;
    await store(key,{pictures,savedAt:Date.now()},true);
    if(account!==key||generation!==n)return;
-   images=pictures;say('Alle 258 2D-kaarten privé geïmporteerd.');render();
+   images=pictures;say('Alle 258 2D-kaarten privé geïmporteerd.');render();renderActive();
   }catch(e){if(account===key)say('Import mislukt: '+String(e.message||e));}
   finally{loading=false;if(account===key)$('full-deck-zip').disabled=false;}
  }
@@ -162,7 +206,7 @@
    cards=[...data.ordinary.map(c=>({...c,superdate:false})),
       ...data.superdates.map(c=>({...c,world:'superdate',superdate:true}))];
    if(new Set(data.ordinary.map(c=>c.id)).size!==240)throw Error('Dubbele catalogus-ID');
-   filter();say('258 officiële titels geladen. Importeer het mobiele ZIP-pakket voor de illustraties.');
+   filter();renderActive();say('258 officiële titels geladen. Importeer het mobiele ZIP-pakket voor de illustraties.');
   }catch(_err){say('Volledige catalogus niet geladen; probeer deze testversie opnieuw te openen.');return;}
   $('full-deck-world').addEventListener('change',filter);
   $('full-deck-search').addEventListener('input',filter);
@@ -171,6 +215,26 @@
   $('full-deck-zip').addEventListener('change',async e=>{
    const file=e.currentTarget.files?.[0];e.currentTarget.value='';
    if(file)await importZip(file);
+  });
+  $('quest-current-open-library')?.addEventListener('click',()=>{
+   if($('quest-current-card').hidden||!activeState?.date?.id)return;
+   const idx=cards.findIndex(c=>!c.superdate&&c.id===activeState.date.id);
+   if(idx<0)return;
+   selected=idx;
+   $('full-deck-world').value='all';$('full-deck-search').value='';
+   filter();
+   const details=$('full-deck-details');
+   details.open=true;
+   details.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  $('quest-current-show-animation')?.addEventListener('click',()=>{
+   if($('quest-current-card').hidden)return;
+   const button=$('quest-cinematic-play');
+   $('quest-world-viewport')?.scrollIntoView({behavior:'smooth',block:'center'});
+   if(button?.disabled){
+    $('quest-current-card-art-status').textContent=
+      'Laad eerst jullie goedgekeurde 2D-pion of poseframes om de beweging te zien.';
+   }else button.click();
   });
   window.addEventListener('us-two-session-cleared',clear);
  }

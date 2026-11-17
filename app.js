@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.10.0-pilot',
+  version: '0.10.1-pilot',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

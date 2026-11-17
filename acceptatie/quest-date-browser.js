@@ -132,6 +132,13 @@
   for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration','quest-date-sort']){
    const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;render();});
   }
+  $('quest-date-surprise')?.addEventListener('click',()=>{
+   if(!loaded?.length||!hasBridge()){say('De dates zijn nog niet beschikbaar.');return;}
+   const options=current();
+   if(!options.length){say('Geen dates passen bij de gekozen filters.');return;}
+   const item=options[Math.floor(Math.random()*options.length)];
+   window.USTwoDateBridge.choose({title:item.title,minutes:item.minutes,source:item.source});
+  });
   $('quest-date-reset-filters')?.addEventListener('click',()=>{
    for(const id of ['quest-date-search','quest-date-area','quest-date-category','quest-date-budget','quest-date-mode','quest-date-duration']){
     const el=$(id);if(el)el.value=id==='quest-date-search'?'':id==='quest-date-sort'?'default':'all';

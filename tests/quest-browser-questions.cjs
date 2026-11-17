@@ -6,6 +6,7 @@ const {chromium}=require('playwright');
  try{
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  page.on('dialog',dialog=>dialog.accept());
   await page.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle',timeout:30000});
   await page.evaluate(()=>{
    const A='00000000-0000-4000-8000-000000000081';

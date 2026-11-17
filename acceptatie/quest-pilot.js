@@ -74,6 +74,17 @@
     $('quest-pilot-cancel').disabled=!ownProposal;
     $('quest-pilot-complete').disabled=!activeTask||Boolean(state.my_done)||Boolean(state.my_skip)||Boolean(state.partner_skip);
     $('quest-pilot-skip').disabled=!activeTask||Boolean(state.my_skip);
+    const taskProgress=$('quest-pilot-task-progress');
+    if(taskProgress){
+      taskProgress.hidden=state.phase!=='active';
+      if(state.phase==='active'){
+        const mine=Boolean(state.my_done),partner=Boolean(state.partner_done);
+        taskProgress.textContent=state.my_skip||state.partner_skip
+          ? 'Opdracht overgeslagen. De gedeelde spelstand wordt bijgewerkt.'
+          : 'Jij: '+(mine?'afgerond ✓':'nog bezig')+' · Partner: '+(partner?'afgerond ✓':'nog bezig')+
+            (mine&&!partner?' · Wachten op je partner.':!mine&&partner?' · Jij kunt de opdracht nog afronden.':'');
+      }
+    }
     const d=state.date;
     text('quest-pilot-task',d&&typeof d.title==='string'
       ? 'Opdracht: '+d.title+' · '+(state.mode==='afstand'?'op afstand':'samen')

@@ -26,6 +26,7 @@ on:
       - 'quest-questions.js'
       - 'supabase/migrations/20261117_canonical_question_turns.sql'
       - 'tests/quest-browser-questions.cjs'
+      - 'tests/quest-browser-login-onboarding.cjs'
       - 'tests/quest-questions-contract.test.cjs'
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
@@ -97,6 +98,8 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Test real login routing and persistent mobile session in Chromium
+        run: node tests/quest-browser-login-onboarding.cjs
       - name: Run actual Chromium interface smoke test
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-http.log 2>&1 &

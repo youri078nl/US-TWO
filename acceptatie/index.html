@@ -291,7 +291,13 @@
               <label for="quest-question-category">Kies een categorie</label>
               <select id="quest-question-category" disabled></select>
               <button id="quest-question-start" type="button" class="secondary-btn" disabled>Start deze vraag</button>
-              <p id="quest-question-prompt" class="quest-question-prompt"></p>
+              <div id="quest-question-card" class="quest-question-card" hidden>
+                <img src="./assets/us-two-user-pawn.png" alt="Goedgekeurde 2D-tekening van Youri en Kim" class="quest-question-art" loading="lazy">
+                <div class="quest-question-card-content">
+                  <span id="quest-question-card-category" class="quest-date-chip">Vraag</span>
+                  <p id="quest-question-prompt" class="quest-question-prompt"></p>
+                </div>
+              </div>
               <p id="quest-question-received" class="quest-question-answer" hidden></p>
               <label for="quest-question-answer">Jouw antwoord</label>
               <textarea id="quest-question-answer" rows="3" maxlength="1500" placeholder="Typ jouw antwoord voor je partner" disabled hidden></textarea>

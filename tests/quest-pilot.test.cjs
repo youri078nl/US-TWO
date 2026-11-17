@@ -32,7 +32,8 @@ function setup(name) {
  elements['quest-pilot-budget'].value='0';
  const doc={readyState:'complete',getElementById:id=>elements[id]||null};
  const events={};
- const ctx={console,document:doc,indexedDB:new IDBFactory(),crypto:require('node:crypto').webcrypto};
+ const ctx={console,URL,location:{href:'https://youri078nl.github.io/US-TWO/acceptatie/'},
+  document:doc,indexedDB:new IDBFactory(),crypto:require('node:crypto').webcrypto};
  ctx.addEventListener=(name,fn)=>{events[name]=fn;};
  ctx.globalThis=ctx;ctx.window=ctx;
  ctx.navigator={onLine:true,locks:{request:async(_key,_options,fn)=>fn()}};

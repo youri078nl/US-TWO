@@ -34,6 +34,7 @@
    const official=source.ordinary.map((c,i)=>({
     key:'quest-'+String(c.id),title:String(c.title||'').slice(0,120),
     description:String(c.brief||''),instructions:String(c.together_instructions||''),
+    remoteInstructions:String(c.remote_instructions||''),
     category:String(c.category||'Algemeen'),minutes:Number(c.minutes)||30,
     cost:Number(c.estimated_cost_eur)||0,remote:Boolean(c.remote),
     together:Boolean(c.together),source:'officieel',index:i
@@ -42,7 +43,7 @@
     .map((c,i)=>({
       key:'bonus-'+String(c.number||i+1),title:String(c.title||'').slice(0,120),
       description:Array.isArray(c.steps)?c.steps.join(' · '):'',
-      instructions:'',category:String(c.category||'Bonus'),minutes:Number(c.minutes)||30,
+      instructions:'',remoteInstructions:'',category:String(c.category||'Bonus'),minutes:Number(c.minutes)||30,
       cost:null,remote:false,together:true,source:'bonus',index:i
     }));
    loaded=[...official,...bonus];
@@ -106,7 +107,10 @@
    const details=document.createElement('details');details.className='quest-date-details';
    const summary=document.createElement('summary');summary.textContent='Bekijk de date';
    const instructions=document.createElement('p');
-   instructions.textContent=c.instructions||c.description||'Geen aanvullende uitleg beschikbaar.';
+   const mode=$('quest-date-mode')?.value||'all';
+   const instructionText=mode==='remote'&&c.remote?c.remoteInstructions||c.description
+    :c.instructions||c.description;
+   instructions.textContent=instructionText||'Geen aanvullende uitleg beschikbaar.';
    details.append(summary,instructions);
    const button=document.createElement('button');button.type='button';
    button.className='secondary-btn quest-date-choose';button.textContent='Kies deze date';
@@ -145,7 +149,7 @@
    window.USTwoDateBridge.choose({title:item.title,minutes:item.minutes,source:item.source});
   });
   $('quest-date-reset-filters')?.addEventListener('click',()=>{
-   for(const id of ['quest-date-search','quest-date-area','quest-date-category','quest-date-budget','quest-date-mode','quest-date-duration']){
+   for(const id of ['quest-date-search','quest-date-area','quest-date-category','quest-date-budget','quest-date-mode','quest-date-duration','quest-date-sort']){
     const el=$(id);if(el)el.value=id==='quest-date-search'?'':id==='quest-date-sort'?'default':'all';
    }
    shown=12;render();

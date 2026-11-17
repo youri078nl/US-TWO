@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.13.0-bord-rc',
+  version: '0.13.1-bord-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

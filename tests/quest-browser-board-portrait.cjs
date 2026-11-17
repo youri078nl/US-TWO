@@ -41,7 +41,16 @@ const {chromium}=require('playwright');
    assert.ok(image.cardWidth>=width-60,'board must be nearly full width');
    assert.equal(image.tile,'3');
    assert.equal(image.hidden,false);
-   assert.match(image.board,/ustwo-board-portrait\.avif/);
+   assert.match(image.board,/ustwo-board-portrait\.(avif|webp)/);
+   // Browsers without AVIF must still display the exact portrait board in WebP.
+   const fallback=await page.evaluate(async()=>{
+     const res=await fetch('./assets/ustwo-board-portrait.webp');
+     if(!res.ok)return {ok:false};
+     const bitmap=await createImageBitmap(await res.blob());
+     const out={ok:true,w:bitmap.width,h:bitmap.height};
+     bitmap.close();return out;
+   });
+   assert.deepEqual(fallback,{ok:true,w:480,h:720});
    assert.match(image.pawnSrc,/^blob:/);
    assert.equal(await page.locator('#quest-world-heading').textContent(),'Wereld 1 · Liefdesbos');
    assert.equal(await page.locator('#quest-world-cell').textContent(),'Vakje 3 ♡');

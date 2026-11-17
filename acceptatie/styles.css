@@ -128,3 +128,11 @@ textarea::placeholder{color:#a89db7}
 #bottom-nav.bottom-nav button{min-width:0;padding:4px 5px;flex:1 1 20%}
 #bottom-nav.bottom-nav{justify-content:space-between}
 @media(min-width:580px){.quest-date-results{grid-template-columns:1fr 1fr}}
+
+/* Questions share the visual language of the existing task cards. Approved 2D art only. */
+.quest-question-card{display:grid;grid-template-columns:minmax(86px,32%) 1fr;gap:12px;align-items:center;padding:13px;border:1px solid #b58675;border-radius:17px;background:linear-gradient(145deg,#4b2b3d,#261e32 68%);box-shadow:inset 0 1px 4px #e7aa9d26}
+.quest-question-card[hidden]{display:none}
+.quest-question-art{display:block;width:100%;height:auto;max-height:180px;object-fit:contain}
+.quest-question-card-content{min-width:0}
+.quest-question-card .quest-question-prompt{margin:12px 0 0;color:#ffdfad;font-size:clamp(16px,4vw,21px);font-weight:750;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:360px){.quest-question-card{grid-template-columns:85px 1fr;gap:8px;padding:10px}}

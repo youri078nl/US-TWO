@@ -24,7 +24,7 @@ ALTER TABLE public.us_quest_games ADD CONSTRAINT quest_consistent CHECK (
 -- Review/audit records store NO private free-text answer.
 CREATE TABLE IF NOT EXISTS public.us_quest_question_results (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  couple_id uuid NOT NULL REFERENCES public.us_couples(id),
+  couple_id uuid NOT NULL REFERENCES public.us_couples(id) ON DELETE CASCADE,
   asked_by uuid NOT NULL,
   approved_by uuid NOT NULL,
   category text NOT NULL,

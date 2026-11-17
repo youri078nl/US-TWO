@@ -193,6 +193,8 @@
   for(const [name,action]of Object.entries(bindings))
    $('quest-question-'+name).addEventListener('click',()=>act(action));
   $('quest-question-play-pose')?.addEventListener('click',playQuestionPose);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopQuestionPose();});
+  window.addEventListener('us-two-tab-changed',event=>{if(event.detail?.tab!=='game')stopQuestionPose();});
   window.addEventListener('us-two-session-cleared',clear);
   window.addEventListener('us-two-poses-changed',()=>{resetArt();render();});
   clear();

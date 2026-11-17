@@ -125,6 +125,7 @@ window.USTwoDateBridge=Object.freeze({
     $('date-form-selected').textContent='Gekozen date: '+picked+'. Kies een datum en tijd. Alleen Verzenden maakt een uitnodiging.';
     setTab('dates');
     $('date-form').scrollIntoView({behavior:'instant',block:'center'});
+    $('date-when').focus({preventScroll:true});
   }
 });
 async function syncAll({quiet=false}={}) {

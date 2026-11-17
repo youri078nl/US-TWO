@@ -42,6 +42,8 @@ async function setup(page,user){
   window.USTwoCinematics.update(game,who);
   window.dispatchEvent(new Event('us-two-pawn-art-changed'));
  },{user,COUPLE});
+ const options=page.locator('.quest-board-art-options');
+ if(!await options.evaluate(el=>el.open))await options.locator('summary').first().click();
  const details=page.locator('.quest-pose-management');
  if(!await details.evaluate(el=>el.open))await details.locator('summary').click();
 }

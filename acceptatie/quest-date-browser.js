@@ -103,10 +103,15 @@
    const description=document.createElement('p');description.textContent=c.description;
    const meta=document.createElement('p');meta.className='quest-date-meta';
    meta.textContent=c.minutes+' minuten · '+(c.remote&&c.together?'Samen of op afstand':c.remote?'Op afstand':'Samen');
+   const details=document.createElement('details');details.className='quest-date-details';
+   const summary=document.createElement('summary');summary.textContent='Bekijk de date';
+   const instructions=document.createElement('p');
+   instructions.textContent=c.instructions||c.description||'Geen aanvullende uitleg beschikbaar.';
+   details.append(summary,instructions);
    const button=document.createElement('button');button.type='button';
    button.className='secondary-btn quest-date-choose';button.textContent='Kies deze date';
    button.dataset.dateKey=c.key;
-   article.append(top,title,description,meta,button);list.append(article);
+   article.append(top,title,description,meta,details,button);list.append(article);
   }
   const more=$('quest-date-more');
   if(more){more.hidden=matches.length<=shown;more.disabled=matches.length<=shown;}

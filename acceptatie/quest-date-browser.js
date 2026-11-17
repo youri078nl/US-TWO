@@ -111,6 +111,11 @@
    const instructionText=mode==='remote'&&c.remote?c.remoteInstructions||c.description
     :c.instructions||c.description;
    instructions.textContent=instructionText||'Geen aanvullende uitleg beschikbaar.';
+   if(mode==='all'&&c.together&&c.remote&&c.remoteInstructions&&c.remoteInstructions!==instructionText){
+    const remoteHeading=document.createElement('strong');remoteHeading.textContent='Op afstand';
+    const remoteDetail=document.createElement('p');remoteDetail.textContent=c.remoteInstructions;
+    details.append(remoteHeading,remoteDetail);
+   }
    details.append(summary,instructions);
    const button=document.createElement('button');button.type='button';
    button.className='secondary-btn quest-date-choose';button.textContent='Kies deze date';

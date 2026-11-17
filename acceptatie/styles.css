@@ -145,3 +145,6 @@ textarea::placeholder{color:#a89db7}
 
 .quest-question-turn-indicator{padding:10px 13px;border-radius:12px;border:1px solid #bd8b9e;background:#493043;color:#ffe4c5;font-size:14px;font-weight:800;text-align:center}
 .quest-question-turn-indicator[hidden]{display:none}
+
+.quest-task-progress{padding:11px 13px;border-radius:12px;background:#403044;border:1px solid #b8879b;color:#ffe0b7;font-size:14px;font-weight:750}
+.quest-task-progress[hidden]{display:none}

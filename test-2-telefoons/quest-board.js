@@ -124,11 +124,35 @@
    };
    animationTimer=setTimeout(tick,100);
  }
+ const BASE_BOARD_WIDTH=()=>Math.max(window.innerWidth*2.2,window.innerHeight*3.55);
+ const ZOOM_STEPS=[0.65,0.8,1,1.25,1.5,1.8,2.1];
+ let zoomIndex=2;
+ function setZoom(nextIndex){
+   const scroller=$('quest-world-scroll'),map=$('quest-world-viewport');
+   if(!scroller||!map)return;
+   const index=Math.min(ZOOM_STEPS.length-1,Math.max(0,nextIndex));
+   const oldW=map.getBoundingClientRect().width||BASE_BOARD_WIDTH();
+   const cx=(scroller.scrollLeft+scroller.clientWidth/2)/oldW;
+   const cy=(scroller.scrollTop+scroller.clientHeight/2)/(oldW*720/1279);
+   zoomIndex=index;
+   const width=BASE_BOARD_WIDTH()*ZOOM_STEPS[index];
+   map.style.width=width+'px';
+   scroller.scrollLeft=Math.max(0,cx*width-scroller.clientWidth/2);
+   scroller.scrollTop=Math.max(0,cy*width*720/1279-scroller.clientHeight/2);
+   if($('quest-world-zoom-label'))$('quest-world-zoom-label').textContent=Math.round(ZOOM_STEPS[index]*100)+'%';
+   if($('quest-world-zoom-out'))$('quest-world-zoom-out').disabled=index===0;
+   if($('quest-world-zoom-in'))$('quest-world-zoom-in').disabled=index===ZOOM_STEPS.length-1;
+ }
  function bind(){
    const input=$('quest-world-art-upload');
    if(!input)return;
    move(0);
    $('quest-world-find-pawn')?.addEventListener('click',()=>focusPawn(true));
+   $('quest-world-zoom-out')?.addEventListener('click',()=>setZoom(zoomIndex-1));
+   $('quest-world-zoom-in')?.addEventListener('click',()=>setZoom(zoomIndex+1));
+   $('quest-world-zoom-reset')?.addEventListener('click',()=>{setZoom(2);focusPawn(true);});
+   window.addEventListener('resize',()=>setZoom(zoomIndex));
+   setZoom(2);
    input.addEventListener('change',async()=>{
      const key=activeKey,file=input.files?.[0];input.value='';
      if(!key||!file)return;

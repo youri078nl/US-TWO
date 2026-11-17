@@ -63,7 +63,7 @@
   const mode=$('quest-date-mode')?.value||'all';
   const duration=$('quest-date-duration')?.value||'all';
   const words=search.split(/\s+/).filter(Boolean);
-  return all.filter(c=>{
+  const matches=all.filter(c=>{
    const corpus=normalize([c.title,c.description,c.instructions,c.category].join(' '));
    if(words.some(w=>!corpus.includes(w)))return false;
    if(category!=='all'&&c.category!==category)return false;
@@ -74,6 +74,12 @@
    if(mode==='remote'&&!c.remote)return false;
    return true;
   });
+  const sort=$('quest-date-sort')?.value||'default';
+  if(sort==='shortest')matches.sort((a,b)=>a.minutes-b.minutes);
+  else if(sort==='longest')matches.sort((a,b)=>b.minutes-a.minutes);
+  else if(sort==='cheapest')matches.sort((a,b)=>(a.cost??Infinity)-(b.cost??Infinity));
+  else if(sort==='title')matches.sort((a,b)=>a.title.localeCompare(b.title,'nl'));
+  return matches;
  }
  function render(){
   if(!active)return;
@@ -123,12 +129,12 @@
   const panel=$('discover-panel');if(!panel)return;
   const areas=$('quest-date-area');areas.replaceChildren();
   for(const [key,info]of Object.entries(AREAS))opt(areas,key,info.label);
-  for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration']){
+  for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration','quest-date-sort']){
    const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;render();});
   }
   $('quest-date-reset-filters')?.addEventListener('click',()=>{
    for(const id of ['quest-date-search','quest-date-area','quest-date-category','quest-date-budget','quest-date-mode','quest-date-duration']){
-    const el=$(id);if(el)el.value=id==='quest-date-search'?'':'all';
+    const el=$(id);if(el)el.value=id==='quest-date-search'?'':id==='quest-date-sort'?'default':'all';
    }
    shown=12;render();
   });
@@ -149,6 +155,7 @@
    if($('quest-date-area'))$('quest-date-area').value='all';
    if($('quest-date-category'))$('quest-date-category').value='all';
    for(const id of ['quest-date-budget','quest-date-mode','quest-date-duration'])if($(id))$(id).value='all';
+   if($('quest-date-sort'))$('quest-date-sort').value='default';
    if($('quest-date-results'))$('quest-date-results').replaceChildren();
   });
  }

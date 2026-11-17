@@ -286,8 +286,16 @@
         !panel.classList.contains('hidden')&&
         Boolean(window.USTwoQuestPilotBridge?.identity()?.paired);
     };
+    // Focus, tab and visibility events can arrive together on Android/iOS.
+    // Coalesce them instead of triggering several identical authenticated RPCs.
+    let lastAutomaticRefresh=0;
     const refreshVisible=()=>{
-      if(!loading&&navigator.onLine!==false&&gameVisible())operation(refresh);
+      const now=Date.now();
+      if(!loading&&navigator.onLine!==false&&gameVisible()&&
+         now-lastAutomaticRefresh>=2500){
+        lastAutomaticRefresh=now;
+        operation(refresh);
+      }
     };
     // Do not erase a valid on-screen board by needlessly polling while offline.
     window.addEventListener?.('online',refreshVisible);

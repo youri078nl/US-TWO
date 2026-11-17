@@ -61,6 +61,7 @@
   const area=$('quest-date-area')?.value||'all';
   const budget=$('quest-date-budget')?.value||'all';
   const mode=$('quest-date-mode')?.value||'all';
+  const duration=$('quest-date-duration')?.value||'all';
   const words=search.split(/\s+/).filter(Boolean);
   return all.filter(c=>{
    const corpus=normalize([c.title,c.description,c.instructions,c.category].join(' '));
@@ -68,6 +69,7 @@
    if(category!=='all'&&c.category!==category)return false;
    if(!AREAS[area]?.test(corpus))return false;
    if(budget!=='all'&&(c.cost===null||c.cost>Number(budget)))return false;
+   if(duration!=='all'&&c.minutes>Number(duration))return false;
    if(mode==='together'&&!c.together)return false;
    if(mode==='remote'&&!c.remote)return false;
    return true;
@@ -121,7 +123,7 @@
   const panel=$('discover-panel');if(!panel)return;
   const areas=$('quest-date-area');areas.replaceChildren();
   for(const [key,info]of Object.entries(AREAS))opt(areas,key,info.label);
-  for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode']){
+  for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration']){
    const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;render();});
   }
   $('quest-date-more')?.addEventListener('click',()=>{shown+=12;render();});

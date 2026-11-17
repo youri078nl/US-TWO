@@ -27,6 +27,8 @@ on:
       - 'supabase/migrations/20261117_canonical_question_turns.sql'
       - 'tests/quest-browser-questions.cjs'
       - 'tests/quest-browser-login-onboarding.cjs'
+      - 'tests/quest-browser-board-portrait.cjs'
+      - 'assets/**'
       - 'tests/quest-questions-contract.test.cjs'
       - 'quest-catalog.js'
       - 'tests/quest-browser-smoke.cjs'
@@ -99,12 +101,19 @@ jobs:
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Test real login routing and persistent mobile session in Chromium
-        run: node tests/quest-browser-login-onboarding.cjs
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-login-http.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER 2>/dev/null || true' EXIT
+          sleep 2
+          node tests/quest-browser-login-onboarding.cjs
       - name: Run actual Chromium interface smoke test
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/us-two-http.log 2>&1 &
           sleep 2
           node tests/quest-browser-smoke.cjs
+      - name: Check mobile portrait board, genuine shared pawn and server-reward animation
+        run: node tests/quest-browser-board-portrait.cjs
       - name: Check on-board animation safety in Chromium
         run: node tests/quest-browser-cinematics.cjs
       - name: Validate the original 50-card library, local ZIP import and session isolation
@@ -125,3 +134,11 @@ jobs:
         run: node tests/quest-browser-schedule.cjs
       - name: Verify canonical game dates in the existing month calendar
         run: node tests/quest-browser-month-calendar.cjs
+      - name: Attach mobile board screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-two-portrait-board-preview
+          path: /tmp/us-two-board-*.png
+          if-no-files-found: ignore
+          retention-days: 7

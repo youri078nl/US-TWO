@@ -1,8 +1,8 @@
 // Updates: bump CACHE when changing assets. Network first keeps updates fresh.
 // A SW under /acceptatie/ must never delete caches from /test-2-telefoons/.
 const CACHE_PREFIX = 'us-two-web-scope-' + encodeURIComponent(new URL(self.registration.scope).pathname) + '-';
-const CACHE = CACHE_PREFIX + 'v0.12.1-speelklaar-rc';
-const SHELL = ['./','./index.html','./styles.css','./app.js','./us-two-offline.js','./quest-catalog.js','./quest-board.js','./quest-pose-archive.js','./quest-poses.js','./quest-card-data.js','./quest-card-archive.js','./quest-card-gallery.js','./quest-full-deck.js','./quest-calendar-ics.js','./catalog/quest-full-258.json','./quest-cinematics.js','./quest-board.css','./assets/ustwo-world-original.webp','./quest-pilot.js','./quest-questions.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
+const CACHE = CACHE_PREFIX + 'v0.13.0-bord-rc';
+const SHELL = ['./','./index.html','./styles.css','./app.js','./us-two-offline.js','./quest-catalog.js','./quest-board.js','./quest-pose-archive.js','./quest-poses.js','./quest-card-data.js','./quest-card-archive.js','./quest-card-gallery.js','./quest-full-deck.js','./quest-calendar-ics.js','./catalog/quest-full-258.json','./quest-cinematics.js','./quest-board.css','./assets/ustwo-world-original.webp','./assets/ustwo-board-portrait.avif', './assets/approved-youri-kim.webp','./assets/approved-pepsi.webp','./quest-pilot.js','./quest-questions.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(CACHE_PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting()});

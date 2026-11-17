@@ -1,0 +1,7 @@
+US TWO 0.11.1-rc
+Isolatiepad: /US-TWO/acceptatie/
+Bron: 44abc3a1fa7b48d2682db271c5227cff1ed79078
+Bron-PR: https://github.com/youri078nl/US-TWO/pull/1
+Geautomatiseerde CI: https://github.com/youri078nl/US-TWO/actions/runs/44074123734
+Let op: testversie, geen vrijgegeven versie 1.0.0.
+Gebruik bij voorkeur een apart gekoppeld testpaar. Originele 2D-pion en kaartafbeeldingen worden per toestel lokaal geïmporteerd.

@@ -126,6 +126,12 @@
   for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration']){
    const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;render();});
   }
+  $('quest-date-reset-filters')?.addEventListener('click',()=>{
+   for(const id of ['quest-date-search','quest-date-area','quest-date-category','quest-date-budget','quest-date-mode','quest-date-duration']){
+    const el=$(id);if(el)el.value=id==='quest-date-search'?'':'all';
+   }
+   shown=12;render();
+  });
   $('quest-date-more')?.addEventListener('click',()=>{shown+=12;render();});
   $('quest-date-results')?.addEventListener('click',event=>{
    const button=event.target.closest('button[data-date-key]');
@@ -142,6 +148,7 @@
    if($('quest-date-search'))$('quest-date-search').value='';
    if($('quest-date-area'))$('quest-date-area').value='all';
    if($('quest-date-category'))$('quest-date-category').value='all';
+   for(const id of ['quest-date-budget','quest-date-mode','quest-date-duration'])if($(id))$(id).value='all';
    if($('quest-date-results'))$('quest-date-results').replaceChildren();
   });
  }

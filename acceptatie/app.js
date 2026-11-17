@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.12.0-quiz-rc',
+  version: '0.13.0-bord-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -89,7 +89,12 @@ function showRecovery(kind) {
 async function showApp(){
   $('auth-view').classList.add('hidden');$('app-view').classList.remove('hidden');$('bottom-nav').classList.remove('hidden');$('refresh-btn').classList.remove('hidden');
   $('date-today').textContent=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
-  setTab('home');await syncAll();
+  // Begin with a safe shell while fetching identity. After successful dashboard
+  // hydration, go directly to the actual game (or pairing for an unpaired user).
+  // Do not misroute if Supabase is unavailable and the dashboard is unknown.
+  setTab('home');
+  await syncAll();
+  if(state.session&&state.dashboard)setTab(paired()?'game':'pair');
 }
 function setTab(tab){
   if(!['home','pair','dates','game','memories','more'].includes(tab))return;

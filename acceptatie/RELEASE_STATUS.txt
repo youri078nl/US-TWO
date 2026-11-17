@@ -1,7 +1,8 @@
-US TWO 0.12.0-quiz-rc | Acceptatietest, geen release 1.0.0
-GitHub-code: bc4a3b59ecc681744cb57cf3976b332afca5ee0c
-CI: https://github.com/youri078nl/US-TWO/actions/runs/44083101573 (success)
-Supabase migratie: 20261117122745 canonical_question_turns_shared_position_20261117
-Nieuw: gedeelde vraagbeurten met goedkeuring via dezelfde canonical us_quest_games positie; geen tweede pion of dubbele voortgang.
-Categorie Erotiek voorlopig gesloten tot wederzijdse opt-in.
-Gebruik aparte testaccounts. Niet getest: echte Android+iPhone eindacceptatie, originele volledige 2D poseframes.
+US TWO 0.13.0-bord-rc | Verticale spelbordtest, geen finale 1.0.0.
+Bron branch: c5ded089d0cfc78127b43d9929b7f7f695f5e8a6
+CI groen: https://github.com/youri078nl/US-TWO/actions/runs/44121261557
+Wijzigingen: 2:3 staand mobiel bord met roze hartjespad, originele Youri/Kim/Pepsi als één samen bewegende 2D-pion, vakjes en herhaalbare verdiende stappen.
+Account- en spelposities blijven afkomstig uit canonieke Supabase-spelstand; geen database-reset of verzonnen voortgang.
+Geen 3D. De achtergrond is opnieuw vormgegeven met behoud van referentiestijl; karakterbeelden zijn uit de oude goedgekeurde broncode overgenomen.
+De bestaande hoofdapp en eerdere /test-2-telefoons/ blijven ongemoeid.
+Niet definitief geaccepteerd: echte Android/iPhone-duotest en complete 2D framebibliotheek.

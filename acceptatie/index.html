@@ -137,31 +137,54 @@
         </section>
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
-          <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
+          <div class="section-heading quest-game-title"><div><span class="eyebrow">SAMEN OP PAD</span><h2>Jullie avontuur</h2></div></div>
           <section class="panel inset stack" id="quest-pilot" aria-labelledby="quest-pilot-heading">
             <h3 id="quest-pilot-heading">Jullie gezamenlijke spelreis</h3>
             <p class="muted">Eén gedeelde pion, één serverstand en één route. Deze testversie gebruikt uitsluitend de nieuwe spelreis.</p>
             <p id="quest-pilot-status" role="status" aria-live="polite">Gebruik eerst je gekoppelde account.</p>
-            <p id="quest-journey-guidance" class="quest-journey-guidance" role="status" aria-live="polite">De spelreisstatus verschijnt na het inloggen.</p>
-            <section class="quest-board-section stack" aria-label="Oorspronkelijke gezamenlijke spelwereld">
-              <h4>Jullie gezamenlijke speelwereld</h4>
-              <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Spelbord met één gezamenlijke pion">
-                <img class="quest-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="Officiële geïllustreerde US TWO-wereld met gouden hartjespad" loading="eager">
-                <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor jullie beiden en Pepsi">
-                  <div id="quest-world-actor" class="quest-world-actor">
-                    <img id="quest-world-pawn-art" alt="Goedgekeurd origineel van Youri, Kim en Pepsi" hidden>
-                    <img id="quest-world-pose-frame" alt="" aria-hidden="true" hidden>
-                    <span id="quest-world-fallback" class="quest-world-heart" aria-hidden="true">♥</span>
-                  </div>
-                  <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
-                  <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
+            <section class="quest-board-section stack" aria-label="Officieel verticaal speelbord">
+              <div id="quest-board-card" class="quest-board-card">
+                <div class="quest-board-card-header">
+                  <strong id="quest-world-heading">Wereld 1 · Liefdesbos</strong>
+                  <strong id="quest-world-cell">Vakje 0 ♡</strong>
                 </div>
+                <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Verticaal spelbord met één gezamenlijk bewegende pion">
+                  <picture class="quest-board-art-picture">
+                    <source srcset="./assets/ustwo-board-portrait.avif" type="image/avif">
+                    <img class="quest-world-art" src="./assets/ustwo-board-portrait.avif" width="480" height="720" alt="Fantasywereld met gouden roze hartjespad, poorten en datebestemmingen" loading="eager">
+                  </picture>
+                  <div class="quest-board-label quest-label-airport">✈ Vliegveld</div>
+                  <div class="quest-board-label quest-label-beach">☀ Strand</div>
+                  <div class="quest-board-label quest-label-cinema">▣ Bioscoop</div>
+                  <div class="quest-board-label quest-label-wellness">✿ Wellness</div>
+                  <div class="quest-board-label quest-label-lounge">♡ Woonkamer</div>
+                  <div class="quest-board-label quest-label-cafe">☕ Café</div>
+                  <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor Youri, Kim en Pepsi" hidden>
+                    <div id="quest-world-actor" class="quest-world-actor">
+                      <img id="quest-world-approved-couple" class="quest-world-approved-couple" src="./assets/approved-youri-kim.webp" alt="" aria-hidden="true">
+                      <img id="quest-world-approved-pepsi" class="quest-world-approved-pepsi" src="./assets/approved-pepsi.webp" alt="" aria-hidden="true">
+                      <img id="quest-world-pawn-art" alt="De origineel goedgekeurde gezamenlijke pion" hidden>
+                      <img id="quest-world-pose-frame" alt="" aria-hidden="true" hidden>
+                      <span id="quest-world-fallback" class="quest-world-heart" aria-hidden="true" hidden>♥</span>
+                    </div>
+                    <span id="quest-world-scene-spark" class="quest-world-scene-spark" aria-hidden="true" hidden>♥</span>
+                    <span id="quest-world-scene-ball" class="quest-world-scene-ball" aria-hidden="true" hidden></span>
+                  </div>
+                  <div class="quest-board-replay" aria-label="Voortgang op het bord">
+                    <span id="quest-world-step-caption">Huidige positie laden…</span>
+                    <button type="button" id="quest-world-replay" disabled>↻ Herhaal</button>
+                  </div>
+                </div>
+                <div class="quest-board-caption">De pion beweegt na een voltooide opdracht. Jullie bevestigen allebei, zonder dobbelsteen.</div>
               </div>
-              <p id="quest-world-position" class="muted" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
-              <label for="quest-world-art-upload">Oorspronkelijke pion privé op dit toestel instellen</label>
-              <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
-              <p id="quest-world-art-status" class="muted">Gebruik het originele, goedgekeurde plaatje van jullie drieën. De afbeelding wordt alleen op dit toestel in lokale opslag bewaard, niet gepubliceerd of naar de server verstuurd.</p>
-              <details class="quest-pose-management">
+              <p id="quest-world-position" class="quest-screenreader" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
+              <details class="quest-board-art-options">
+                <summary>2D-pion en bewegingen beheren</summary>
+                <p class="muted">De goedgekeurde Youri-, Kim- en Pepsi-pionnen staan standaard op het bord. Een zelf gekozen origineel blijft alleen op dit toestel.</p>
+                <label for="quest-world-art-upload">Eigen originele pion (PNG/WebP)</label>
+                <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
+                <p id="quest-world-art-status" class="muted" role="status" aria-live="polite">Goedgekeurde figuren worden automatisch gebruikt.</p>
+                <details class="quest-pose-management">
                 <summary>Goedgekeurde 2D-bewegingen beheren</summary>
                 <p class="muted">Voeg alleen beelden toe van de bestaande, goedgekeurde personages. De app speelt de frames achter elkaar af. Niets wordt naar de server verstuurd.</p>
                 <label for="quest-pose-zip">Goedgekeurd US TWO-posepakket in één keer importeren (ZIP)</label>
@@ -184,6 +207,7 @@
                 <button type="button" id="quest-pose-remove" class="ghost-btn" disabled>Verwijder lokale beeldreeks</button>
                 <p id="quest-pose-status" class="muted" role="status" aria-live="polite">Nog geen goedgekeurde beeldframes geladen.</p>
               </details>
+              </details>
               <div class="quest-cinematic-controls" role="group" aria-label="Animatie voor de opdracht">
                 <p id="quest-cinematic-status" class="muted" role="status" aria-live="polite">De animatie verschijnt wanneer jullie een opdracht hebben.</p>
                 <div class="buttons">
@@ -192,7 +216,9 @@
                 </div>
                 <p class="muted">Bewegingen gebruiken uitsluitend de goedgekeurde 2D-personages en beschikbare poseframes.</p>
               </div>
+            
             </section>
+            <p id="quest-journey-guidance" class="quest-journey-guidance" role="status" aria-live="polite">De spelreisstatus verschijnt na het inloggen.</p>
             <p id="quest-pilot-pending" class="muted">Wachtende acties: onbekend</p>
             <p id="quest-pilot-network" class="muted" role="status" aria-live="polite">Netwerkstatus controleren…</p>
             <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
@@ -387,7 +413,7 @@
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
       <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
-      <button type="button" data-tab="game"><span class="nav-icon">◇</span>Spel</button>
+      <button type="button" data-tab="game"><span class="nav-icon">♙</span>Speelbord</button>
       <button type="button" data-tab="memories"><span class="nav-icon">♡</span>Momenten</button>
       <button type="button" data-tab="more"><span class="nav-icon">☷</span>Meer</button>
     </nav>

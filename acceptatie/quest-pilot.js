@@ -38,6 +38,7 @@
   function status(state, items, blocked) {
     if(!state?.paired){text('quest-pilot-status','Nog niet gekoppeld.');
       if($('quest-task-phase'))$('quest-task-phase').hidden=true;
+      if($('quest-next-action'))$('quest-next-action').hidden=true;
       if($('quest-pilot-task-progress'))$('quest-pilot-task-progress').hidden=true;
       return;}
     const phase=state.initialized?(state.phase||'onbekend'):'nog niet gestart';
@@ -99,6 +100,21 @@
           : mine?'Jouw deel is afgerond ✓ · Wachten tot jullie allebei klaar zijn.'
             :'Jouw deel staat nog open · Rond de opdracht af wanneer je klaar bent.';
       }
+    }
+    const next=$('quest-next-action');
+    if(next){
+      const target=!state.initialized?'quest-pilot-start'
+        :state.phase==='choose'?'quest-pilot-load-catalog'
+        :state.phase==='approval'?(partnerProposal?'quest-pilot-accept':null)
+        :state.phase==='active'&&!state.my_done?'quest-pilot-complete':null;
+      const action=target?$(target):null;
+      next.hidden=!action||action.disabled;
+      next.disabled=!action||action.disabled;
+      next.dataset.target=action&&!action.disabled?target:'';
+      next.textContent=target==='quest-pilot-start'?'Start jullie spelreis'
+        :target==='quest-pilot-load-catalog'?'Kies de volgende opdracht'
+        :target==='quest-pilot-accept'?'Beoordeel het voorstel'
+        :target==='quest-pilot-complete'?'Rond jouw opdracht af':'Ga naar volgende spelactie';
     }
     const d=state.date;
     text('quest-pilot-task',d&&typeof d.title==='string'
@@ -515,6 +531,13 @@
         handleSync(await q.sync());
       }));
     }
+    $('quest-next-action')?.addEventListener('click',()=>{
+      const shortcut=$('quest-next-action');
+      const target=shortcut?.dataset.target?$(shortcut.dataset.target):null;
+      if(!target||target.disabled)return;
+      target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+      target.focus({preventScroll:true});
+    });
     $('quest-pilot-start').addEventListener('click',()=>operation(async()=>{
       const q=await ensureQueue();
       const state=await window.USTwoQuestPilotBridge.read();

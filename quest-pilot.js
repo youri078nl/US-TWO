@@ -509,6 +509,9 @@
       await q.enqueue({type:'question_action',requestId,expectedRevision:server.revision,
         payload});
       handleSync(await q.sync());
+      // A successful mutation must refresh immediately; focus-event throttling
+      // applies only to passive polling, never to explicit user actions.
+      await refresh();
     }
   });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();

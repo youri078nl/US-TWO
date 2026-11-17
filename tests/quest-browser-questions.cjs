@@ -59,15 +59,7 @@ const {chromium}=require('playwright');
   assert.equal(await page.locator('#quest-question-panel').isVisible(),true);
   await page.locator('#quest-question-category').selectOption('Liefde');
   await page.locator('#quest-question-start').click();
-  await page.waitForTimeout(700);
-  console.log('QUIZ DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({
-    questionStatus:document.querySelector('#quest-question-status')?.textContent,
-    pilotStatus:document.querySelector('#quest-pilot-message')?.textContent,
-    readPhase:document.querySelector('#quest-question-prompt')?.textContent,
-    backendPhase:window.__mockGame.game.phase,
-    actions:window.__mockGame.calls.map(x=>[x.name,x.args.p_action]),
-    startDisabled:document.querySelector('#quest-question-start')?.disabled
-  }))));
+
   await page.locator('#quest-question-prompt').getByText('Wat maakt jullie samen gelukkig?').waitFor({timeout:15000});
   assert.equal(await page.locator('#quest-pilot-load-catalog').isDisabled(),true,
     'No ordinary quest proposal while a question turn is active');

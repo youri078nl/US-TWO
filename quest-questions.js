@@ -112,8 +112,7 @@
    await window.USTwoQuestionActions.send({action,...(action==='category'?{category}:{}),
      ...(action==='submit'?{answer}:{})});
    if(action==='submit')$('quest-question-answer').value='';
-   // The shared game refresh rereads the canonical position AND the question state.
-   window.dispatchEvent(new Event('us-two-quest-game-open'));
+   // The shared outbox bridge already refreshed the canonical server state.
   }catch(e){show('Actie niet voltooid: '+String(e?.message||e).slice(0,180));}
   finally{loading=false;render();}
  }

@@ -307,3 +307,31 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .us-two-luxe-card-body p:last-child{color:#e9dfe8;line-height:1.65;font-size:14px}
 .us-two-luxe-card.is-superdate{background:radial-gradient(ellipse at top,#594027,#231a2e 65%,#151222)}
 #game-panel.quest-tasks-view #full-deck-details{margin-top:14px}
+
+/* Chosen and received quest cards: original 2D art, no generated replacements. */
+.quest-current-card{margin:18px auto;max-width:490px;width:100%;padding:0;background:transparent;border:0}
+.quest-current-card-frame{padding:14px;border:1px solid #c8a878;border-radius:22px;background:radial-gradient(ellipse at top,#50334e,#21182c 70%,#141120);box-shadow:0 15px 40px #0d0718aa,inset 0 0 0 5px #d5b58115;color:#fff4e5}
+.quest-current-card-top{display:flex;justify-content:space-between;gap:12px;padding:7px 12px 15px;color:#e6c28b;letter-spacing:.17em;font-size:10px;font-weight:800}
+.quest-current-card-picture{position:relative;display:grid;place-items:center;min-height:230px;aspect-ratio:4/3;border:1px solid #c7a87a66;border-radius:15px;overflow:hidden;background:radial-gradient(circle,#6b4264,#241c32)}
+.quest-current-card-picture img{display:block;width:100%;height:100%;max-height:none;object-fit:contain;border:0;background:#191422}
+.quest-current-card-picture img[hidden]{display:none}
+.quest-current-card-placeholder{font-family:Georgia,serif;font-size:100px;color:#e5bd8e66}
+.quest-current-card-picture:has(img:not([hidden])) .quest-current-card-placeholder{display:none}
+.quest-current-card-copy{text-align:center;padding:16px 15px 6px}
+.quest-current-card-copy h4{font-family:Georgia,serif;font-size:clamp(22px,5vw,32px);line-height:1.2;color:#fff2de;margin:10px 0}
+.quest-current-card-copy .eyebrow{color:#e6c28b}
+.quest-current-card-copy #quest-current-card-art-status{font-size:11px;color:#d5c2d0}
+.quest-current-card>.buttons{justify-content:center;margin-top:12px}
+.quest-card-reveal{position:fixed;inset:0;z-index:1100;display:grid;place-items:center;padding:20px;isolation:isolate}
+.quest-card-reveal.hidden{display:none}
+.quest-card-reveal-backdrop{position:absolute;inset:0;background:#080711e8;backdrop-filter:blur(9px)}
+.quest-card-reveal-content{position:relative;width:min(100%,470px);max-height:calc(100dvh - 40px);overflow-y:auto;text-align:center;border:1px solid #d6b47f;border-radius:25px;background:radial-gradient(ellipse at top,#553651,#251b31 67%,#15121f);color:#fff3e4;box-shadow:0 25px 70px #000b;padding:28px 19px 22px;animation:quest-card-enter .32s ease-out}
+.quest-card-reveal-eyebrow{display:block;font-size:11px;letter-spacing:.15em;color:#e8c38e;font-weight:800;margin-bottom:12px}
+.quest-card-reveal-content h3{font-family:Georgia,serif;font-size:clamp(24px,6vw,34px);margin:0 30px 18px;color:#fff1df}
+.quest-card-reveal-content img{display:block;width:100%;max-height:47dvh;object-fit:contain;border:1px solid #bc986b77;border-radius:14px;background:#1a1526}
+.quest-card-reveal-content img[hidden]{display:none}
+.quest-card-reveal-content p{font-size:14px;line-height:1.5;color:#e7d9e3;margin:16px 0}
+.quest-card-reveal-content .primary-btn{width:100%}
+.quest-card-reveal-close{position:absolute;right:13px;top:11px;border:1px solid #d7b78466;border-radius:50%;width:38px;height:38px;background:#201725;color:#fff4df;font-size:27px;z-index:1}
+@keyframes quest-card-enter{from{opacity:0;transform:translateY(25px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.quest-card-reveal-content{animation:none}}

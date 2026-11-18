@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.20-share-pwa-rc',
+  version: '0.17.21-date-conflict-warning-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -184,7 +184,24 @@ async function syncAll({quiet=false}={}) {
     return false;
   }finally{pollBusy=false}
 }
-function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome()}
+function updateDateConflictWarning(){
+  const warning=$('date-conflict-warning');
+  if(!warning)return;
+  const raw=$('date-when').value;
+  const start=new Date(raw).getTime(),minutes=Number($('date-duration').value);
+  if(!raw||!Number.isFinite(start)||!Number.isSafeInteger(minutes)||minutes<15||minutes>1440){
+    warning.hidden=true;warning.textContent='';return;
+  }
+  const end=start+minutes*60000;
+  const conflicts=(state.dashboard?.dates||[]).filter(d=>{
+    if(!['accepted','proposed'].includes(d.status))return false;
+    const otherStart=new Date(d.start_at).getTime(),otherDuration=Number(d.duration_minutes);
+    return Number.isFinite(otherStart)&&Number.isFinite(otherDuration)&&otherDuration>0&&start<otherStart+otherDuration*60000&&end>otherStart;
+  });
+  warning.hidden=!conflicts.length;
+  warning.textContent=conflicts.length?'Let op: dit tijdstip overlapt met '+conflicts.length+' bestaande '+(conflicts.length===1?'afspraak of uitnodiging.':'afspraken of uitnodigingen.')+' Je kunt het voorstel nog steeds versturen.':'';
+}
+function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome();updateDateConflictWarning()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
 function renderHome(){
   const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];
@@ -546,6 +563,8 @@ function bind(){
     if(!Number.isFinite(parsed.getTime())||parsed.getFullYear()!==Number(day.slice(0,4))||parsed.getMonth()+1!==Number(day.slice(5,7))||parsed.getDate()!==Number(day.slice(8,10)))return;
     state.calendarSelected=day;state.calendarMonth=day.slice(0,7);renderCalendar();
   });
+  $('date-when').addEventListener('input',updateDateConflictWarning);
+  $('date-duration').addEventListener('change',updateDateConflictWarning);
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();if(state.working)return;
     const title=$('date-title').value.trim(),raw=$('date-when').value;
     const when=new Date(raw),duration=Number($('date-duration').value);
@@ -554,7 +573,7 @@ function bind(){
     setBusy(true);
     try{
       await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:duration,p_request_id:requestId});
-      state.dateRequestId=null;$('date-form').reset();$('date-form-selected').textContent='';
+      state.dateRequestId=null;$('date-form').reset();$('date-form-selected').textContent='';updateDateConflictWarning();
       const refreshed=await syncAll({quiet:true});
       toast(refreshed?'Uitnodiging verzonden.':'Uitnodiging verzonden; het agendaoverzicht wordt later vernieuwd.',!refreshed);
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}

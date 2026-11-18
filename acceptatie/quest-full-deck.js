@@ -116,6 +116,7 @@
   const card=cards[idx],overlay=$('quest-card-reveal'),pic=$('quest-card-reveal-image');
   if(!card||!overlay||!pic)return;
   lastRevealKey=key;pendingReveal=null;previousRevealFocus=document.activeElement;
+  try{sessionStorage.setItem('us-two-seen-invite:'+key,'1');}catch(_error){}
   $('quest-card-reveal-label').textContent=phase==='approval'?'UITNODIGING VAN JE PARTNER':'JULLIE NIEUWE OPDRACHT';
   $('quest-card-reveal-heading').textContent=card.title;
   $('quest-card-reveal-description').textContent=(phase==='approval'?'Je partner stelt deze opdracht voor. Bekijk de kaart en beslis of je meedoet.':'Deze opdracht staat klaar. Bekijk de kaart en start jullie avontuur.')+' · '+(mode==='afstand'?'Op afstand':'Samen');
@@ -126,10 +127,18 @@
   $('quest-card-reveal-continue')?.focus();
  }
  function queueReveal(state,idx){
-  const phase=state.phase;
-  const key=account+':'+state.date.id+':'+phase;
-  if(phase==='approval'&&state.proposer_id===account.split(':')[0]){pendingReveal=null;return;}
-  if(key!==lastRevealKey)pendingReveal={key,idx,phase,mode:state.mode};
+  // Never replay an already accepted/active task on app launch.
+  // Only an outstanding proposal to the OTHER partner is a new invitation.
+  if(state.phase!=='approval'||state.proposer_id===account.split(':')[0]){
+   pendingReveal=null;
+   closeReveal();
+   return;
+  }
+  const key=account+':'+state.date.id+':approval';
+  let seen=false;
+  try{seen=sessionStorage.getItem('us-two-seen-invite:'+key)==='1';}catch(_error){}
+  if(seen||key===lastRevealKey){pendingReveal=null;return;}
+  pendingReveal={key,idx,phase:'approval',mode:state.mode};
   showReveal();
  }
  function renderActive(){

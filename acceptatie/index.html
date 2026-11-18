@@ -80,6 +80,13 @@
           <div class="panel inset stack quest-date-intro">
             <h3>Een date voor ieder moment ♡</h3>
             <p class="muted">Ontdek alle gewone opdrachten en bonusdates. Je kunt ook rechtstreeks op een plek op het speelbord tikken, zoals Bos, Strand of Woonkamer.</p>
+            <div class="quest-date-proposals">
+              <h3>Drie dates voor jullie ♡</h3>
+              <p class="muted">Kies een voorstel of bekijk drie andere ideeën. Daarna plan je samen de datum.</p>
+              <div id="quest-date-proposal-results" class="quest-date-results" aria-label="Drie datevoorstellen"></div>
+              <button id="quest-date-refresh-proposals" type="button" class="primary-btn">Toon drie andere dates ↻</button>
+            </div>
+            <details id="quest-date-advanced" class="quest-date-advanced"><summary>Uitgebreid zoeken en filters</summary>
             <div class="quest-date-filters">
               <label for="quest-date-search">Zoeken</label>
               <input id="quest-date-search" type="search" placeholder="Bijvoorbeeld wandelen, film of romantisch" autocomplete="off">
@@ -98,13 +105,11 @@
                   <select id="quest-date-mode"><option value="all">Alles</option><option value="together">Samen</option><option value="remote">Op afstand</option></select></div>
               </div>
             </div>
-            <div class="quest-date-filter-pair">
-              <button id="quest-date-surprise" type="button" class="secondary-btn">Verras ons met een date ♡</button>
-              <button id="quest-date-reset-filters" type="button" class="secondary-btn">Wis alle filters</button>
-            </div>
+            <button id="quest-date-reset-filters" type="button" class="secondary-btn">Wis alle filters</button>
+            </details>
             <p id="quest-date-status" class="muted" role="status" aria-live="polite">Open dit scherm om de collectie te laden.</p>
             <p id="quest-date-count" class="quest-date-count" aria-live="polite"></p>
-            <div id="quest-date-results" class="quest-date-results" aria-label="Beschikbare datekaarten"></div>
+            <div id="quest-date-results" class="quest-date-results" aria-label="Beschikbare datekaarten" hidden></div>
             <button type="button" id="quest-date-more" class="secondary-btn" hidden>Toon meer dates</button>
             <p class="muted">Een date kiezen opent de Agenda. Niets wordt verstuurd voordat je zelf een datum kiest en bevestigt. Bonuskaarten geven geen automatische spelstappen.</p>
           </div>
@@ -407,7 +412,7 @@
             </section>
             <p id="quest-pilot-message" class="muted" role="status" aria-live="polite">Niet voor productie vrijgegeven.</p>
           </section>
-          <details id="full-deck-details" class="panel quest-card-library stack">
+          <details id="full-deck-details" style="display:none!important" class="panel quest-card-library stack">
             <summary>Volledige collectie · 240 opdrachten + 18 superdates</summary>
             <p class="muted">Zes werelden met elk 40 officiële opdrachten en 18 superdates. De superdatekaartjes tonen geen geheime voorbereidingen. De echte serverstand bepaalt jullie spelvoortgang.</p>
             <p id="full-deck-status" role="status" aria-live="polite">De volledige collectie wordt geladen…</p>

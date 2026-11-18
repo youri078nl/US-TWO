@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.5-rpc-session-rc',
+  version: '0.17.6-date-prefill-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -142,7 +142,19 @@ window.USTwoDateBridge=Object.freeze({
       option.textContent=chosenMinutes+' minuten (gekozen date)';duration.append(option);
     }
     duration.value=String(chosenMinutes);
-    $('date-form-selected').textContent='Gekozen date: '+picked+'. Kies een datum en tijd. Alleen Verzenden maakt een uitnodiging.';
+    const dateField=$('date-when');
+    const now=new Date(),today=amsterdamDay(now);
+    const selected=state.calendarSelected&&state.calendarSelected>=today?state.calendarSelected:today;
+    const nextHour=Math.floor(amsterdamClock(now)/60)+1;
+    const hour=selected===today?Math.max(19,nextHour):19;
+    if(!dateField.value||!Number.isFinite(new Date(dateField.value).getTime())||new Date(dateField.value)<=now){
+      if(hour<24)dateField.value=selected+'T'+String(hour).padStart(2,'0')+':00';
+      else{
+        const tomorrow=new Date(Date.UTC(Number(today.slice(0,4)),Number(today.slice(5,7))-1,Number(today.slice(8,10))+1));
+        dateField.value=tomorrow.toISOString().slice(0,10)+'T19:00';
+      }
+    }
+    $('date-form-selected').textContent='Gekozen date: '+picked+'. Controleer datum en tijd; alleen Verzenden maakt een uitnodiging.';
     setTab('dates');
     $('date-form').scrollIntoView({behavior:'instant',block:'center'});
     $('date-when').focus({preventScroll:true});

@@ -403,7 +403,7 @@ function bind(){
     if(!paired()){toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
     const day=state.calendarSelected||amsterdamDay(new Date());
     const now=new Date();const today=amsterdamDay(now);
-    if(day<today){toast('Kies een dag vanaf vandaag.',true);return;}
+    if(day<today||day===today&&now.getHours()===23){toast('Kies een toekomstige dag en tijd.',true);return;}
     const field=$('date-when');
     const time=day===today&&now.getHours()>=19
       ?String(Math.min(23,now.getHours()+1)).padStart(2,'0')+':00':'19:00';

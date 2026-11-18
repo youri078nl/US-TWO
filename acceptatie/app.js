@@ -489,6 +489,13 @@ function bind(){
   $('auth-form').addEventListener('submit',async e=>{e.preventDefault();if(state.working)return;setBusy(true);$('auth-feedback').textContent='';try{await authorize($('auth-email').value.trim(),$('auth-password').value,state.mode==='signup')}catch(err){$('auth-feedback').classList.add('error');$('auth-feedback').textContent=failText(err)}finally{setBusy(false)}});
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   for(const eventName of ['input','change'])$('date-form').addEventListener(eventName,()=>{state.dateRequestId=null;});
+  $('date-when').addEventListener('change',()=>{
+    const day=$('date-when').value.slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(day))return;
+    const parsed=new Date(day+'T12:00:00');
+    if(!Number.isFinite(parsed.getTime())||parsed.getFullYear()!==Number(day.slice(0,4))||parsed.getMonth()+1!==Number(day.slice(5,7))||parsed.getDate()!==Number(day.slice(8,10)))return;
+    state.calendarSelected=day;state.calendarMonth=day.slice(0,7);renderCalendar();
+  });
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();if(state.working)return;
     const title=$('date-title').value.trim(),raw=$('date-when').value;
     const when=new Date(raw),duration=Number($('date-duration').value);

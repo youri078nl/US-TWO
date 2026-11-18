@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.16.2-card-flow-rc',
+  version: '0.16.3-date-idempotency-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
 // Keep preview and production credentials separate on the same GitHub Pages origin.
 const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -113,6 +113,7 @@ window.USTwoDateBridge=Object.freeze({
     if(!paired()){setTab('pair');toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
     const picked=String(title||'').trim().slice(0,120);
     if(!picked)return;
+    state.dateRequestId=null;
     $('date-title').value=picked;
     const duration=$('date-duration');
     const chosenMinutes=Math.max(15,Math.min(240,Math.round(Number(minutes)||60)));
@@ -410,7 +411,19 @@ function bind(){
   });
   $('auth-form').addEventListener('submit',async e=>{e.preventDefault();if(state.working)return;setBusy(true);$('auth-feedback').textContent='';try{await authorize($('auth-email').value.trim(),$('auth-password').value,state.mode==='signup')}catch(err){$('auth-feedback').classList.add('error');$('auth-feedback').textContent=failText(err)}finally{setBusy(false)}});
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();$('date-form-selected').textContent='';await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
+  for(const eventName of ['input','change'])$('date-form').addEventListener(eventName,()=>{state.dateRequestId=null;});
+  $('date-form').addEventListener('submit',async e=>{e.preventDefault();if(state.working)return;
+    const title=$('date-title').value.trim(),raw=$('date-when').value;
+    const when=new Date(raw),duration=Number($('date-duration').value);
+    if(!title||!raw||!Number.isFinite(+when)||when<=new Date()||!Number.isSafeInteger(duration)||duration<15||duration>1440){toast('Kies een geldige datum in de toekomst en tijdsduur.',true);return;}
+    const requestId=state.dateRequestId||(state.dateRequestId=crypto.randomUUID());
+    setBusy(true);
+    try{
+      await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:duration,p_request_id:requestId});
+      state.dateRequestId=null;$('date-form').reset();$('date-form-selected').textContent='';
+      await syncAll({quiet:true});toast('Uitnodiging verzonden.');
+    }catch(err){toast(failText(err),true)}finally{setBusy(false)}
+  });
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-plan-day'){
     if(!paired()){toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
@@ -418,6 +431,7 @@ function bind(){
     const now=new Date();const today=amsterdamDay(now);
     if(day<today){toast('Kies een toekomstige dag.',true);return;}
     const field=$('date-when');
+    state.dateRequestId=null;
     const minutes=amsterdamClock(now);
     const nextHour=Math.floor(minutes/60)+1;
     const hour=day===today?Math.max(19,nextHour):19;

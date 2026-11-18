@@ -56,8 +56,10 @@
   const frame=await window.USTwoPoseFrames?.approvedStill?.(scene);
   if(n!==artRevision||who!==identityKey||!frame)return;
   artUrl=URL.createObjectURL(frame);img.src=artUrl;
-  if($('quest-question-play-pose'))$('quest-question-play-pose').hidden=false;
   img.alt='Goedgekeurde 2D-pose bij de vraagcategorie '+question.category;
+  const sequence=await window.USTwoPoseFrames?.approvedSequence?.(scene);
+  if(n!==artRevision||who!==identityKey)return;
+  if($('quest-question-play-pose'))$('quest-question-play-pose').hidden=!(Array.isArray(sequence)&&sequence.length>1);
  }
 
  const show=s=>{const e=$('quest-question-status');if(e)e.textContent=s;};

@@ -277,3 +277,7 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 
 /* Full portrait board, viewed through a mobile-sized draggable window. */
 #quest-board-stage{height:auto;aspect-ratio:941/1672;bottom:auto;}
+
+/* Separate tasks screen reuses the live quest controls, never duplicates game state. */
+#game-panel.quest-tasks-view .quest-board-section{display:none}
+#game-panel.quest-tasks-view #quest-pilot-catalog{scroll-margin-top:80px}

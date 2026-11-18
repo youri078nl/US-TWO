@@ -412,7 +412,7 @@ function renderDates(){
       actions+=`<details class="cancel-confirm"><summary>Afspraak annuleren</summary><p class="muted">Deze actie trekt de afspraak in voor jullie allebei. Dit kan niet ongedaan gemaakt worden.</p><button type="button" class="ghost-btn" data-action="date-cancel" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Ja, afspraak annuleren</button></details>`;
     }
     const calendarAction=Number.isFinite(new Date(d.start_at).getTime())?`<button type="button" class="ghost-btn" data-action="date-show-calendar" data-id="${safe(d.id)}">Bekijk in kalender</button>`:"";
-    return `<article class="card" id="agenda-date-${safe(d.id)}">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}${calendarAction}</article>`;
+    return `<article class="card" id="agenda-date-${safe(d.id)}" tabindex="-1">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}${calendarAction}</article>`;
   }).join('');
 }
 function openDateChangeEditor(id){

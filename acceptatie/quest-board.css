@@ -357,3 +357,19 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #quest-pilot-recovery:not(:has(button:not(:disabled))){display:none}
 #quest-pilot-refresh{font-size:12px;opacity:.8}
 #quest-pilot .primary-btn:not(:disabled){box-shadow:0 4px 17px #bb8c6750}
+
+/* v0.17.44: Keep diagnostic and import nodes for existing JS, but remove
+   developer controls and repeated status text from the normal game UI. */
+#game-panel .quest-board-art-options,
+#game-panel .quest-cinematic-controls,
+#game-panel .quest-board-caption,
+#game-panel #quest-journey-guidance,
+#game-panel #quest-pilot-pending,
+#game-panel #quest-pilot-network,
+#game-panel #quest-task-phase,
+#game-panel #quest-pilot-task,
+#game-panel #quest-pilot-status,
+#game-panel #quest-pilot-task-progress,
+#game-panel #full-deck-details,
+#game-panel #quest-cards-import-hint{display:none!important}
+#game-panel #quest-pilot-message:empty{display:none}

@@ -303,9 +303,17 @@
                 <div class="quest-current-card-picture"><img id="quest-current-card-image" class="quest-card-image" alt="" hidden><span class="quest-current-card-placeholder" aria-hidden="true">♡</span></div>
                 <div class="quest-current-card-copy"><p class="eyebrow" id="quest-current-card-meta"></p><h4 id="quest-current-card-title"></h4><p id="quest-current-card-art-status" class="muted" role="status"></p></div>
               </div>
-              <div class="buttons">
-                <button type="button" id="quest-current-show-animation" class="secondary-btn">Bekijk de 2D-animatie</button>
-              </div>
+            </section>
+            <section class="stack" aria-labelledby="quest-schedule-heading">
+              <h4 id="quest-schedule-heading">Date samen plannen</h4>
+              <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>
+              <label for="quest-pilot-schedule-time">Voorgestelde datum en tijd</label>
+              <input id="quest-pilot-schedule-time" type="datetime-local" aria-label="Date voorstellen voor datum en tijd" />
+              <button id="quest-pilot-schedule-propose" type="button" class="primary-btn" disabled>♡ Plan deze date</button>
+              <button id="quest-pilot-schedule-accept" type="button" class="primary-btn" disabled>✓ Datum bevestigen</button>
+              <button id="quest-pilot-schedule-reject" type="button" class="ghost-btn" disabled>Datum afwijzen</button>
+              <button id="quest-pilot-schedule-cancel" type="button" class="ghost-btn" disabled>Mijn datumvoorstel intrekken</button>
+
             </section>
             <div id="quest-card-reveal" class="quest-card-reveal hidden" role="dialog" aria-modal="true" aria-labelledby="quest-card-reveal-heading" aria-describedby="quest-card-reveal-description">
               <div class="quest-card-reveal-backdrop"></div>
@@ -348,17 +356,7 @@
               <p class="muted">Categorie Erotiek blijft gesloten totdat wederzijdse toestemming technisch is vastgelegd.</p>
             </section>
 
-            <section class="stack" aria-labelledby="quest-schedule-heading">
-              <h4 id="quest-schedule-heading">Date samen plannen</h4>
-              <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>
-              <label for="quest-pilot-schedule-time">Voorgestelde datum en tijd</label>
-              <input id="quest-pilot-schedule-time" type="datetime-local" aria-label="Date voorstellen voor datum en tijd" />
-              <button id="quest-pilot-schedule-propose" type="button" class="primary-btn" disabled>♡ Plan deze date</button>
-              <button id="quest-pilot-schedule-accept" type="button" class="primary-btn" disabled>✓ Datum bevestigen</button>
-              <button id="quest-pilot-schedule-reject" type="button" class="ghost-btn" disabled>Datum afwijzen</button>
-              <button id="quest-pilot-schedule-cancel" type="button" class="ghost-btn" disabled>Mijn datumvoorstel intrekken</button>
 
-            </section>
             <div class="stack" id="quest-pilot-catalog">
               <h4>Kies een nieuwe opdracht</h4>
               <label for="quest-pilot-mode">Hoe spelen jullie?</label>

@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.28-pending-calendar-rc',
+  version: '0.17.29-calendar-reschedules-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -345,8 +345,17 @@ function renderCalendar(){
    .concat(state.questCalendar.filter(d=>d.status==='accepted'&&d.kind==='confirmed')):[];
  const exportButton=$('quest-calendar-export');
  if(exportButton)exportButton.disabled=!confirmed.some(d=>typeof d.start_at==='string'&&Number.isFinite(new Date(d.start_at).getTime()));
+ // Show pending reschedules on their proposed day without changing the
+ // canonical original appointment or exporting an unaccepted proposal.
+ const pendingCalendarEntries=scheduled.flatMap(d=>{
+  const change=d.pending_change;
+  const at=change?.start_at;
+  if(!at||!Number.isFinite(new Date(at).getTime()))return [];
+  return [{...d,start_at:at,title:change.title||d.title,
+    status:'proposed',calendarLabel:d.status==='accepted'?'Wijziging voorgesteld':'Tegenvoorstel'}];
+ });
  const byDay=new Map();
- (paired()?scheduled.concat(state.questCalendar):scheduled).forEach(d=>{
+ (paired()?scheduled.concat(pendingCalendarEntries,state.questCalendar):scheduled.concat(pendingCalendarEntries)).forEach(d=>{
   const date=new Date(d.start_at);
   if(!Number.isFinite(date.getTime()))return;
   const key=amsterdamDay(date);
@@ -366,7 +375,7 @@ function renderCalendar(){
  const events=(byDay.get(key)||[]).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
  const label=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
  $('calendar-day-detail').innerHTML='<h4>'+safe(label)+'</h4>'+(events.length?
-  events.map(d=>'<div class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+safe(d.kind?d.label:(d.status==='accepted'?'Geaccepteerd':'Uitnodiging'))+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+(d.kind?' <button type="button" class="ghost-btn" data-action="calendar-open-game">Open spelreis</button>':!validUuid(d.id)?'':' <button type="button" class="ghost-btn" data-action="calendar-open-date" data-id="'+safe(d.id)+'">Bekijk afspraak</button>')+'</div>').join(''):
+  events.map(d=>'<div class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+safe(d.calendarLabel|| (d.kind?d.label:(d.status==='accepted'?'Geaccepteerd':'Uitnodiging')))+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+(d.kind?' <button type="button" class="ghost-btn" data-action="calendar-open-game">Open spelreis</button>':!validUuid(d.id)?'':' <button type="button" class="ghost-btn" data-action="calendar-open-date" data-id="'+safe(d.id)+'">Bekijk afspraak</button>')+'</div>').join(''):
   '<p class="muted">Geen geplande afspraken op deze dag.</p>');
 }
 function renderMemories(){

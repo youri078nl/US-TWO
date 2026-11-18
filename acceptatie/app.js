@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.26-confirmed-home-date-rc',
+  version: '0.17.27-incoming-changes-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -225,6 +225,17 @@ function updateDateConflictWarning(){
 }
 function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome();updateDateConflictWarning()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
+function dateNeedsMyResponse(d,me,now=Date.now()){
+  if(!d||!['accepted','proposed'].includes(d.status))return false;
+  const pending=d.pending_change;
+  if(pending){
+    return pending.proposer_id!==me&&
+      Number.isFinite(new Date(pending.start_at).getTime())&&
+      new Date(pending.start_at).getTime()>=now;
+  }
+  return d.status==='proposed'&&d.proposer_id!==me&&
+    Number.isFinite(new Date(d.start_at).getTime())&&new Date(d.start_at).getTime()>=now;
+}
 function renderHome(){
   const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];
   $('couple-banner').innerHTML=paired()?'<span class="dot"></span><span>Jullie zijn gekoppeld 💞</span>':`<span class="dot"></span><span>${m.length?'Wachten op jouw partner':'Koppel jullie accounts om te starten'}</span>`;
@@ -233,9 +244,7 @@ function renderHome(){
   const next=upcoming.find(x=>x.status==='accepted')||upcoming[0];
   const nextConfirmed=next?.status==='accepted';
   const me=state.session?.user?.id;
-  const incoming=list.filter(x=>new Date(x.start_at).getTime()>=Date.now()&&
-    (x.pending_change?.proposer_id&&x.pending_change.proposer_id!==me&&['accepted','proposed'].includes(x.status)||
-     x.status==='proposed'&&x.proposer_id!==me&&!x.pending_change));
+  const incoming=list.filter(x=>dateNeedsMyResponse(x,me));
   let cards='';
   if(!paired()){cards+=`<div class="card"><span class="eyebrow">EERSTE STAP</span><h3>Verbind jullie accounts</h3><p class="muted">Gebruik een koppelcode zodat jullie samen kunnen plannen en spelen.</p><button class="secondary-btn" data-action="open-pair">Naar koppelen</button></div>`}
   else {if(incoming.length)cards+=`<div class="card"><span class="eyebrow">JOUW ACTIE</span><h3>${incoming.length} ${incoming.length===1?'uitnodiging wacht':'uitnodigingen wachten'} op jou</h3><p class="muted">Bekijk de voorgestelde dates of wijzigingen en reageer vanuit de gedeelde agenda.</p><button class="primary-btn" data-action="open-pending-dates">Bekijk uitnodigingen</button></div>`;
@@ -388,9 +397,7 @@ function renderDates(){
   const currentTime=Date.now();
   const isUpcoming=d=>new Date(d.start_at).getTime()>=currentTime&&d.status!=='cancelled'&&d.status!=='declined';
   const me=state.session?.user?.id;
-  const needsMyResponse=d=>isUpcoming(d)&&(
-    d.pending_change?.proposer_id&&d.pending_change.proposer_id!==me&&['accepted','proposed'].includes(d.status)||
-    d.status==='proposed'&&d.proposer_id!==me&&!d.pending_change);
+  const needsMyResponse=d=>dateNeedsMyResponse(d,me,currentTime);
   const incomingCount=allDates.filter(needsMyResponse).length;
   const pendingCount=allDates.filter(d=>isUpcoming(d)&&(d.status==='proposed'||Boolean(d.pending_change))).length;
   const acceptedCount=allDates.filter(d=>isUpcoming(d)&&d.status==='accepted'&&!d.pending_change).length;

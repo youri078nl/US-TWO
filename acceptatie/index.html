@@ -153,6 +153,7 @@
               <label for="date-title">Wat gaan jullie doen?</label><input id="date-title" maxlength="120" required placeholder="Bijvoorbeeld een verrassingswandeling">
               <label for="date-when">Wanneer?</label><input id="date-when" type="datetime-local" required>
               <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="30">30 minuten</option><option value="45">45 minuten</option><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
+              <p id="date-conflict-warning" class="muted" role="status" aria-live="polite" hidden></p>
               <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
             </form>
           </div>

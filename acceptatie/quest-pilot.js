@@ -208,10 +208,16 @@
     $('quest-pilot-super-skip').disabled=!readyToAct||!open||!!v.my_skip;
   }
   async function refresh() {
+    const who=identity();
+    const sameIdentity=()=>{
+      const now=window.USTwoQuestPilotBridge?.identity();
+      return now?.paired&&now.userId===who.userId&&now.coupleId===who.coupleId;
+    };
     const q=await ensureQueue();
     const [server,local]=await Promise.all([
       window.USTwoQuestPilotBridge.read(),q.state()
     ]);
+    if(!sameIdentity())return;
     latest=server;
     if(server.world_index!==catalogWorld||server.phase!=='choose') {catalogChoices=[];catalogWorld=null;catalogPage=0;}
     status(server,local.items,local.blocked);
@@ -224,8 +230,10 @@
     window.USTwoQuestQuestions?.update(server,identity(),local);
     try {
       const superdates=await window.USTwoQuestPilotBridge.readSuper();
+      if(!sameIdentity())return;
       showSuper(superdates,local.items.length>0,local.blocked);
     } catch(_error) {
+      if(!sameIdentity())return;
       showSuper([],true,'superdate_read_failed');
       text('quest-pilot-super-status','Superdategegevens tijdelijk niet beschikbaar. Probeer opnieuw.');
     }

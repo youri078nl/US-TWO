@@ -611,7 +611,7 @@ function bind(){
     field.value=day+'T'+time;
     state.calendarSelected=day;
     state.calendarMonth=day.slice(0,7);
-    renderCalendar();
+    renderCalendar();updateDateConflictWarning();
     $('date-form').scrollIntoView({behavior:'smooth',block:'center'});
     field.focus({preventScroll:true});return;
    }if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;window.USTwoDateBridge.choose({title:item[0],minutes:item[1],source:'inspiratie'});return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});

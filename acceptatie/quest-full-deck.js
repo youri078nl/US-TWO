@@ -135,6 +135,8 @@
    $('full-deck-count').textContent='0 / 0';
    clearImage();return;
   }
+  const num=$('full-deck-card-number');if(num)num.textContent=c.superdate?'SUPERDATE '+String(c.idx).padStart(2,'0'):'KAART '+String(selected+1).padStart(3,'0');
+  const showcase=$('full-deck-showcase');if(showcase)showcase.classList.toggle('is-superdate',Boolean(c.superdate));
   $('full-deck-title').textContent=c.title;
   $('full-deck-description').textContent=c.superdate
    ? 'De geheime voorbereiding wordt uitsluitend via het beveiligde superdatespel getoond.'
@@ -142,8 +144,9 @@
   $('full-deck-count').textContent=(filtered.indexOf(selected)+1)+' / '+filtered.length;
   $('full-deck-meta').textContent=c.superdate?'Superdate '+c.idx+' / 18':'Wereld '+(c.world+1)+' · '+c.minutes+' minuten · richtprijs samen €'+c.estimated_cost_eur;
   clearImage();
+  $('full-deck-art-fallback')?.classList.remove('hidden');
   if(account&&images?.[selected] instanceof Blob){
-   imageURL=URL.createObjectURL(images[selected]);pic.src=imageURL;pic.alt='Goedgekeurde US TWO-kaart '+c.title;pic.hidden=false;
+   imageURL=URL.createObjectURL(images[selected]);pic.src=imageURL;pic.alt='Goedgekeurde US TWO-kaart '+c.title;pic.hidden=false;$('full-deck-art-fallback')?.classList.add('hidden');
   }
   $('full-deck-prev').disabled=filtered.length<2;
   $('full-deck-next').disabled=filtered.length<2;

@@ -1,0 +1,58 @@
+name: Publish US TWO card artwork
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'US_TWO_WEB_ASSETS_258_GITHUB_UPLOAD.zip'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: us-two-card-assets
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Validate and unpack the 258 approved illustrations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import re
+          path=Path('US_TWO_WEB_ASSETS_258_GITHUB_UPLOAD.zip')
+          if not path.is_file():
+              raise SystemExit('Upload the ZIP in the repository root first.')
+          with ZipFile(path) as z:
+              files=[n for n in z.namelist() if n.endswith('.jpg')]
+              expected={f'acceptatie/assets/cards/US_TWO_W{w}_{i:02}.jpg' for w in range(1,7) for i in range(1,41)}
+              expected|={f'acceptatie/assets/cards/US_TWO_SUPERDATE_{i:02}.jpg' for i in range(1,19)}
+              if len(files)!=258 or set(files)!=expected or len(z.namelist())!=258:
+                  raise SystemExit('ZIP must contain exactly 258 expected images in correct paths.')
+              for name in sorted(files):
+                  info=z.getinfo(name)
+                  if info.file_size>500000 or info.file_size<1000:
+                      raise SystemExit(f'Unexpected image size: {name}')
+                  data=z.read(name)
+                  if not data.startswith(bytes.fromhex('ffd8ff')) or not data.endswith(bytes.fromhex('ffd9')):
+                      raise SystemExit(f'Invalid JPEG: {name}')
+                  target=Path(name)
+                  target.parent.mkdir(parents=True,exist_ok=True)
+                  target.write_bytes(data)
+          path.unlink()
+          print('Validated and extracted 258 images.')
+          PY
+      - name: Commit card artwork to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add acceptatie/assets/cards/ US_TWO_WEB_ASSETS_258_GITHUB_UPLOAD.zip
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'assets(cards): publish 258 approved US TWO illustrations'
+            git push
+          fi

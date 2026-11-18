@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.40-guided-quests-sounds-rc',
+  version: '0.17.41-accept-to-agenda-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

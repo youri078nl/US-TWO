@@ -674,9 +674,11 @@ window.USTwoQuestPilotBridge = Object.freeze({
     if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
     const type=mode==='afstand'?'remote':'together';
     const query='/rest/v1/us_quest_catalog?select=id,title,category,minutes,reward_steps,brief,remote,together,world,estimated_cost_eur&world=eq.'+world+'&category=neq.Flirt&'+type+'=eq.true&order=id.asc&limit=50';
+    let lastCatalogToken='';
     const call=async()=>{
       if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
       const token=state.session.access_token;
+      lastCatalogToken=token;
       try{
         const data=await request(query,{headers:{Authorization:'Bearer '+token}});
         if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
@@ -689,8 +691,7 @@ window.USTwoQuestPilotBridge = Object.freeze({
     try{return await call();}
     catch(e){
       if(e.status!==401||!current())throw e;
-      const previous=state.session.access_token;
-      if(previous&&state.session.access_token===previous)await freshToken();
+      if(state.session.access_token===lastCatalogToken)await freshToken();
       return call();
     }
   },

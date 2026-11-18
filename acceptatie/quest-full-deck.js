@@ -126,8 +126,8 @@
  }
  function queueReveal(state,idx){
   const phase=state.phase;
-  const key=account+':'+state.date.id+':'+phase+':'+String(state.revision||0);
-  if(phase==='approval'&&state.proposer_id===account.split(':')[0])return;
+  const key=account+':'+state.date.id+':'+phase;
+  if(phase==='approval'&&state.proposer_id===account.split(':')[0]){pendingReveal=null;return;}
   if(key!==lastRevealKey)pendingReveal={key,idx,phase,mode:state.mode};
   showReveal();
  }

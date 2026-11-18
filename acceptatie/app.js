@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.3-session-generation-rc',
+  version: '0.17.4-auth-race-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -44,25 +44,37 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){authGeneration++;state.dateRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
-  if(refreshPending)return refreshPending;
+  if(refreshPending?.generation===authGeneration)return refreshPending.promise;
   const generation=authGeneration;
   const refreshToken=state.session.refresh_token;
-  refreshPending=(async()=>{
+  const pending={generation,promise:null};
+  refreshPending=pending;
+  pending.promise=(async()=>{
     try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:refreshToken})});
       if(generation!==authGeneration||state.session?.refresh_token!==refreshToken)throw Error('Inlogsessie is gewijzigd.');
       saveSession(data);return data.access_token}
     catch(e){if((e.status===400||e.status===401)&&generation===authGeneration){clearSession();showAuth()}throw e}
-    finally{refreshPending=null}
-  })();return refreshPending;
+    finally{if(refreshPending===pending)refreshPending=null}
+  })();return pending.promise;
 }
 async function rpc(name,body={},retry=true) {
   if(!state.session)throw new Error('Log eerst in.');
+  const generation=authGeneration;
   if(state.session.expires_at < Date.now()/1000+80)await freshToken();
-  try{return await request('/rest/v1/rpc/'+name,{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token},body:JSON.stringify(body)})}
-  catch(e){if(retry&&e.status===401){await freshToken();return rpc(name,body,false)}throw e}
+  if(generation!==authGeneration||!state.session)throw Error('Inlogsessie is gewijzigd.');
+  const token=state.session.access_token;
+  try{return await request('/rest/v1/rpc/'+name,{method:'POST',headers:{Authorization:'Bearer '+token},body:JSON.stringify(body)})}
+  catch(e){
+    if(retry&&e.status===401&&generation===authGeneration){
+      if(state.session?.access_token===token)await freshToken();
+      if(generation!==authGeneration||!state.session)throw Error('Inlogsessie is gewijzigd.');
+      return rpc(name,body,false);
+    }
+    throw e;
+  }
 }
 async function authorize(email,password,signUp){
   const url=signUp?'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname):'/auth/v1/token?grant_type=password';

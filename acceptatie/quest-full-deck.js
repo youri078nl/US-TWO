@@ -219,12 +219,34 @@
    cards=[...data.ordinary.map(c=>({...c,superdate:false})),
       ...data.superdates.map(c=>({...c,world:'superdate',superdate:true}))];
    if(new Set(data.ordinary.map(c=>c.id)).size!==240)throw Error('Dubbele catalogus-ID');
-   filter();renderActive();say('258 officiële titels geladen. Importeer het mobiele ZIP-pakket voor de illustraties.');
+   filter();renderActive();say('258 officiële kaarten geladen. Illustraties verschijnen automatisch zodra de webbestanden gepubliceerd zijn; lokaal importeren blijft mogelijk.');
   }catch(_err){say('Volledige catalogus niet geladen; probeer deze testversie opnieuw te openen.');return;}
   $('full-deck-world').addEventListener('change',filter);
   $('full-deck-search').addEventListener('input',filter);
   $('full-deck-prev').addEventListener('click',()=>move(-1));
   $('full-deck-next').addEventListener('click',()=>move(1));
+  const showcase=$('full-deck-showcase');
+  if(showcase){
+   let startX=0,startY=0,tracking=false;
+   showcase.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='mouse'&&event.button!==0)return;
+    startX=event.clientX;startY=event.clientY;tracking=true;
+   },{passive:true});
+   showcase.addEventListener('pointerup',event=>{
+    if(!tracking)return;
+    tracking=false;
+    const dx=event.clientX-startX,dy=event.clientY-startY;
+    if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.3)move(dx<0?1:-1);
+   },{passive:true});
+   showcase.addEventListener('pointercancel',()=>{tracking=false;},{passive:true});
+   showcase.setAttribute('tabindex','0');
+   showcase.setAttribute('aria-keyshortcuts','ArrowLeft ArrowRight');
+   showcase.addEventListener('keydown',event=>{
+    if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
+     event.preventDefault();move(event.key==='ArrowRight'?1:-1);
+    }
+   });
+  }
   $('full-deck-zip').addEventListener('change',async e=>{
    const file=e.currentTarget.files?.[0];e.currentTarget.value='';
    if(file)await importZip(file);

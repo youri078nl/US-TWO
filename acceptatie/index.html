@@ -422,12 +422,22 @@
             <label for="full-deck-search">Zoek een opdracht</label>
             <input id="full-deck-search" type="search" placeholder="Titel of beschrijving" maxlength="120">
             <label><input id="full-deck-follow" type="checkbox"> Actieve opdracht automatisch tonen</label>
-            <div class="quest-card-heading">
-              <p id="full-deck-meta" class="muted"></p>
-              <h3 id="full-deck-title"></h3>
-            </div>
-            <img id="full-deck-image" class="quest-card-image" alt="" hidden>
-            <p id="full-deck-description" class="muted">Opdrachtbeschrijving laden…</p>
+            <article id="full-deck-showcase" class="us-two-luxe-card" aria-label="Opdrachtkaart">
+              <div class="us-two-luxe-card-top"><span>US TWO</span><span id="full-deck-card-number">KAART 001</span></div>
+              <div class="us-two-luxe-card-art">
+                <img id="full-deck-image" class="quest-card-image" alt="" hidden>
+                <div id="full-deck-art-fallback" class="us-two-luxe-art-fallback" aria-hidden="true">
+                  <span class="us-two-luxe-heart">♡</span>
+                  <span>SAMEN IS ALTIJD BIJZONDER</span>
+                </div>
+              </div>
+              <div class="us-two-luxe-card-body">
+                <p id="full-deck-meta" class="us-two-luxe-card-meta"></p>
+                <h3 id="full-deck-title"></h3>
+                <p id="full-deck-description">Opdrachtbeschrijving laden…</p>
+              </div>
+              <div class="us-two-luxe-card-foot"><span>YOURI ♡ KIM</span><span>ÉÉN AVONTUUR</span></div>
+            </article>
             <div class="quest-card-navigation">
               <button type="button" id="full-deck-prev" class="secondary-btn" disabled>Vorige</button>
               <span id="full-deck-count" aria-live="polite">0 / 258</span>

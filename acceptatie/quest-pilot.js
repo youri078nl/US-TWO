@@ -491,6 +491,13 @@
           expectedRevision:state.revision,payload:{action}
         });
         handleSync(await q.sync());
+        if(action==='accept'){
+          const verified=await window.USTwoQuestPilotBridge.read();
+          const remaining=await q.state();
+          if(verified?.phase==='active'&&!remaining.items.length&&!remaining.blocked){
+            window.dispatchEvent(new CustomEvent('us-two-open-quest-agenda'));
+          }
+        }
       }));
     }
     for(const action of SUPER_ACTIONS) {

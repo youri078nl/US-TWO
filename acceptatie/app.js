@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.16-date-calendar-link-rc',
+  version: '0.17.17-calendar-event-navigation-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -315,7 +315,7 @@ function renderCalendar(){
  const events=(byDay.get(key)||[]).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
  const label=new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(key+'T12:00:00Z'));
  $('calendar-day-detail').innerHTML='<h4>'+safe(label)+'</h4>'+(events.length?
-  events.map(d=>'<p class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+(d.kind?d.label:(d.status==='accepted'?'Geaccepteerd':'Uitnodiging'))+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+'</p>').join(''):
+  events.map(d=>'<div class="calendar-event"><span class="tag '+(d.status==='accepted'?'active':'pending')+'">'+safe(d.kind?d.label:(d.status==='accepted'?'Geaccepteerd':'Uitnodiging'))+'</span> '+safe(d.title)+' · '+timeFmt.format(new Date(d.start_at))+(d.kind||!validUuid(d.id)?'':' <button type="button" class="ghost-btn" data-action="calendar-open-date" data-id="'+safe(d.id)+'">Bekijk afspraak</button>')+'</div>').join(''):
   '<p class="muted">Geen geplande afspraken op deze dag.</p>');
 }
 function renderMemories(){
@@ -412,7 +412,7 @@ function renderDates(){
       actions+=`<details class="cancel-confirm"><summary>Afspraak annuleren</summary><p class="muted">Deze actie trekt de afspraak in voor jullie allebei. Dit kan niet ongedaan gemaakt worden.</p><button type="button" class="ghost-btn" data-action="date-cancel" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Ja, afspraak annuleren</button></details>`;
     }
     const calendarAction=Number.isFinite(new Date(d.start_at).getTime())?`<button type="button" class="ghost-btn" data-action="date-show-calendar" data-id="${safe(d.id)}">Bekijk in kalender</button>`:"";
-    return `<article class="card">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}${calendarAction}</article>`;
+    return `<article class="card" id="agenda-date-${safe(d.id)}">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}${calendarAction}</article>`;
   }).join('');
 }
 function openDateChangeEditor(id){
@@ -524,7 +524,14 @@ function bind(){
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='incoming';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='date-show-calendar'){
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='incoming';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='calendar-open-date'){
+    const appointment=(state.dashboard?.dates||[]).find(d=>d.id===x.dataset.id);
+    if(!appointment)return;
+    $('date-list-filter').value='all';renderDates();
+    const card=document.getElementById('agenda-date-'+appointment.id);
+    if(card){card.scrollIntoView({behavior:'smooth',block:'center'});card.focus?.({preventScroll:true});}
+    return;
+  }if(a==='date-show-calendar'){
     const appointment=(state.dashboard?.dates||[]).find(d=>d.id===x.dataset.id);
     if(!appointment)return;
     const start=new Date(appointment.start_at);

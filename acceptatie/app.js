@@ -221,6 +221,13 @@ window.USTwoQuestCalendar=Object.freeze({update:updateQuestCalendar,clear:()=>{
 }});
 function renderCalendar(){
  const today=amsterdamDay(new Date()),month=state.calendarMonth||today.slice(0,7);
+ const plan=$('[data-action="calendar-plan-day"]');
+ if(plan){
+  const selected=state.calendarSelected||today;
+  plan.disabled=!paired()||selected<today||selected===today&&amsterdamClock(new Date())>=23*60;
+  plan.textContent=!paired()?'Koppel accounts om een date te plannen'
+   :selected<today?'Kies een toekomstige dag om te plannen':'Plan een date op '+selected.split('-').reverse().join('-');
+ }
  const [year,m]=month.split('-').map(Number);
  const start=new Date(Date.UTC(year,m-1,1));
  if(!Number.isFinite(start.getTime()))return;

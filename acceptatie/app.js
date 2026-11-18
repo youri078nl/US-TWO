@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.46-date-proposals-rc',
+  version: '0.17.47-dates-first-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -136,7 +136,9 @@ let gameView='board';
 function setTab(tab,view){
   if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
   if(tab==='game')gameView=view==='tasks'?'tasks':'board';
-  state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
+  state.tab=tab;
+  $('app-view')?.classList.toggle('us-two-home-view',tab==='home');
+  document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');
   $('game-panel')?.classList.toggle('quest-tasks-view',tab==='game'&&gameView==='tasks');
   const note=$('quest-game-section-note');

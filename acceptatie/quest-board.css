@@ -375,7 +375,7 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #game-panel #quest-pilot-message:empty{display:none}
 
 /* Dates: three curated proposals first; advanced search remains collapsed. */
-#quest-date-results,#quest-date-more{display:none!important}
+#quest-date-advanced:not([open]) #quest-date-results,#quest-date-advanced:not([open]) #quest-date-more{display:none!important}
 #quest-date-advanced{margin-top:12px;border:1px solid #c99d7645;border-radius:16px;padding:12px}
 #quest-date-advanced>summary{cursor:pointer;font-weight:700;padding:7px 2px}
 #quest-date-advanced[open]>.quest-date-filters{margin-top:16px}

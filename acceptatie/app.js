@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.13-date-change-retry-rc',
+  version: '0.17.14-incoming-dates-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -191,9 +191,14 @@ function renderHome(){
   $('couple-banner').innerHTML=paired()?'<span class="dot"></span><span>Jullie zijn gekoppeld 💞</span>':`<span class="dot"></span><span>${m.length?'Wachten op jouw partner':'Koppel jullie accounts om te starten'}</span>`;
   $('welcome-note').textContent=paired()?'Een kleine verrassing kan een gewone dag bijzonder maken.':'Twee accounts, één avontuur. Nodig je partner uit om te beginnen.';
   const next=[...list].filter(x=>x.status!=='declined'&&x.status!=='cancelled'&&new Date(x.start_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at))[0];
+  const me=state.session?.user?.id;
+  const incoming=list.filter(x=>new Date(x.start_at).getTime()>=Date.now()&&
+    (x.pending_change?.proposer_id&&x.pending_change.proposer_id!==me&&['accepted','proposed'].includes(x.status)||
+     x.status==='proposed'&&x.proposer_id!==me&&!x.pending_change));
   let cards='';
   if(!paired()){cards+=`<div class="card"><span class="eyebrow">EERSTE STAP</span><h3>Verbind jullie accounts</h3><p class="muted">Gebruik een koppelcode zodat jullie samen kunnen plannen en spelen.</p><button class="secondary-btn" data-action="open-pair">Naar koppelen</button></div>`}
-  else {cards+=`<div class="card"><span class="eyebrow">VOLGENDE DATE</span><h3>${next?safe(next.title):'Tijd voor een nieuwe afspraak?'}</h3><p class="muted">${next?timeFmt.format(new Date(next.start_at)):'Plan iets leuks, ook als het maar een halfuurtje is.'}</p><button class="secondary-btn" data-action="open-dates">Bekijk agenda</button></div>`;
+  else {if(incoming.length)cards+=`<div class="card"><span class="eyebrow">JOUW ACTIE</span><h3>${incoming.length} ${incoming.length===1?'uitnodiging wacht':'uitnodigingen wachten'} op jou</h3><p class="muted">Bekijk de voorgestelde dates of wijzigingen en reageer vanuit de gedeelde agenda.</p><button class="primary-btn" data-action="open-pending-dates">Bekijk uitnodigingen</button></div>`;
+    cards+=`<div class="card"><span class="eyebrow">VOLGENDE DATE</span><h3>${next?safe(next.title):'Tijd voor een nieuwe afspraak?'}</h3><p class="muted">${next?timeFmt.format(new Date(next.start_at)):'Plan iets leuks, ook als het maar een halfuurtje is.'}</p><button class="secondary-btn" data-action="open-dates">Bekijk agenda</button></div>`;
     cards+=`<div class="card"><span class="eyebrow">JULLIE SPELREIS</span><h3>Samen verder spelen</h3><p class="muted">Bekijk jullie gezamenlijke wereld, opdrachten en de actuele serverstand.</p><button class="secondary-btn" data-action="open-game">Open het spel</button></div>`}
   $('home-cards').innerHTML=cards;
 }
@@ -511,7 +516,7 @@ function bind(){
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-plan-day'){
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='pending';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-plan-day'){
     if(!paired()){toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
     const day=state.calendarSelected||amsterdamDay(new Date());
     const now=new Date();const today=amsterdamDay(now);

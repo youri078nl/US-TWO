@@ -23,16 +23,16 @@
  async function playQuestionPose(){
   if(posePlaying){stopQuestionPose();return;}
   const scene=SCENE_BY_CATEGORY[question?.category];
-  if(!scene||!identityKey||!$('quest-question-art'))return;
+  if(!scene||!identityKey||!$('quest-question-art')||document.hidden||$('game-panel')?.classList.contains('hidden'))return;
   const n=artRevision,who=identityKey;
   const frames=await window.USTwoPoseFrames?.approvedSequence?.(scene);
-  if(!frames||n!==artRevision||who!==identityKey||posePlaying)return;
+  if(!frames||n!==artRevision||who!==identityKey||posePlaying||document.hidden||$('game-panel')?.classList.contains('hidden'))return;
   try{poseUrls=frames.map(frame=>URL.createObjectURL(frame));}catch(_error){stopQuestionPose();return;}
   posePlaying=true;
   const button=$('quest-question-play-pose');if(button)button.textContent='Stop 2D-pose';
   let index=0;
   const tick=()=>{
-   if(!posePlaying||n!==artRevision){stopQuestionPose();return;}
+   if(!posePlaying||n!==artRevision||document.hidden||$('game-panel')?.classList.contains('hidden')){stopQuestionPose();return;}
    $('quest-question-art').src=poseUrls[index++];
    if(index<poseUrls.length)poseTimer=setTimeout(tick,200);
    else poseTimer=setTimeout(stopQuestionPose,350);

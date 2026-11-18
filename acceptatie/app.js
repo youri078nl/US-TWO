@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.2-account-sync-rc',
+  version: '0.17.3-session-generation-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -13,7 +13,7 @@ const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]
 const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'});
 const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spullen uit huis samen een piepklein dorp."],["Keukenlab voor twee",90,15,"thuis","Verzin een gerecht met ingrediënten die jullie kennen."],["Samen een filmtrailer maken",30,0,"thuis","Bedenk een titel en speel jullie eigen filmtrailer."],["Wandeling met drie vragen",60,0,"buiten","Kies een veilige route en stel elkaar drie gekke vragen."],["Onzinreclame maken",30,0,"thuis","Maak een reclamespot voor een nutteloos voorwerp."],["Tien gratis mini-avonturen",30,0,"beide","Bedenk ieder vijf kleine avonturen die niets kosten."],["Fotomissie: filmposter",60,0,"beide","Maak samen een foto alsof jullie in een film spelen."],["Picknick met een thema",90,15,"buiten","Neem iets lekkers mee naar een fijne plek."],["Muzikale herinneringen",45,0,"thuis","Vertel welk nummer bij een mooie herinnering hoort."],["Kaartspel met nieuwe regels",60,0,"thuis","Bedenk samen verrassende regels voor een bestaand spel."],["Speurtocht door huis",45,0,"thuis","Verstop aanwijzingen voor een kleine speurtocht."],["Samen sterren kijken",60,0,"buiten","Zoek bij geschikt weer een plek om naar de lucht te kijken."]]);
 let ideaOffset=0;
-let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
+let refreshPending = null; let pollBusy = false; let authGeneration = 0; let toastTimer = 0; let waitingWorker = null;
 
 function toast(message, error=false) {
   const e=$('toast');e.textContent=message;e.classList.toggle('error',error);e.classList.add('visible');
@@ -40,17 +40,21 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
-  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id)state.questCalendar=[];
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){authGeneration++;state.dashboard=null;state.questCalendar=[];}
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){authGeneration++;state.dateRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;
+  const generation=authGeneration;
+  const refreshToken=state.session.refresh_token;
   refreshPending=(async()=>{
-    try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:state.session.refresh_token})});saveSession(data);return data.access_token}
-    catch(e){if(e.status===400||e.status===401){clearSession();showAuth()}throw e}
+    try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:refreshToken})});
+      if(generation!==authGeneration||state.session?.refresh_token!==refreshToken)throw Error('Inlogsessie is gewijzigd.');
+      saveSession(data);return data.access_token}
+    catch(e){if((e.status===400||e.status===401)&&generation===authGeneration){clearSession();showAuth()}throw e}
     finally{refreshPending=null}
   })();return refreshPending;
 }
@@ -132,17 +136,17 @@ window.USTwoDateBridge=Object.freeze({
 async function syncAll({quiet=false}={}) {
   if(!state.session||pollBusy)return false;
   const account=state.session.user?.id;
-  const sessionAtStart=state.session;
+  const generation=authGeneration;
   pollBusy=true;
   try{
     const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
     // A response from the previous account must never repopulate the screen after logout.
-    if(!account||state.session!==sessionAtStart)return false;
+    if(!account||generation!==authGeneration||state.session?.user?.id!==account)return false;
     state.dashboard=d;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();connection(true);return true;
   }catch(e){
-    if(account&&state.session===sessionAtStart){connection(false);if(!quiet)toast(failText(e),true);}
+    if(account&&generation===authGeneration&&state.session?.user?.id===account){connection(false);if(!quiet)toast(failText(e),true);}
     return false;
   }finally{pollBusy=false}
 }

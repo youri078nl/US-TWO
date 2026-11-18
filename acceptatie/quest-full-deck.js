@@ -119,6 +119,7 @@
   $('quest-card-reveal-label').textContent=phase==='approval'?'UITNODIGING VAN JE PARTNER':'JULLIE NIEUWE OPDRACHT';
   $('quest-card-reveal-heading').textContent=card.title;
   $('quest-card-reveal-description').textContent=(phase==='approval'?'Je partner stelt deze opdracht voor. Bekijk de kaart en beslis of je meedoet.':'Deze opdracht staat klaar. Bekijk de kaart en start jullie avontuur.')+' · '+(mode==='afstand'?'Op afstand':'Samen');
+  $('quest-card-reveal-continue').textContent=phase==='approval'?'Accepteren':'Naar agenda';
   pic.alt='Originele illustratie van '+card.title;pic.src=publicCardURL(idx);pic.hidden=false;
   pic.onerror=()=>{pic.hidden=true;};
   overlay.classList.remove('hidden');
@@ -304,20 +305,19 @@
    if(file)await importZip(file);
   });
   $('quest-card-reveal-close')?.addEventListener('click',closeReveal);
-  $('quest-card-reveal-continue')?.addEventListener('click',()=>{closeReveal();$('quest-current-card')?.scrollIntoView({behavior:'smooth',block:'center'});});
+  $('quest-card-reveal-continue')?.addEventListener('click',()=>{
+   const phase=activeState?.phase;
+   closeReveal();
+   if(phase==='approval'){
+    const accept=$('quest-pilot-accept');
+    if(accept&&!accept.disabled){accept.click();return;}
+    $('quest-current-card')?.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+   }
+   window.dispatchEvent(new CustomEvent('us-two-open-quest-agenda'));
+  });
   $('quest-card-reveal')?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeReveal();}if(event.key==='Tab'){const buttons=[$('quest-card-reveal-close'),$('quest-card-reveal-continue')];if(event.shiftKey&&document.activeElement===buttons[0]){event.preventDefault();buttons[1].focus();}else if(!event.shiftKey&&document.activeElement===buttons[1]){event.preventDefault();buttons[0].focus();}}});
   window.addEventListener('us-two-quest-game-open',showReveal);
-  $('quest-current-open-library')?.addEventListener('click',()=>{
-   if($('quest-current-card').hidden||!activeState?.date?.id)return;
-   const idx=cards.findIndex(c=>!c.superdate&&c.id===activeState.date.id);
-   if(idx<0)return;
-   selected=idx;
-   $('full-deck-world').value='all';$('full-deck-search').value='';
-   filter();
-   const details=$('full-deck-details');
-   details.open=true;
-   details.scrollIntoView({behavior:'smooth',block:'start'});
-  });
   $('quest-current-show-animation')?.addEventListener('click',()=>{
    if($('quest-current-card').hidden)return;
    const button=$('quest-cinematic-play');

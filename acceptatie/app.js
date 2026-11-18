@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.32-tasks-nav-rc',
+  version: '0.17.33-task-shortcuts-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -782,6 +782,19 @@ function bind(){
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab,x.dataset.gameView)});
+  $('quest-tasks-shortcuts')?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-quest-jump]');
+    if(!button)return;
+    const target=$(button.dataset.questJump);
+    if(!target)return;
+    if(target.tagName==='DETAILS')target.open=true;
+    if(target.hidden){
+      const status=$('quest-question-status')?.textContent||'';
+      toast(status||'Dit onderdeel is beschikbaar zodra de spelstand het toestaat.');
+      return;
+    }
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  });
   $('date-list-filter').addEventListener('change',renderDates);
   $('refresh-btn').addEventListener('click',()=>syncAll());
   $('logout-btn').addEventListener('click',async()=>{if(state.session){try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch{}}clearSession();showAuth();toast('Uitgelogd.')});

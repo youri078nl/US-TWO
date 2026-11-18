@@ -317,7 +317,14 @@ function renderMemories(){
  }).join('');
 }
 function renderDates(){
-  const list=state.dashboard?.dates||[];
+  const list=[...(state.dashboard?.dates||[])].sort((a,b)=>{
+    const aTime=new Date(a.start_at).getTime(),bTime=new Date(b.start_at).getTime();
+    const now=Date.now();
+    const aFuture=aTime>=now&&a.status!=='cancelled'&&a.status!=='declined';
+    const bFuture=bTime>=now&&b.status!=='cancelled'&&b.status!=='declined';
+    if(aFuture!==bFuture)return aFuture?-1:1;
+    return aFuture?aTime-bTime:bTime-aTime;
+  });
   $('date-form').querySelectorAll('input,select,button').forEach(x=>x.disabled=!paired());
   const me=state.session?.user?.id;
   if(state.dateEditId&&!list.some(d=>d.id===state.dateEditId&&!d.pending_change&&new Date(d.start_at)>new Date()&&(d.status==='accepted'||(d.status==='proposed'&&d.proposer_id!==me)))){

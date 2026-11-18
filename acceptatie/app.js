@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.4-auth-race-rc',
+  version: '0.17.5-rpc-session-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -66,8 +66,11 @@ async function rpc(name,body={},retry=true) {
   if(state.session.expires_at < Date.now()/1000+80)await freshToken();
   if(generation!==authGeneration||!state.session)throw Error('Inlogsessie is gewijzigd.');
   const token=state.session.access_token;
-  try{return await request('/rest/v1/rpc/'+name,{method:'POST',headers:{Authorization:'Bearer '+token},body:JSON.stringify(body)})}
-  catch(e){
+  try{
+    const result=await request('/rest/v1/rpc/'+name,{method:'POST',headers:{Authorization:'Bearer '+token},body:JSON.stringify(body)});
+    if(generation!==authGeneration)throw Error('Inlogsessie is gewijzigd.');
+    return result;
+  }catch(e){
     if(retry&&e.status===401&&generation===authGeneration){
       if(state.session?.access_token===token)await freshToken();
       if(generation!==authGeneration||!state.session)throw Error('Inlogsessie is gewijzigd.');

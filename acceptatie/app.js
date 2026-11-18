@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.41-accept-to-agenda-rc',
+  version: '0.17.42-inline-planning-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -123,15 +123,10 @@ async function showApp(){
   await syncAll();
   if(state.session&&state.dashboard)setTab(paired()?'game':'pair');
 }
-let questScheduleHome=null;
 function showQuestAgenda(){
  const schedule=document.querySelector('[aria-labelledby="quest-schedule-heading"]');
- const agenda=$('dates-panel');
- if(!schedule||!agenda)return;
- if(!questScheduleHome){questScheduleHome=document.createComment('Quest schedule original location');schedule.parentNode.insertBefore(questScheduleHome,schedule);}
- agenda.insertBefore(schedule,agenda.firstChild);
- schedule.classList.add('quest-schedule-in-agenda');
- setTab('dates');
+ if(!schedule)return;
+ setTab('game','tasks');
  schedule.scrollIntoView({behavior:'smooth',block:'start'});
  const field=$('quest-pilot-schedule-time');
  if(field&&!field.disabled)field.focus({preventScroll:true});
@@ -141,13 +136,6 @@ let gameView='board';
 function setTab(tab,view){
   if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
   if(tab==='game')gameView=view==='tasks'?'tasks':'board';
-  if(tab==='game'&&questScheduleHome?.parentNode){
-    const schedule=document.querySelector('[aria-labelledby="quest-schedule-heading"]');
-    if(schedule?.classList.contains('quest-schedule-in-agenda')){
-      questScheduleHome.parentNode.insertBefore(schedule,questScheduleHome.nextSibling);
-      schedule.classList.remove('quest-schedule-in-agenda');
-    }
-  }
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');
   $('game-panel')?.classList.toggle('quest-tasks-view',tab==='game'&&gameView==='tasks');

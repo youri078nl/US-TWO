@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.21-date-conflict-warning-rc',
+  version: '0.17.22-quest-conflict-warning-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -198,8 +198,17 @@ function updateDateConflictWarning(){
     const otherStart=new Date(d.start_at).getTime(),otherDuration=Number(d.duration_minutes);
     return Number.isFinite(otherStart)&&Number.isFinite(otherDuration)&&otherDuration>0&&start<otherStart+otherDuration*60000&&end>otherStart;
   });
-  warning.hidden=!conflicts.length;
-  warning.textContent=conflicts.length?'Let op: dit tijdstip overlapt met '+conflicts.length+' bestaande '+(conflicts.length===1?'afspraak of uitnodiging.':'afspraken of uitnodigingen.')+' Je kunt het voorstel nog steeds versturen.':'';
+  // Quest schedule entries expose a start time but no guaranteed duration.
+  // Flag the exact start falling inside the new time window, without inventing an end.
+  const questConflicts=(state.questCalendar||[]).filter(d=>{
+    if(!['accepted','proposed'].includes(d.status))return false;
+    const questStart=new Date(d.start_at).getTime();
+    return Number.isFinite(questStart)&&questStart>=start&&questStart<end;
+  });
+  const count=conflicts.length+questConflicts.length;
+  warning.hidden=!count;
+  warning.textContent=count?'Let op: dit tijdstip overlapt met '+conflicts.length+' bestaande '+(conflicts.length===1?'afspraak of uitnodiging':'afspraken of uitnodigingen')+
+    (questConflicts.length?' en '+questConflicts.length+' spelreis'+(questConflicts.length===1?'date':'dates'):'')+'. Je kunt het voorstel nog steeds versturen.':'';
 }
 function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome();updateDateConflictWarning()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
@@ -283,10 +292,11 @@ function updateQuestCalendar(game,who){
     p.pending_by===who.userId?'Eigen datumvoorstel · spelreis':'Voorstel partner · spelreis');
  }
  state.questCalendar=next;
+ updateDateConflictWarning();
  if($('calendar-grid')&&state.tab==='dates')renderCalendar();
 }
 window.USTwoQuestCalendar=Object.freeze({update:updateQuestCalendar,clear:()=>{
- state.questCalendar=[];if($('calendar-grid')&&state.tab==='dates')renderCalendar();
+ state.questCalendar=[];updateDateConflictWarning();if($('calendar-grid')&&state.tab==='dates')renderCalendar();
 }});
 function renderCalendar(){
  const today=amsterdamDay(new Date()),month=state.calendarMonth||today.slice(0,7);

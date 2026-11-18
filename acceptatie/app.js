@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.24-sync-error-rc',
+  version: '0.17.25-date-proposals-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -169,6 +169,7 @@ window.USTwoDateBridge=Object.freeze({
       state.calendarMonth=chosenDay.slice(0,7);
       renderCalendar();
     }
+    updateDateConflictWarning();
     $('date-form-selected').textContent='Gekozen date: '+picked+'. Controleer datum en tijd; alleen Verzenden maakt een uitnodiging.';
     setTab('dates');
     $('date-form').scrollIntoView({behavior:'instant',block:'center'});
@@ -201,11 +202,13 @@ function updateDateConflictWarning(){
     warning.hidden=true;warning.textContent='';return;
   }
   const end=start+minutes*60000;
-  const conflicts=(state.dashboard?.dates||[]).filter(d=>{
-    if(!['accepted','proposed'].includes(d.status))return false;
-    const otherStart=new Date(d.start_at).getTime(),otherDuration=Number(d.duration_minutes);
+  const overlaps=(candidate)=>{
+    const otherStart=new Date(candidate?.start_at).getTime(),otherDuration=Number(candidate?.duration_minutes);
     return Number.isFinite(otherStart)&&Number.isFinite(otherDuration)&&otherDuration>0&&start<otherStart+otherDuration*60000&&end>otherStart;
-  });
+  };
+  const conflicts=(state.dashboard?.dates||[]).filter(d=>
+    ['accepted','proposed'].includes(d.status)&&(overlaps(d)||d.pending_change&&overlaps(d.pending_change))
+  );
   // Quest schedule entries expose a start time but no guaranteed duration.
   // Flag the exact start falling inside the new time window, without inventing an end.
   const questConflicts=(state.questCalendar||[]).filter(d=>{

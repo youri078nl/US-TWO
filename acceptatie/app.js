@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.18-quest-calendar-route-rc',
+  version: '0.17.19-pwa-install-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -457,7 +457,25 @@ async function runAction(action,extra={}){
     toast(refreshed?result:result+' Het overzicht wordt later vernieuwd.',!refreshed);
   }catch(e){toast(failText(e),true)}finally{setBusy(false)}
 }
+let deferredInstallPrompt=null;
+function refreshInstallUi(){
+  const button=$('pwa-install-button'),status=$('pwa-install-status');
+  if(!button||!status)return;
+  const installed=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  button.classList.toggle('hidden',installed||!deferredInstallPrompt);
+  status.textContent=installed?'US TWO draait al als geïnstalleerde webapp.':deferredInstallPrompt?'Installatie is beschikbaar op dit apparaat.':'Gebruik de installatie-instructies hieronder.';
+}
 function bind(){
+  window.addEventListener('beforeinstallprompt',event=>{
+    event.preventDefault();deferredInstallPrompt=event;refreshInstallUi();
+  });
+  window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;refreshInstallUi();});
+  $('pwa-install-button').addEventListener('click',async()=>{
+    if(!deferredInstallPrompt)return;
+    const prompt=deferredInstallPrompt;deferredInstallPrompt=null;refreshInstallUi();
+    try{await prompt.prompt();await prompt.userChoice;}catch(_error){toast('Installatie niet gestart. Gebruik het browsermenu.',true)}
+    refreshInstallUi();
+  });
   $('login-tab').addEventListener('click',()=>changeMode('login'));
   $('signup-tab').addEventListener('click',()=>changeMode('signup'));
   $('forgot-password').addEventListener('click',()=>showRecovery('request'));
@@ -636,7 +654,7 @@ function bind(){
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
-  bind();renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
+  bind();renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);refreshInstallUi();
   try{
     const params=new URLSearchParams(location.hash.slice(1));
     const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');

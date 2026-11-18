@@ -10,6 +10,7 @@
  const STORE='collection', DB='us-two-full-deck-258-v1';
  let cards=[],filtered=[],selected=0,account='',images=null,imageURL='',generation=0,loading=false;
  let activeState=null,activeImageURL='',activeImageIndex=-1,activeImageBlob=null;
+ let lastRevealKey='',pendingReveal=null,previousRevealFocus=null;
  const say=s=>{if($('full-deck-status'))$('full-deck-status').textContent=s;};
  const PUBLIC_CARD_ROOT='./assets/cards/';
  let hostedArtworkReady=false, hostedArtworkChecked=false;
@@ -19,7 +20,7 @@
    hostedArtworkReady=response.ok&&response.headers.get('content-type')?.startsWith('image/');
   }catch(_error){hostedArtworkReady=false;}
   hostedArtworkChecked=true;
-  if(cards.length){render();renderActive();}
+  if(cards.length){render();renderActive();showReveal();}
  }
 
  const publicCardURL=i=>PUBLIC_CARD_ROOT+nameOf(i);
@@ -99,6 +100,37 @@
   const pic=$('quest-current-card-image');
   if(pic){pic.hidden=true;pic.removeAttribute('src');pic.alt='';}
  }
+ function closeReveal(){
+  const overlay=$('quest-card-reveal');
+  if(!overlay||overlay.classList.contains('hidden'))return;
+  overlay.classList.add('hidden');
+  const pic=$('quest-card-reveal-image');if(pic){pic.removeAttribute('src');pic.hidden=true;}
+  previousRevealFocus?.focus?.();previousRevealFocus=null;
+ }
+ function showReveal(){
+  if(!pendingReveal||!account||!hostedArtworkReady)return;
+  const panel=$('game-panel');
+  if(!panel||panel.classList.contains('hidden')||document.visibilityState==='hidden')return;
+  const {key,idx,phase,mode}=pendingReveal;
+  if(key===lastRevealKey)return;
+  const card=cards[idx],overlay=$('quest-card-reveal'),pic=$('quest-card-reveal-image');
+  if(!card||!overlay||!pic)return;
+  lastRevealKey=key;pendingReveal=null;previousRevealFocus=document.activeElement;
+  $('quest-card-reveal-label').textContent=phase==='approval'?'UITNODIGING VAN JE PARTNER':'JULLIE NIEUWE OPDRACHT';
+  $('quest-card-reveal-heading').textContent=card.title;
+  $('quest-card-reveal-description').textContent=(phase==='approval'?'Je partner stelt deze opdracht voor. Bekijk de kaart en beslis of je meedoet.':'Deze opdracht staat klaar. Bekijk de kaart en start jullie avontuur.')+' · '+(mode==='afstand'?'Op afstand':'Samen');
+  pic.alt='Originele illustratie van '+card.title;pic.src=publicCardURL(idx);pic.hidden=false;
+  pic.onerror=()=>{pic.hidden=true;};
+  overlay.classList.remove('hidden');
+  $('quest-card-reveal-continue')?.focus();
+ }
+ function queueReveal(state,idx){
+  const phase=state.phase;
+  const key=account+':'+state.date.id+':'+phase+':'+String(state.revision||0);
+  if(phase==='approval'&&state.proposer_id===account.split(':')[0])return;
+  if(key!==lastRevealKey)pendingReveal={key,idx,phase,mode:state.mode};
+  showReveal();
+ }
  function renderActive(){
   const panel=$('quest-current-card'),pic=$('quest-current-card-image');
   if(!panel||!pic)return;
@@ -108,12 +140,15 @@
   const idx=active?cards.findIndex(card=>!card.superdate&&card.id===state.date.id):-1;
   if(idx<0){
    panel.hidden=true;
+   pendingReveal=null;closeReveal();
    clearActiveImage();
    return;
   }
   const card=cards[idx], blob=images?.[idx];
   const publicURL=publicCardURL(idx);
   panel.hidden=false;
+  $('quest-current-card-phase').textContent=state.phase==='approval'?'WACHT OP AKKOORD':'OPDRACHT ACTIEF';
+  queueReveal(state,idx);
   $('quest-current-card-title').textContent=card.title;
   $('quest-current-card-meta').textContent=
     'Wereld '+(card.world+1)+' · '+card.minutes+' min · '+
@@ -193,7 +228,7 @@
  function update(identity,state){
   const key=identity?.paired&&identity.userId&&identity.coupleId?identity.userId+':'+identity.coupleId:'';
   if(key!==account){
-   account=key;++generation;images=null;clearImage();clearActiveImage();
+   account=key;++generation;images=null;clearImage();clearActiveImage();lastRevealKey='';pendingReveal=null;closeReveal();
    $('full-deck-zip').disabled=!key||loading;
    if(key)load(key);else{say('Log in op jullie gekoppelde accounts om afbeeldingen te importeren.');render();}
   }
@@ -268,6 +303,10 @@
    const file=e.currentTarget.files?.[0];e.currentTarget.value='';
    if(file)await importZip(file);
   });
+  $('quest-card-reveal-close')?.addEventListener('click',closeReveal);
+  $('quest-card-reveal-continue')?.addEventListener('click',()=>{closeReveal();$('quest-current-card')?.scrollIntoView({behavior:'smooth',block:'center'});});
+  $('quest-card-reveal')?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeReveal();}if(event.key==='Tab'){const buttons=[$('quest-card-reveal-close'),$('quest-card-reveal-continue')];if(event.shiftKey&&document.activeElement===buttons[0]){event.preventDefault();buttons[1].focus();}else if(!event.shiftKey&&document.activeElement===buttons[1]){event.preventDefault();buttons[0].focus();}}});
+  window.addEventListener('us-two-quest-game-open',showReveal);
   $('quest-current-open-library')?.addEventListener('click',()=>{
    if($('quest-current-card').hidden||!activeState?.date?.id)return;
    const idx=cards.findIndex(c=>!c.superdate&&c.id===activeState.date.id);

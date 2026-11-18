@@ -174,3 +174,7 @@ textarea::placeholder{color:#a89db7}
 .incoming-invite-dialog p{line-height:1.5;overflow-wrap:anywhere}
 .incoming-invite-dialog .buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
 .incoming-invite-dialog .buttons button{flex:1 1 160px;min-height:48px}
+
+/* Six mobile destinations must fit a 320px-wide iPhone without horizontal overflow. */
+.bottom-nav button{min-width:0;max-width:none;padding:4px 2px;font-size:clamp(8px,2.4vw,10px);overflow-wrap:anywhere}
+.bottom-nav .nav-icon{font-size:clamp(19px,5vw,25px)}

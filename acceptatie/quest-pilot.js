@@ -85,6 +85,25 @@
     const partnerProposal=active&&state.phase==='approval'&&state.proposer_id!==who?.userId;
     const ownProposal=active&&state.phase==='approval'&&state.proposer_id===who?.userId;
     const activeTask=active&&state.phase==='active';
+    // Only show actions relevant to the current phase. All original buttons and RPCs remain intact.
+    const flow=$('quest-pilot');
+    if(flow){
+      flow.dataset.phase=state.initialized?String(state.phase||'choose'):'setup';
+      flow.dataset.role=partnerProposal?'receiver':ownProposal?'sender':activeTask?'playing':'idle';
+      flow.dataset.canChoose=canChoose?'true':'false';
+    }
+    for(const [id,visible] of [
+      ['quest-pilot-accept',partnerProposal],['quest-pilot-reject',partnerProposal],
+      ['quest-pilot-cancel',ownProposal],['quest-pilot-complete',activeTask&&!state.my_done],
+      ['quest-pilot-skip',activeTask&&!state.my_skip],
+      ['quest-pilot-start',!state.initialized],
+      ['quest-pilot-sync',items.length>0],['quest-pilot-resolve',conflict],
+      ['quest-pilot-schedule-propose',activeTask],
+      ['quest-pilot-schedule-accept',activeTask&&Boolean(state.schedule?.pending_at)],
+      ['quest-pilot-schedule-reject',activeTask&&Boolean(state.schedule?.pending_at)],
+      ['quest-pilot-schedule-cancel',activeTask&&Boolean(state.schedule?.pending_at)]
+    ]){const el=$(id);if(el)el.hidden=!visible;}
+
     $('quest-pilot-accept').disabled=!partnerProposal;
     $('quest-pilot-reject').disabled=!partnerProposal;
     $('quest-pilot-cancel').disabled=!ownProposal;
@@ -283,6 +302,7 @@
     if(result.status==='busy')throw Error('Synchronisatie is al bezig in een ander venster.');
   }
   function clearPrivateScreen() {
+    if($('quest-pilot')){$('quest-pilot').dataset.phase='setup';$('quest-pilot').dataset.role='idle';}
     latest=null;currentSuper=null;catalogChoices=[];catalogWorld=null;catalogMode=null;catalogBudget=null;catalogPage=0;
     text('quest-pilot-status','Log opnieuw in om je gezamenlijke spelstand te bekijken.');
     text('quest-journey-guidance','De spelreisstatus is verborgen na uitloggen.');

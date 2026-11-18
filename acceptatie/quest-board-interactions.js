@@ -10,13 +10,17 @@
  const stage=()=> $('quest-board-stage');
  function clamp(){
   const el=viewport();if(!el)return;
-  const w=el.clientWidth,h=el.clientHeight;
-  const maxX=Math.max(0,(zoom-1)*w/2),maxY=Math.max(0,(zoom-1)*h/2);
+  const w=el.clientWidth,h=el.clientHeight,board=stage();
+  const boardW=board?.offsetWidth||w,boardH=board?.offsetHeight||h;
+  const maxX=Math.max(0,(zoom*boardW-w)/2),maxY=Math.max(0,(zoom*boardH-h)/2);
   x=Math.max(-maxX,Math.min(maxX,x));y=Math.max(-maxY,Math.min(maxY,y));
  }
  function paint(){
+  const node=stage(),el=viewport();if(!node||!el)return;
+  // The full portrait image stays at its natural aspect ratio. Center it in
+  // the shorter viewing window, then allow panning to BOTH distant ends.
+  node.style.top=((el.clientHeight-node.offsetHeight)/2).toFixed(2)+'px';
   clamp();
-  const node=stage();if(!node)return;
   node.style.transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) scale('+zoom.toFixed(3)+')';
   const label=$('quest-board-zoom-level');if(label)label.textContent=Math.round(zoom*100)+'%';
   const minus=$('quest-board-zoom-out');if(minus)minus.disabled=zoom<=1.01;
@@ -32,8 +36,9 @@
   zoom=Math.max(1.42,zoom);
   const left=Number.parseFloat(pawn.style.left),top=Number.parseFloat(pawn.style.top);
   if(!Number.isFinite(left)||!Number.isFinite(top))return reset();
-  x=-(left/100-.5)*el.clientWidth*zoom;
-  y=-(top/100-.5)*el.clientHeight*zoom;
+  const board=stage();
+  x=-(left/100-.5)*(board?.offsetWidth||el.clientWidth)*zoom;
+  y=-(top/100-.5)*(board?.offsetHeight||el.clientHeight)*zoom;
   paint();
  }
  function onDown(event){

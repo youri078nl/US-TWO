@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.17.23-sync-freshness-rc',
+  version: '0.17.24-sync-error-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [], lastSyncAt: null };
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [], lastSyncAt: null, syncError: false };
 // Keep preview and production credentials separate on the same GitHub Pages origin.
 const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -26,7 +26,7 @@ function connection(ok) {
   const time=fresh?new Intl.DateTimeFormat('nl-NL',{hour:'2-digit',minute:'2-digit'}).format(new Date(state.lastSyncAt)):'';
   const age=fresh?Date.now()-state.lastSyncAt:Infinity;
   const current=ok&&fresh&&age<=60000;
-  label.textContent=!ok?'Geen verbinding'+(fresh?' · laatst '+time:''):current?'Bijgewerkt '+time:fresh?'Niet actueel · '+time:'Nog niet gesynchroniseerd';
+  label.textContent=!navigator.onLine?'Geen internet'+(fresh?' · laatst '+time:''):state.syncError?'Synchronisatie mislukt'+(fresh?' · laatst '+time:''):current?'Bijgewerkt '+time:fresh?'Niet actueel · '+time:'Nog niet gesynchroniseerd';
   label.classList.toggle('online',current);
   label.title=fresh?'Laatste succesvolle synchronisatie: '+new Date(state.lastSyncAt).toLocaleString('nl-NL'):'Er is nog geen succesvolle synchronisatie bevestigd.';
 }
@@ -48,11 +48,11 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
-  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){authGeneration++;state.dashboard=null;state.questCalendar=[];}
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){authGeneration++;state.dashboard=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;}
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending?.generation===authGeneration)return refreshPending.promise;
@@ -184,11 +184,11 @@ async function syncAll({quiet=false}={}) {
     const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
     // A response from the previous account must never repopulate the screen after logout.
     if(!account||generation!==authGeneration||state.session?.user?.id!==account)return false;
-    state.dashboard=d;state.lastSyncAt=Date.now();
+    state.dashboard=d;state.lastSyncAt=Date.now();state.syncError=false;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();connection(true);return true;
   }catch(e){
-    if(account&&generation===authGeneration&&state.session?.user?.id===account){connection(false);if(!quiet)toast(failText(e),true);}
+    if(account&&generation===authGeneration&&state.session?.user?.id===account){state.syncError=true;connection(navigator.onLine);if(!quiet)toast(failText(e),true);}
     return false;
   }finally{pollBusy=false}
 }

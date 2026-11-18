@@ -132,16 +132,17 @@ window.USTwoDateBridge=Object.freeze({
 async function syncAll({quiet=false}={}) {
   if(!state.session||pollBusy)return false;
   const account=state.session.user?.id;
+  const sessionAtStart=state.session;
   pollBusy=true;
   try{
     const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
     // A response from the previous account must never repopulate the screen after logout.
-    if(!account||state.session?.user?.id!==account)return false;
+    if(!account||state.session!==sessionAtStart)return false;
     state.dashboard=d;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();connection(true);return true;
   }catch(e){
-    if(account&&state.session?.user?.id===account){connection(false);if(!quiet)toast(failText(e),true);}
+    if(account&&state.session===sessionAtStart){connection(false);if(!quiet)toast(failText(e),true);}
     return false;
   }finally{pollBusy=false}
 }

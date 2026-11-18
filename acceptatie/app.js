@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.14-incoming-dates-rc',
+  version: '0.17.15-incoming-actions-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -345,10 +345,17 @@ function renderDates(){
   const dateFilter=$('date-list-filter')?.value||'upcoming';
   const currentTime=Date.now();
   const isUpcoming=d=>new Date(d.start_at).getTime()>=currentTime&&d.status!=='cancelled'&&d.status!=='declined';
+  const me=state.session?.user?.id;
+  const needsMyResponse=d=>isUpcoming(d)&&(
+    d.pending_change?.proposer_id&&d.pending_change.proposer_id!==me&&['accepted','proposed'].includes(d.status)||
+    d.status==='proposed'&&d.proposer_id!==me&&!d.pending_change);
+  const incomingCount=allDates.filter(needsMyResponse).length;
   const pendingCount=allDates.filter(d=>isUpcoming(d)&&(d.status==='proposed'||Boolean(d.pending_change))).length;
   const acceptedCount=allDates.filter(d=>isUpcoming(d)&&d.status==='accepted'&&!d.pending_change).length;
   const filter=$('date-list-filter');
   if(filter){
+    const incomingOption=filter.querySelector('option[value="incoming"]');
+    if(incomingOption)incomingOption.textContent='Jouw reacties ('+incomingCount+')';
     const pendingOption=filter.querySelector('option[value="pending"]');
     const acceptedOption=filter.querySelector('option[value="accepted"]');
     if(pendingOption)pendingOption.textContent='Wachten op antwoord ('+pendingCount+')';
@@ -357,6 +364,7 @@ function renderDates(){
   const filteredDates=allDates.filter(d=>{
     if(dateFilter==='all')return true;
     if(dateFilter==='history')return !isUpcoming(d);
+    if(dateFilter==='incoming')return needsMyResponse(d);
     if(dateFilter==='pending')return isUpcoming(d)&&(d.status==='proposed'||Boolean(d.pending_change));
     if(dateFilter==='accepted')return isUpcoming(d)&&d.status==='accepted'&&!d.pending_change;
     return isUpcoming(d);
@@ -370,7 +378,6 @@ function renderDates(){
     return aFuture?aTime-bTime:bTime-aTime;
   });
   $('date-form').querySelectorAll('input,select,button').forEach(x=>x.disabled=!paired());
-  const me=state.session?.user?.id;
   // Editing is tied to the canonical date, not the currently selected list filter.
   if(state.dateEditId&&!allDates.some(d=>d.id===state.dateEditId&&!d.pending_change&&new Date(d.start_at)>new Date()&&(d.status==='accepted'||(d.status==='proposed'&&d.proposer_id!==me)))){
     state.dateEditId=null;$('date-change-editor').classList.add('hidden');
@@ -516,7 +523,7 @@ function bind(){
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='pending';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-plan-day'){
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='incoming';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-plan-day'){
     if(!paired()){toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
     const day=state.calendarSelected||amsterdamDay(new Date());
     const now=new Date();const today=amsterdamDay(now);

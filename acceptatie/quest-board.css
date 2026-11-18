@@ -384,3 +384,8 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #quest-date-proposal-results .quest-date-proposal h3{margin:0;color:#f7d8a1}
 #quest-date-proposal-results .quest-date-proposal p{margin:0}
 #quest-date-proposal-results .quest-date-proposal button{margin-top:6px}
+
+/* v0.17.47: Start on Dates, without the redundant welcome banner. */
+#app-view:not(.us-two-home-view)>.welcome{display:none!important}
+#discover-panel .quest-date-intro>h3:first-child,#discover-panel .quest-date-intro>p.muted:first-of-type{display:none}
+#discover-panel .quest-date-proposals{margin-top:0}

@@ -207,8 +207,10 @@ function updateDateConflictWarning(){
   });
   const count=conflicts.length+questConflicts.length;
   warning.hidden=!count;
-  warning.textContent=count?'Let op: dit tijdstip overlapt met '+conflicts.length+' bestaande '+(conflicts.length===1?'afspraak of uitnodiging':'afspraken of uitnodigingen')+
-    (questConflicts.length?' en '+questConflicts.length+' spelreis'+(questConflicts.length===1?'date':'dates'):'')+'. Je kunt het voorstel nog steeds versturen.':'';
+  warning.textContent=count?'Let op: dit tijdstip overlapt met '+[
+    conflicts.length?conflicts.length+' bestaande '+(conflicts.length===1?'afspraak of uitnodiging':'afspraken of uitnodigingen'):null,
+    questConflicts.length?questConflicts.length+' spelreis'+(questConflicts.length===1?'date':'dates'):null
+  ].filter(Boolean).join(' en ')+'. Je kunt het voorstel nog steeds versturen.':'';
 }
 function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome();updateDateConflictWarning()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}

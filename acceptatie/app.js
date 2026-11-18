@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.6-date-prefill-rc',
+  version: '0.17.7-agenda-filter-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -329,7 +329,12 @@ function renderMemories(){
  }).join('');
 }
 function renderDates(){
-  const list=[...(state.dashboard?.dates||[])].sort((a,b)=>{
+  const allDates=state.dashboard?.dates||[];
+  const dateFilter=$('date-list-filter')?.value||'upcoming';
+  const currentTime=Date.now();
+  const isUpcoming=d=>new Date(d.start_at).getTime()>=currentTime&&d.status!=='cancelled'&&d.status!=='declined';
+  const filteredDates=allDates.filter(d=>dateFilter==='all'||(dateFilter==='history'?!isUpcoming(d):isUpcoming(d)));
+  const list=[...filteredDates].sort((a,b)=>{
     const aTime=new Date(a.start_at).getTime(),bTime=new Date(b.start_at).getTime();
     const now=Date.now();
     const aFuture=aTime>=now&&a.status!=='cancelled'&&a.status!=='declined';
@@ -343,7 +348,7 @@ function renderDates(){
     state.dateEditId=null;$('date-change-editor').classList.add('hidden');
   }
   if(!paired()){$('dates-list').innerHTML='<div class="card"><p class="muted">Koppel eerst jullie twee accounts om een date te plannen.</p></div>';return;}
-  if(!list.length){$('dates-list').innerHTML='<div class="card"><h3>De agenda is nog leeg</h3><p class="muted">Begin met een klein plan. De leukste afspraak hoeft niets te kosten.</p></div>';return;}
+  if(!list.length){$('dates-list').innerHTML='<div class="card"><h3>'+(allDates.length?'Geen afspraken in deze weergave':'De agenda is nog leeg')+'</h3><p class="muted">'+(allDates.length?'Kies Alle afspraken om de overige uitnodigingen en plannen te bekijken.':'Begin met een klein plan. De leukste afspraak hoeft niets te kosten.')+'</p></div>';return;}
   $('dates-list').innerHTML=list.map(d=>{
     const own=d.proposer_id===me;
     const upcoming=new Date(d.start_at)>new Date();
@@ -554,6 +559,7 @@ function bind(){
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
+  $('date-list-filter').addEventListener('change',renderDates);
   $('refresh-btn').addEventListener('click',()=>syncAll());
   $('logout-btn').addEventListener('click',async()=>{if(state.session){try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch{}}clearSession();showAuth();toast('Uitgelogd.')});
   $('update-check').addEventListener('click',async()=>{try{if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.getRegistration();await reg?.update();toast('Je hebt de nieuwste versie, of de update wordt klaargezet.')}else toast('Open de website opnieuw voor de nieuwste versie.')}catch{toast('Updatecontrole niet gelukt.',true)}});

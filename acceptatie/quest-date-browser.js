@@ -65,10 +65,11 @@
   const duration=$('quest-date-duration')?.value||'all';
   const words=search.split(/\s+/).filter(Boolean);
   const matches=all.filter(c=>{
-   const corpus=normalize([c.title,c.description,c.instructions,c.category].join(' '));
+   const corpus=normalize([c.title,c.description,c.instructions,c.remoteInstructions,c.category].join(' '));
    if(words.some(w=>!corpus.includes(w)))return false;
    if(category!=='all'&&c.category!==category)return false;
-   if(!AREAS[area]?.test(corpus))return false;
+   const locationCorpus=normalize([c.title,c.description,c.instructions,c.category].join(' '));
+   if(!AREAS[area]?.test(locationCorpus))return false;
    if(budget!=='all'&&(c.cost===null||c.cost>Number(budget)))return false;
    if(duration!=='all'&&c.minutes>Number(duration))return false;
    if(mode==='together'&&!c.together)return false;

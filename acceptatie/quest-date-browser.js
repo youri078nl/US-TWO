@@ -15,7 +15,7 @@
   cafe:{label:'Café',test:t=>/caf[eé]|koffie|restaurant|eten|drinken|picknick|thee|gesprek|diner|menu|keuken|tafel|hapje|proef/.test(t)}
  });
  const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
- let loaded=null,loading=null,shown=12,active=false;
+ let loaded=null,loading=null,shown=12,active=false,proposalKeys=[],proposalRound=0;
  const hasBridge=()=>typeof window.USTwoDateBridge?.choose==='function';
  const say=t=>{if($('quest-date-status'))$('quest-date-status').textContent=t;};
  const opt=(select,value,label)=>{
@@ -83,8 +83,44 @@
   else if(sort==='title')matches.sort((a,b)=>a.title.localeCompare(b.title,'nl'));
   return matches;
  }
+ function nextProposals(){
+  const options=current();
+  const previous=new Set(proposalKeys);
+  let pool=options.filter(x=>!previous.has(x.key));
+  if(pool.length<3)pool=options.slice();
+  for(let i=pool.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));
+   [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  proposalKeys=pool.slice(0,3).map(x=>x.key);
+  proposalRound++;
+  renderProposals();
+ }
+ function renderProposals(){
+  const target=$('quest-date-proposal-results');
+  if(!target||!active)return;
+  target.replaceChildren();
+  const available=current();
+  const proposals=proposalKeys.map(k=>available.find(x=>x.key===k)).filter(Boolean);
+  if(!proposals.length){
+   const p=document.createElement('p');p.className='muted';
+   p.textContent=available.length?'Tik op Toon drie andere dates voor voorstellen.':'Geen passende dates. Pas de zoekfilters aan.';
+   target.append(p);return;
+  }
+  for(const item of proposals){
+   const card=document.createElement('article');card.className='quest-date-tile quest-date-proposal';
+   const heading=document.createElement('h3');heading.textContent=item.title;
+   const meta=document.createElement('p');meta.className='quest-date-meta';
+   meta.textContent=item.minutes+' minuten · '+(item.cost===null?'Bonusdate':item.cost===0?'Gratis':'± €'+item.cost);
+   const description=document.createElement('p');description.textContent=item.description;
+   const button=document.createElement('button');button.type='button';button.className='primary-btn';
+   button.textContent='Kies deze date ♡';button.dataset.dateKey=item.key;
+   card.append(heading,meta,description,button);target.append(card);
+  }
+ }
  function render(){
   if(!active)return;
+  renderProposals();
   const list=$('quest-date-results');if(!list)return;
   list.replaceChildren();
   const matches=current();
@@ -134,7 +170,7 @@
  async function activate(){
   active=true;
   say('Dates laden…');
-  try{await ensure();if(!active)return;say('Kies een date. De agenda opent zonder iets te versturen.');render();}
+  try{await ensure();if(!active)return;say('Kies een date. De agenda opent zonder iets te versturen.');if(!proposalKeys.length)nextProposals();render();}
   catch(e){say(String(e.message||e));}
  }
  function openLocation(area){
@@ -150,8 +186,15 @@
   const areas=$('quest-date-area');areas.replaceChildren();
   for(const [key,info]of Object.entries(AREAS))opt(areas,key,info.label);
   for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration','quest-date-sort']){
-   const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;render();});
+   const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;nextProposals();render();});
   }
+  $('quest-date-refresh-proposals')?.addEventListener('click',()=>nextProposals());
+  $('quest-date-proposal-results')?.addEventListener('click',event=>{
+   const button=event.target.closest('button[data-date-key]');
+   if(!button||!hasBridge())return;
+   const item=loaded?.find(c=>c.key===button.dataset.dateKey);
+   if(item)window.USTwoDateBridge.choose({title:item.title,minutes:item.minutes,source:item.source});
+  });
   $('quest-date-surprise')?.addEventListener('click',()=>{
    if(!loaded?.length||!hasBridge()){say('De dates zijn nog niet beschikbaar.');return;}
    const options=current();
@@ -163,7 +206,7 @@
    for(const id of ['quest-date-search','quest-date-area','quest-date-category','quest-date-budget','quest-date-mode','quest-date-duration','quest-date-sort']){
     const el=$(id);if(el)el.value=id==='quest-date-search'?'':id==='quest-date-sort'?'default':'all';
    }
-   shown=12;render();
+   shown=12;nextProposals();render();
   });
   $('quest-date-more')?.addEventListener('click',()=>{shown+=12;render();});
   $('quest-date-results')?.addEventListener('click',event=>{
@@ -177,7 +220,7 @@
    if(!isShown){active=false;return;}
    activate();
   });
-  window.addEventListener('us-two-session-cleared',()=>{active=false;shown=12;
+  window.addEventListener('us-two-session-cleared',()=>{active=false;shown=12;proposalKeys=[];
    if($('quest-date-search'))$('quest-date-search').value='';
    if($('quest-date-area'))$('quest-date-area').value='all';
    if($('quest-date-category'))$('quest-date-category').value='all';

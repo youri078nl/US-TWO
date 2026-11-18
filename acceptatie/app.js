@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.19-pwa-install-rc',
+  version: '0.17.20-share-pwa-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -470,6 +470,24 @@ function bind(){
     event.preventDefault();deferredInstallPrompt=event;refreshInstallUi();
   });
   window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;refreshInstallUi();});
+  $('pwa-share-link').addEventListener('click',async()=>{
+    const url=new URL('./',location.href).href;
+    const status=$('pwa-share-status');
+    try{
+      if(navigator.share){
+        await navigator.share({title:'US TWO',text:'Open US TWO op je eigen telefoon en log in met je gekoppelde account.',url});
+        status.textContent='Deelvenster geopend.';
+      }else if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(url);
+        status.textContent='De app-link is gekopieerd. Stuur deze naar je partner.';
+      }else{
+        status.textContent='Kopieer deze link: '+url;
+      }
+    }catch(error){
+      if(error?.name==='AbortError')return;
+      status.textContent='Kopieer deze link: '+url;
+    }
+  });
   $('pwa-install-button').addEventListener('click',async()=>{
     if(!deferredInstallPrompt)return;
     const prompt=deferredInstallPrompt;deferredInstallPrompt=null;refreshInstallUi();

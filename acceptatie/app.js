@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.0-pwa-install-rc',
+  version: '0.17.1-sync-feedback-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -135,8 +135,8 @@ async function syncAll({quiet=false}={}) {
     const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
     state.dashboard=d;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
-    renderAll();if(!quiet)connection(true);
-  }catch(e){if(!quiet)toast(failText(e),true)}finally{pollBusy=false}
+    renderAll();if(!quiet)connection(true);return true;
+  }catch(e){if(!quiet)toast(failText(e),true);return false;}finally{pollBusy=false}
 }
 function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}
@@ -363,8 +363,11 @@ async function runAction(action,extra={}){
   if(!operations[action])return;
   if((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id))return;
   setBusy(true);
-  try{await operations[action]();await syncAll({quiet:true});toast(action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Opgeslagen en gesynchroniseerd.');}
-  catch(e){toast(failText(e),true)}finally{setBusy(false)}
+  try{await operations[action]();
+    const refreshed=await syncAll({quiet:true});
+    const result=action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Wijziging opgeslagen op de server.';
+    toast(refreshed?result:result+' Het overzicht wordt later vernieuwd.',!refreshed);
+  }catch(e){toast(failText(e),true)}finally{setBusy(false)}
 }
 function bind(){
   $('login-tab').addEventListener('click',()=>changeMode('login'));

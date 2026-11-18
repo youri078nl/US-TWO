@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.17.12-catalog-auth-rc',
+  version: '0.17.13-date-change-retry-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
 // Keep preview and production credentials separate on the same GitHub Pages origin.
 const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -44,7 +44,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending?.generation===authGeneration)return refreshPending.promise;
@@ -410,6 +410,7 @@ function openDateChangeEditor(id){
     toast('Dit voorstel kan momenteel niet worden aangepast.',true);return;
   }
   state.dateEditId=id;
+  state.dateChangeRequestId=null;
   $('date-change-heading').textContent=counter?'Doe een tegenvoorstel':'Wijziging voorstellen';
   $('date-change-title').value=d.title;
   const start=new Date(d.start_at);
@@ -547,6 +548,7 @@ function bind(){
     }catch(err){toast('Agenda-export mislukt: '+failText(err),true);}
   });
   $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
+  for(const eventName of ['input','change'])$('date-change-form').addEventListener(eventName,()=>{state.dateChangeRequestId=null;});
   $('date-change-form').addEventListener('submit',async e=>{
     e.preventDefault();
     if(state.working||!state.dateEditId)return;
@@ -558,14 +560,15 @@ function bind(){
       ||!Number.isInteger(duration)||duration<15||duration>1440){
       toast('Kies een toekomstige datum, een titel en een duur tussen 15 en 1440 minuten.',true);return;
     }
+    const requestId=state.dateChangeRequestId||(state.dateChangeRequestId=crypto.randomUUID());
     setBusy(true);
     try{
       await rpc(d.status==='proposed'?'us_counter_date':'us_suggest_date_change',{
         p_date_id:d.id,p_title:title,p_start_at:start.toISOString(),
         p_duration_minutes:duration,p_expected_revision:Number(d.revision),
-        p_request_id:crypto.randomUUID()
+        p_request_id:requestId
       });
-      state.dateEditId=null;$('date-change-editor').classList.add('hidden');
+      state.dateChangeRequestId=null;state.dateEditId=null;$('date-change-editor').classList.add('hidden');
       await syncAll({quiet:true});
       toast(d.status==='proposed'?'Tegenvoorstel verstuurd. Je partner kan het accepteren.':'Wijziging voorgesteld. De afspraak blijft staan totdat je partner accepteert.');
     }catch(err){toast(failText(err),true)}

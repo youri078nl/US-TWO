@@ -485,7 +485,7 @@
           complete:'Bevestig dat jij deze opdracht hebt afgerond. Stappen worden pas toegekend na beide bevestigingen.',
           skip:'Wil je deze opdracht overslaan? Dit levert geen stappen op en vereist ook de bevestiging van je partner.'
         };
-        if(!window.confirm(messages[action]))return;
+        if(action!=='accept'&&!window.confirm(messages[action]))return;
         await q.enqueue({
           type:'quest_action',requestId:crypto.randomUUID(),
           expectedRevision:state.revision,payload:{action}

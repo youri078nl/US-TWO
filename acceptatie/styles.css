@@ -165,3 +165,12 @@ textarea::placeholder{color:#a89db7}
 .date-list-controls{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:8px 0 14px;flex-wrap:wrap}
 .date-list-controls label{font-weight:600}
 .date-list-controls select{min-height:44px;max-width:100%;flex:1 1 180px}
+
+/* Incoming date invitations: shown immediately after authenticated sync. */
+.incoming-invite-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(11,7,24,.83);backdrop-filter:blur(7px)}
+.incoming-invite-overlay.hidden{display:none}
+.incoming-invite-dialog{width:min(100%,440px);max-height:calc(100dvh - 44px);overflow:auto;border:1px solid #d9a776;border-radius:22px;background:linear-gradient(150deg,#35203e,#161025);box-shadow:0 18px 75px #000b;padding:28px 22px;color:#fff4e6}
+.incoming-invite-dialog h2{font-size:clamp(23px,5vw,30px);line-height:1.15;margin:10px 0 14px}
+.incoming-invite-dialog p{line-height:1.5;overflow-wrap:anywhere}
+.incoming-invite-dialog .buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.incoming-invite-dialog .buttons button{flex:1 1 160px;min-height:48px}

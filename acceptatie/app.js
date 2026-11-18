@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.30-full-board-pan-rc',
+  version: '0.17.31-invite-popup-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -187,7 +187,7 @@ async function syncAll({quiet=false}={}) {
     if(!account||generation!==authGeneration||state.session?.user?.id!==account)return false;
     state.dashboard=d;state.lastSyncAt=Date.now();state.syncError=false;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
-    renderAll();connection(true);return true;
+    renderAll();connection(true);showIncomingInvite();return true;
   }catch(e){
     if(account&&generation===authGeneration&&state.session?.user?.id===account){state.syncError=true;connection(navigator.onLine);if(!quiet)toast(failText(e),true);}
     return false;
@@ -235,6 +235,34 @@ function dateNeedsMyResponse(d,me,now=Date.now()){
   }
   return d.status==='proposed'&&d.proposer_id!==me&&
     Number.isFinite(new Date(d.start_at).getTime())&&new Date(d.start_at).getTime()>=now;
+}
+const shownIncomingInvites=new Set();
+let incomingInviteAccount=null;
+function closeIncomingInvite(){
+  $('incoming-invite-overlay')?.classList.add('hidden');
+}
+function showIncomingInvite(){
+  const overlay=$('incoming-invite-overlay');
+  const me=state.session?.user?.id;
+  if(!overlay||!me||!paired()){closeIncomingInvite();return;}
+  if(incomingInviteAccount!==me){
+    incomingInviteAccount=me;shownIncomingInvites.clear();closeIncomingInvite();
+  }
+  if(!overlay.classList.contains('hidden'))return;
+  const waiting=(state.dashboard?.dates||[]).filter(d=>dateNeedsMyResponse(d,me));
+  const unseen=waiting.filter(d=>!shownIncomingInvites.has(d.id+':'+String(d.revision)+':'+String(d.pending_change?.id||'')));
+  if(!unseen.length)return;
+  unseen.forEach(d=>shownIncomingInvites.add(d.id+':'+String(d.revision)+':'+String(d.pending_change?.id||'')));
+  const first=unseen[0],change=first.pending_change;
+  $('incoming-invite-heading').textContent=unseen.length===1?
+    (change?'Nieuw tegenvoorstel voor een date':'Je hebt een date-uitnodiging ontvangen'):
+    'Je hebt '+unseen.length+' uitnodigingen ontvangen';
+  $('incoming-invite-description').textContent=unseen.length===1?
+    (change?.title||first.title)+' · '+timeFmt.format(new Date(change?.start_at||first.start_at))+
+      '. Bekijk het voorstel en reageer in de agenda.':
+    'Er wachten '+unseen.length+' voorstellen of wijzigingen van je partner. Bekijk ze in de gedeelde agenda.';
+  overlay.classList.remove('hidden');
+  $('incoming-invite-open')?.focus();
 }
 function renderHome(){
   const d=state.dashboard||{};const m=d.members||[];const list=d.dates||[];
@@ -532,6 +560,20 @@ function refreshInstallUi(){
   status.textContent=installed?'US TWO draait al als geïnstalleerde webapp.':deferredInstallPrompt?'Installatie is beschikbaar op dit apparaat.':'Gebruik de installatie-instructies hieronder.';
 }
 function bind(){
+  $('incoming-invite-open')?.addEventListener('click',()=>{
+    closeIncomingInvite();setTab('dates');
+    const filter=$('date-list-filter');if(filter)filter.value='incoming';
+    renderDates();
+  });
+  $('incoming-invite-later')?.addEventListener('click',closeIncomingInvite);
+  $('incoming-invite-overlay')?.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();closeIncomingInvite();return;}
+    if(event.key==='Tab'){
+      const open=$('incoming-invite-open'),later=$('incoming-invite-later');
+      if(event.shiftKey&&document.activeElement===open){event.preventDefault();later.focus();}
+      else if(!event.shiftKey&&document.activeElement===later){event.preventDefault();open.focus();}
+    }
+  });
   window.addEventListener('beforeinstallprompt',event=>{
     event.preventDefault();deferredInstallPrompt=event;refreshInstallUi();
   });

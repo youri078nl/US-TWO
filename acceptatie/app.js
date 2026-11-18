@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.16.0-calendar-day-rc',
+  version: '0.16.1-amsterdam-time-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -173,6 +173,12 @@ function renderDateIdeas(){
     return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
   }).join('');
   $('idea-results').innerHTML=rows+(filtered.length>3?'<button type="button" class="ghost-btn" data-action="more-ideas">Andere ideeën</button>':'');
+}
+function amsterdamClock(value){
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{
+  timeZone:'Europe/Amsterdam',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+ }).formatToParts(value).filter(x=>x.type==='hour'||x.type==='minute').map(x=>[x.type,x.value]));
+ return Number(parts.hour)*60+Number(parts.minute);
 }
 function amsterdamDay(value){
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
@@ -403,10 +409,13 @@ function bind(){
     if(!paired()){toast('Koppel eerst jullie accounts om een date te plannen.',true);return;}
     const day=state.calendarSelected||amsterdamDay(new Date());
     const now=new Date();const today=amsterdamDay(now);
-    if(day<today||day===today&&now.getHours()===23){toast('Kies een toekomstige dag en tijd.',true);return;}
+    if(day<today){toast('Kies een toekomstige dag.',true);return;}
     const field=$('date-when');
-    const time=day===today&&now.getHours()>=19
-      ?String(Math.min(23,now.getHours()+1)).padStart(2,'0')+':00':'19:00';
+    const minutes=amsterdamClock(now);
+    const nextHour=Math.floor(minutes/60)+1;
+    const hour=day===today?Math.max(19,nextHour):19;
+    if(hour>=24){toast('Voor vandaag is geen toekomstige starttijd meer beschikbaar. Kies morgen.',true);return;}
+    const time=String(hour).padStart(2,'0')+':00';
     field.value=day+'T'+time;
     $('date-form').scrollIntoView({behavior:'smooth',block:'center'});
     field.focus({preventScroll:true});return;

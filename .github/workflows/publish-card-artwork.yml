@@ -52,7 +52,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A acceptatie/assets/cards/ US_TWO_WEB_ASSETS_258_GITHUB_UPLOAD.zip US_TWO_WEB_ASSETS_258.zip
+          git add -A -- acceptatie/assets/cards/\n          for archive in US_TWO_WEB_ASSETS_258_GITHUB_UPLOAD.zip US_TWO_WEB_ASSETS_258.zip; do\n            if git ls-files --error-unmatch "$archive" >/dev/null 2>&1; then git add -u -- "$archive"; fi\n          done
           if git diff --cached --quiet; then
             echo 'No changes to commit.'
           else

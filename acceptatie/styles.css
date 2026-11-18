@@ -160,3 +160,8 @@ textarea::placeholder{color:#a89db7}
 
 #quest-question-play-pose{width:100%;margin:7px 0 12px;min-height:44px}
 #quest-question-play-pose[hidden]{display:none}
+
+/* Shared agenda history filter, compact and touch-friendly. */
+.date-list-controls{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:8px 0 14px;flex-wrap:wrap}
+.date-list-controls label{font-weight:600}
+.date-list-controls select{min-height:44px;max-width:100%;flex:1 1 180px}

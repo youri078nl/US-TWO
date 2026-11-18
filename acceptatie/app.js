@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.33-task-shortcuts-rc',
+  version: '0.17.34-card-import-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -782,6 +782,14 @@ function bind(){
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab,x.dataset.gameView)});
+  $('quest-open-card-import')?.addEventListener('click',()=>{
+    const collection=$('full-deck-details');
+    if(!collection)return;
+    collection.open=true;
+    collection.scrollIntoView({behavior:'smooth',block:'start'});
+    const upload=$('full-deck-zip');
+    if(upload&&!upload.disabled)upload.focus();
+  });
   $('quest-tasks-shortcuts')?.addEventListener('click',event=>{
     const button=event.target.closest('[data-quest-jump]');
     if(!button)return;

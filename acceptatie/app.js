@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.7-agenda-filter-rc',
+  version: '0.17.8-agenda-actions-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -333,7 +333,13 @@ function renderDates(){
   const dateFilter=$('date-list-filter')?.value||'upcoming';
   const currentTime=Date.now();
   const isUpcoming=d=>new Date(d.start_at).getTime()>=currentTime&&d.status!=='cancelled'&&d.status!=='declined';
-  const filteredDates=allDates.filter(d=>dateFilter==='all'||(dateFilter==='history'?!isUpcoming(d):isUpcoming(d)));
+  const filteredDates=allDates.filter(d=>{
+    if(dateFilter==='all')return true;
+    if(dateFilter==='history')return !isUpcoming(d);
+    if(dateFilter==='pending')return isUpcoming(d)&&(d.status==='proposed'||Boolean(d.pending_change));
+    if(dateFilter==='accepted')return isUpcoming(d)&&d.status==='accepted'&&!d.pending_change;
+    return isUpcoming(d);
+  });
   const list=[...filteredDates].sort((a,b)=>{
     const aTime=new Date(a.start_at).getTime(),bTime=new Date(b.start_at).getTime();
     const now=Date.now();

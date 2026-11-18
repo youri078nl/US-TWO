@@ -48,7 +48,7 @@
  async function updateArt(){
   const img=$('quest-question-art');if(!img)return;
   const scene=SCENE_BY_CATEGORY[question?.category]||'';
-  const key=identityKey+'|'+scene;
+  const key=identityKey+'|'+scene+'|'+String(question?.prompt||'');
   if(key===artKey)return;
   resetArt();artKey=key;
   if(!identityKey||!scene)return;
@@ -69,7 +69,7 @@
   if(!panel)return;
   const paired=Boolean(identityKey&&source?.paired&&source?.initialized);
   panel.hidden=!paired;
-  if(!paired){for(const id of allButtons)$(id).disabled=true;return;}
+  if(!paired){if(artKey)resetArt();for(const id of allButtons)$(id).disabled=true;return;}
   const ok=question?.paired&&question.initialized&&question.revision===source.revision;
   const phase=ok?question.phase:'unavailable';
   const myTurn=Boolean(question?.your_turn);

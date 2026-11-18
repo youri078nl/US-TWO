@@ -185,7 +185,7 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-board-card-header strong{white-space:nowrap}
 .quest-board-card-header #quest-world-heading{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .quest-board-card-header #quest-world-cell{flex:none;color:#ffddba}
-#quest-world-viewport.quest-world-viewport{width:100%;height:auto;min-height:0;aspect-ratio:941/1672;position:relative;overflow:hidden;border:0;border-radius:0;background:radial-gradient(circle at 50% 35%,#43234f,#130c26);isolation:isolate}
+#quest-world-viewport.quest-world-viewport{width:100%;height:min(68dvh,680px);min-height:300px;aspect-ratio:auto;position:relative;overflow:hidden;border:0;border-radius:0;background:radial-gradient(circle at 50% 35%,#43234f,#130c26);isolation:isolate}
 .quest-board-art-picture,.quest-board-art-picture>.quest-world-art{
   position:absolute;inset:0;display:block;width:100%;height:100%
 }
@@ -274,3 +274,6 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
   .quest-board-map-controls{gap:2px;left:5px;top:5px;padding:3px}
   #quest-pilot .quest-board-map-controls button{width:30px;height:32px;min-height:32px;min-width:30px}
 }
+
+/* Full portrait board, viewed through a mobile-sized draggable window. */
+#quest-board-stage{height:auto;aspect-ratio:941/1672;bottom:auto;}

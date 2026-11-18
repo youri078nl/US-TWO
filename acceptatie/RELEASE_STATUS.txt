@@ -1,3 +1,11 @@
+US TWO 0.17.48-date-variety-rc | 2026-11-19
+Latest commits: 8ee0a609 (date variety), b406bbb1 (app version), f24f107c (service worker).
+Done: Dates landing screen confirmed working by user on Android in 0.17.47. Date suggestions now avoid repeats until the eligible pool is exhausted, with category, duration, cost and together/remote metadata.
+Not verified: 0.17.48 on physical devices, date selection/calendar synchronization on both phones, full release regression.
+Known constraints: existing app and Supabase are preserved. Do not claim US TWO 1.0.0 until tests pass.
+Provisional weighted progress: 95% (estimate, not measured acceptance coverage).
+Next: validate 0.17.48 date suggestions and invitation-to-calendar on Android/iPhone; then address any remaining UI and sync issues.
+
 US TWO 0.14.1-dates-locaties-rc | 17 november 2026
 Nieuwe acceptatieversie (nog geen definitieve 1.0.0).
 Bron: 2303cc5b606e7151ceea8a70f25a5cc3847aef85

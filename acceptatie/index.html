@@ -304,7 +304,7 @@
                 <div class="quest-current-card-copy"><p class="eyebrow" id="quest-current-card-meta"></p><h4 id="quest-current-card-title"></h4><p id="quest-current-card-art-status" class="muted" role="status"></p></div>
               </div>
               <div class="buttons">
-                <button type="button" id="quest-current-open-library" class="secondary-btn">Bekijk de kaart in de collectie</button>
+                <button type="button" id="quest-current-open-library" class="secondary-btn" hidden>Bekijk in collectie</button>
                 <button type="button" id="quest-current-show-animation" class="secondary-btn">Bekijk de 2D-animatie</button>
               </div>
             </section>
@@ -354,11 +354,11 @@
               <p id="quest-pilot-schedule-status" class="muted" role="status" aria-live="polite">Geen datum geladen.</p>
               <label for="quest-pilot-schedule-time">Voorgestelde datum en tijd</label>
               <input id="quest-pilot-schedule-time" type="datetime-local" aria-label="Date voorstellen voor datum en tijd" />
-              <button id="quest-pilot-schedule-propose" type="button" class="secondary-btn" disabled>Datum voorstellen</button>
-              <button id="quest-pilot-schedule-accept" type="button" class="secondary-btn" disabled>Datum accepteren</button>
+              <button id="quest-pilot-schedule-propose" type="button" class="primary-btn" disabled>♡ Plan deze date</button>
+              <button id="quest-pilot-schedule-accept" type="button" class="primary-btn" disabled>✓ Datum bevestigen</button>
               <button id="quest-pilot-schedule-reject" type="button" class="ghost-btn" disabled>Datum afwijzen</button>
               <button id="quest-pilot-schedule-cancel" type="button" class="ghost-btn" disabled>Mijn datumvoorstel intrekken</button>
-              <p class="muted">Alleen de partner mag jouw voorstel bevestigen. De planning wordt op beide telefoons opgeslagen; het bestaande agendascherm blijft vooralsnog apart.</p>
+
             </section>
             <div class="stack" id="quest-pilot-catalog">
               <h4>Kies een nieuwe opdracht</h4>
@@ -374,19 +374,20 @@
                 <option value="100">Maximaal €100</option>
                 <option value="max">Onbeperkt</option>
               </select>
-              <p class="muted">Dit is een maximum, geen verplicht uit te geven bedrag. Gratis dates blijven bij elk budget beschikbaar. Richtprijzen zijn voor twee personen.</p>
-              <button id="quest-pilot-load-catalog" class="secondary-btn" type="button" disabled>Toon drie voorstellen</button>
+
+              <button id="quest-pilot-load-catalog" class="primary-btn" type="button" disabled>Laat drie opdrachten zien</button>
               <div id="quest-pilot-options" class="stack" role="group" aria-label="Beschikbare opdrachten">
                 <button id="quest-pilot-option-0" type="button" class="secondary-btn" disabled>Voorstel 1</button>
                 <button id="quest-pilot-option-1" type="button" class="secondary-btn" disabled>Voorstel 2</button>
                 <button id="quest-pilot-option-2" type="button" class="secondary-btn" disabled>Voorstel 3</button>
               </div>
             </div>
+            <details id="quest-advanced-controls"><summary>Meer opties en instellingen</summary><p class="muted">Extra functies en probleemoplossing.</p></details>
             <div class="stack" id="quest-pilot-actions" aria-label="Opdrachtacties">
-              <button id="quest-pilot-accept" type="button" class="secondary-btn" disabled>Voorstel accepteren</button>
+              <button id="quest-pilot-accept" type="button" class="primary-btn" disabled>♡ Ja, deze doen we!</button>
               <button id="quest-pilot-reject" type="button" class="ghost-btn" disabled>Voorstel afwijzen</button>
               <button id="quest-pilot-cancel" type="button" class="ghost-btn" disabled>Eigen voorstel intrekken</button>
-              <button id="quest-pilot-complete" type="button" class="secondary-btn" disabled>Mijn voltooiing bevestigen</button>
+              <button id="quest-pilot-complete" type="button" class="primary-btn" disabled>✓ Opdracht afgerond</button>
               <button id="quest-pilot-skip" type="button" class="ghost-btn" disabled>Opdracht samen overslaan</button>
             </div>
             <div class="stack">

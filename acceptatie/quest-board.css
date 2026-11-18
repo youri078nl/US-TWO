@@ -335,3 +335,25 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-card-reveal-close{position:absolute;right:13px;top:11px;border:1px solid #d7b78466;border-radius:50%;width:38px;height:38px;background:#201725;color:#fff4df;font-size:27px;z-index:1}
 @keyframes quest-card-enter{from{opacity:0;transform:translateY(25px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.quest-card-reveal-content{animation:none}}
+
+/* Guided, phase-aware quest interface. Hidden controls still exist for their existing handlers. */
+#quest-pilot [hidden],#quest-current-card [hidden]{display:none!important}
+#quest-pilot-catalog{border:1px solid #c9a97766;border-radius:18px;padding:16px;background:#241b2b}
+#quest-pilot-catalog label{margin-top:8px}
+#quest-pilot-options{display:grid;gap:10px}
+#quest-pilot-options button{text-align:left;min-height:54px;border-radius:13px}
+#quest-pilot-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+#quest-pilot-actions button{flex:1 1 180px;min-height:48px}
+#quest-pilot-actions button:disabled,#quest-pilot-schedule-propose:disabled{display:none}
+#quest-pilot[data-phase="approval"] #quest-pilot-catalog,
+#quest-pilot[data-phase="active"] #quest-pilot-catalog{display:none}
+#quest-pilot[data-phase="choose"] #quest-pilot-actions,
+#quest-pilot[data-phase="setup"] #quest-pilot-actions{display:none}
+#quest-pilot[data-phase="choose"] [aria-labelledby="quest-schedule-heading"],
+#quest-pilot[data-phase="approval"] [aria-labelledby="quest-schedule-heading"],
+#quest-pilot[data-phase="setup"] [aria-labelledby="quest-schedule-heading"]{display:none}
+#quest-current-open-library{display:none!important}
+#quest-advanced-controls{display:none}
+#quest-pilot-recovery:not(:has(button:not(:disabled))){display:none}
+#quest-pilot-refresh{font-size:12px;opacity:.8}
+#quest-pilot .primary-btn:not(:disabled){box-shadow:0 4px 17px #bb8c6750}

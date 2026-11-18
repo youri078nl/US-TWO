@@ -1,11 +1,11 @@
 const CONFIG = Object.freeze({
-  version: '0.17.22-quest-conflict-warning-rc',
+  version: '0.17.23-sync-freshness-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [] };
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [], lastSyncAt: null };
 // Keep preview and production credentials separate on the same GitHub Pages origin.
 const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -20,7 +20,15 @@ function toast(message, error=false) {
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('visible'),5000);
 }
 function connection(ok) {
-  state.online=ok;$('connection-status').textContent=ok?'Online':'Geen verbinding';$('connection-status').classList.toggle('online',ok);
+  state.online=ok;
+  const label=$('connection-status');
+  const fresh=Number.isFinite(state.lastSyncAt)&&state.lastSyncAt>0;
+  const time=fresh?new Intl.DateTimeFormat('nl-NL',{hour:'2-digit',minute:'2-digit'}).format(new Date(state.lastSyncAt)):'';
+  const age=fresh?Date.now()-state.lastSyncAt:Infinity;
+  const current=ok&&fresh&&age<=60000;
+  label.textContent=!ok?'Geen verbinding'+(fresh?' · laatst '+time:''):current?'Bijgewerkt '+time:fresh?'Niet actueel · '+time:'Nog niet gesynchroniseerd';
+  label.classList.toggle('online',current);
+  label.title=fresh?'Laatste succesvolle synchronisatie: '+new Date(state.lastSyncAt).toLocaleString('nl-NL'):'Er is nog geen succesvolle synchronisatie bevestigd.';
 }
 function setBusy(v) { state.working=v; document.querySelectorAll('button[type=submit], button[data-action]').forEach(x=>x.disabled=v); }
 function failText(error) {
@@ -44,7 +52,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending?.generation===authGeneration)return refreshPending.promise;
@@ -176,7 +184,7 @@ async function syncAll({quiet=false}={}) {
     const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
     // A response from the previous account must never repopulate the screen after logout.
     if(!account||generation!==authGeneration||state.session?.user?.id!==account)return false;
-    state.dashboard=d;
+    state.dashboard=d;state.lastSyncAt=Date.now();
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();connection(true);return true;
   }catch(e){
@@ -700,6 +708,7 @@ function bind(){
   window.addEventListener('online',()=>{connection(true);syncAll({quiet:true})});window.addEventListener('offline',()=>connection(false));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.session)syncAll({quiet:true})});
   setInterval(()=>{if(state.session&&!document.hidden&&!state.working)syncAll({quiet:true})},CONFIG.refreshMs);
+  setInterval(()=>{if(!document.hidden)connection(state.online)},30000);
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){

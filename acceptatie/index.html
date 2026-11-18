@@ -298,16 +298,27 @@
             <p id="quest-pilot-task" class="muted">Huidige opdracht nog niet opgehaald.</p>
             <p id="quest-pilot-task-progress" class="quest-task-progress" role="status" aria-live="polite" hidden></p>
             <section id="quest-current-card" class="quest-current-card" aria-label="Officiële kaart bij de actuele opdracht" hidden>
-              <p class="eyebrow">JULLIE ACTUELE KAART</p>
-              <h4 id="quest-current-card-title"></h4>
-              <p id="quest-current-card-meta" class="muted"></p>
-              <img id="quest-current-card-image" class="quest-card-image" alt="" hidden>
-              <p id="quest-current-card-art-status" class="muted">De originele afbeelding verschijnt na importeren van het 258-kaartenpakket.</p>
+              <div class="quest-current-card-frame">
+                <div class="quest-current-card-top"><span>US TWO ♡</span><span id="quest-current-card-phase">JULLIE KAART</span></div>
+                <div class="quest-current-card-picture"><img id="quest-current-card-image" class="quest-card-image" alt="" hidden><span class="quest-current-card-placeholder" aria-hidden="true">♡</span></div>
+                <div class="quest-current-card-copy"><p class="eyebrow" id="quest-current-card-meta"></p><h4 id="quest-current-card-title"></h4><p id="quest-current-card-art-status" class="muted" role="status"></p></div>
+              </div>
               <div class="buttons">
                 <button type="button" id="quest-current-open-library" class="secondary-btn">Bekijk de kaart in de collectie</button>
                 <button type="button" id="quest-current-show-animation" class="secondary-btn">Bekijk de 2D-animatie</button>
               </div>
             </section>
+            <div id="quest-card-reveal" class="quest-card-reveal hidden" role="dialog" aria-modal="true" aria-labelledby="quest-card-reveal-heading" aria-describedby="quest-card-reveal-description">
+              <div class="quest-card-reveal-backdrop"></div>
+              <div class="quest-card-reveal-content">
+                <button id="quest-card-reveal-close" type="button" class="quest-card-reveal-close" aria-label="Kaart sluiten">×</button>
+                <span class="quest-card-reveal-eyebrow" id="quest-card-reveal-label">US TWO · JULLIE AVONTUUR</span>
+                <h3 id="quest-card-reveal-heading">Een nieuwe kaart</h3>
+                <img id="quest-card-reveal-image" alt="" hidden>
+                <p id="quest-card-reveal-description"></p>
+                <button id="quest-card-reveal-continue" type="button" class="primary-btn">Bekijk de opdracht</button>
+              </div>
+            </div>
             <p id="quest-pilot-instructions" class="muted" aria-live="polite">De opdrachtinstructies verschijnen zodra jullie een opdracht hebben gekozen.</p>
             <section id="quest-question-panel" class="quest-question-panel stack" aria-label="Om de beurt vragen beantwoorden" hidden>
               <h4>Jullie vragenronde</h4>

@@ -11,6 +11,9 @@
  let cards=[],filtered=[],selected=0,account='',images=null,imageURL='',generation=0,loading=false;
  let activeState=null,activeImageURL='',activeImageIndex=-1,activeImageBlob=null;
  const say=s=>{if($('full-deck-status'))$('full-deck-status').textContent=s;};
+ const PUBLIC_CARD_ROOT='./assets/cards/';
+ const publicCardURL=i=>PUBLIC_CARD_ROOT+nameOf(i);
+ const cardArtError=img=>{img.hidden=true;img.removeAttribute('src');};
  const nameOf=i=>i<240?('US_TWO_W'+(Math.floor(i/40)+1)+'_'+String(i%40+1).padStart(2,'0')+'.jpg'):'US_TWO_SUPERDATE_'+String(i-239).padStart(2,'0')+'.jpg';
  const u16=(dv,n)=>dv.getUint16(n,true),u32=(dv,n)=>dv.getUint32(n,true);
  let table=null;
@@ -99,6 +102,7 @@
    return;
   }
   const card=cards[idx], blob=images?.[idx];
+  const publicURL=publicCardURL(idx);
   panel.hidden=false;
   $('quest-current-card-title').textContent=card.title;
   $('quest-current-card-meta').textContent=
@@ -117,8 +121,10 @@
    $('quest-current-card-art-status').textContent='Goedgekeurde 2D-kaart, privé opgeslagen op dit toestel.';
   }else{
    clearActiveImage();
-   $('quest-current-card-art-status').textContent=
-     'De opdracht is beschikbaar. Importeer het originele 258-kaartenpakket voor de afbeelding.';
+   pic.onerror=()=>{cardArtError(pic);$('quest-current-card-art-status').textContent='Illustratie nog niet online beschikbaar.';};
+   pic.onload=()=>{$('quest-current-card-art-status').textContent='Originele US TWO-kaart automatisch geladen.';};
+   pic.src=publicURL;pic.alt='Originele US TWO-opdrachtkaart: '+card.title;pic.hidden=false;
+   $('quest-current-card-art-status').textContent='Kaartillustratie laden…';
   }
  }
  function filter(){
@@ -145,8 +151,12 @@
   $('full-deck-meta').textContent=c.superdate?'Superdate '+c.idx+' / 18':'Wereld '+(c.world+1)+' · '+c.minutes+' minuten · richtprijs samen €'+c.estimated_cost_eur;
   clearImage();
   $('full-deck-art-fallback')?.classList.remove('hidden');
+  pic.onload=()=>{$('full-deck-art-fallback')?.classList.add('hidden');};
+  pic.onerror=()=>{cardArtError(pic);$('full-deck-art-fallback')?.classList.remove('hidden');};
   if(account&&images?.[selected] instanceof Blob){
-   imageURL=URL.createObjectURL(images[selected]);pic.src=imageURL;pic.alt='Goedgekeurde US TWO-kaart '+c.title;pic.hidden=false;$('full-deck-art-fallback')?.classList.add('hidden');
+   imageURL=URL.createObjectURL(images[selected]);pic.src=imageURL;pic.alt='Goedgekeurde US TWO-kaart '+c.title;pic.hidden=false;
+  }else{
+   pic.src=publicCardURL(selected);pic.alt='Originele US TWO-kaart '+c.title;pic.hidden=false;
   }
   $('full-deck-prev').disabled=filtered.length<2;
   $('full-deck-next').disabled=filtered.length<2;

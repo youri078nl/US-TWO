@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.10-agenda-state-rc',
+  version: '0.17.11-calendar-selection-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -153,6 +153,13 @@ window.USTwoDateBridge=Object.freeze({
         const tomorrow=new Date(Date.UTC(Number(today.slice(0,4)),Number(today.slice(5,7))-1,Number(today.slice(8,10))+1));
         dateField.value=tomorrow.toISOString().slice(0,10)+'T19:00';
       }
+    }
+    // Keep the calendar selection in step with the date that is actually in the form.
+    const chosenDay=dateField.value.slice(0,10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(chosenDay)){
+      state.calendarSelected=chosenDay;
+      state.calendarMonth=chosenDay.slice(0,7);
+      renderCalendar();
     }
     $('date-form-selected').textContent='Gekozen date: '+picked+'. Controleer datum en tijd; alleen Verzenden maakt een uitnodiging.';
     setTab('dates');
@@ -509,6 +516,9 @@ function bind(){
     if(hour>=24){toast('Voor vandaag is geen toekomstige starttijd meer beschikbaar. Kies morgen.',true);return;}
     const time=String(hour).padStart(2,'0')+':00';
     field.value=day+'T'+time;
+    state.calendarSelected=day;
+    state.calendarMonth=day.slice(0,7);
+    renderCalendar();
     $('date-form').scrollIntoView({behavior:'smooth',block:'center'});
     field.focus({preventScroll:true});return;
    }if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;window.USTwoDateBridge.choose({title:item[0],minutes:item[1],source:'inspiratie'});return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});

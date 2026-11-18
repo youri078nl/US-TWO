@@ -181,6 +181,7 @@
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
           <div class="section-heading quest-game-title"><div><span class="eyebrow">SAMEN OP PAD</span><h2>Jullie avontuur</h2></div></div>
+          <p id="quest-game-section-note" class="muted" role="status">Het bord en de opdrachten gebruiken dezelfde gezamenlijke spelstand.</p>
           <section class="panel inset stack" id="quest-pilot" aria-labelledby="quest-pilot-heading">
             <h3 id="quest-pilot-heading">Jullie gezamenlijke spelreis</h3>
             <p class="muted">Eén gedeelde pion, één serverstand en één route. Deze testversie gebruikt uitsluitend de nieuwe spelreis.</p>
@@ -481,7 +482,8 @@
       </div>
     </main>
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
-      <button type="button" class="active" data-tab="game"><span class="nav-icon">♙</span>Speelbord</button>
+      <button type="button" class="active" data-tab="game" data-game-view="board"><span class="nav-icon">♙</span>Bord</button>
+      <button type="button" data-tab="game" data-game-view="tasks"><span class="nav-icon">✦</span>Opdrachten</button>
       <button type="button" data-tab="discover"><span class="nav-icon">♡</span>Dates</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
       <button type="button" data-tab="memories"><span class="nav-icon">✧</span>Momenten</button>

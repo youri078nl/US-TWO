@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.31-invite-popup-rc',
+  version: '0.17.32-tasks-nav-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -123,13 +123,24 @@ async function showApp(){
   await syncAll();
   if(state.session&&state.dashboard)setTab(paired()?'game':'pair');
 }
-function setTab(tab){
+let gameView='board';
+function setTab(tab,view){
   if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
+  if(tab==='game')gameView=view==='tasks'?'tasks':'board';
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
-  $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
+  $(tab+'-panel').classList.remove('hidden');
+  $('game-panel')?.classList.toggle('quest-tasks-view',tab==='game'&&gameView==='tasks');
+  const note=$('quest-game-section-note');
+  if(note)note.textContent=tab==='game'&&gameView==='tasks'?
+    'Opdrachten en vragen: kies, beantwoord en keur goed. De gezamenlijke pion verdient hiermee stappen op het bord.':
+    'Het bord en de opdrachten gebruiken dezelfde gezamenlijke spelstand.';
+  document.querySelectorAll('[data-tab]').forEach(x=>{
+    const active=x.dataset.tab===tab&&(tab!=='game'||(x.dataset.gameView||'board')===gameView);
+    x.classList.toggle('active',active);x.setAttribute('aria-current',active?'page':'false');
+  });
   if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
   if(tab==='game'&&state.session)window.dispatchEvent(new Event('us-two-quest-game-open'));
-  window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab}}));
+  window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab,gameView}}));
   window.scrollTo({top:0,behavior:'instant'});
 }
 // Read-only date discovery routes; only the existing date form submits invitations.
@@ -770,7 +781,7 @@ function bind(){
   });
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
-  $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
+  $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab,x.dataset.gameView)});
   $('date-list-filter').addEventListener('change',renderDates);
   $('refresh-btn').addEventListener('click',()=>syncAll());
   $('logout-btn').addEventListener('click',async()=>{if(state.session){try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch{}}clearSession();showAuth();toast('Uitgelogd.')});

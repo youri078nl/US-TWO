@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.36-auto-card-assets-rc',
+  version: '0.17.37-swipe-cards-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -138,6 +138,10 @@ function setTab(tab,view){
     const active=x.dataset.tab===tab&&(tab!=='game'||(x.dataset.gameView||'board')===gameView);
     x.classList.toggle('active',active);x.setAttribute('aria-current',active?'page':'false');
   });
+  if(tab==='game'&&gameView==='tasks'){
+    const deck=$('full-deck-details');
+    if(deck)deck.open=true;
+  }
   if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
   if(tab==='game'&&state.session)window.dispatchEvent(new Event('us-two-quest-game-open'));
   window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab,gameView}}));

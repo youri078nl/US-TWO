@@ -373,3 +373,14 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #game-panel #full-deck-details,
 #game-panel #quest-cards-import-hint{display:none!important}
 #game-panel #quest-pilot-message:empty{display:none}
+
+/* Dates: three curated proposals first; advanced search remains collapsed. */
+#quest-date-results,#quest-date-more{display:none!important}
+#quest-date-advanced{margin-top:12px;border:1px solid #c99d7645;border-radius:16px;padding:12px}
+#quest-date-advanced>summary{cursor:pointer;font-weight:700;padding:7px 2px}
+#quest-date-advanced[open]>.quest-date-filters{margin-top:16px}
+#quest-date-proposal-results{display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0}
+#quest-date-proposal-results .quest-date-proposal{display:flex;flex-direction:column;gap:9px;padding:18px;border:1px solid #e5b67a70;border-radius:20px;background:linear-gradient(145deg,#302139,#21172d)}
+#quest-date-proposal-results .quest-date-proposal h3{margin:0;color:#f7d8a1}
+#quest-date-proposal-results .quest-date-proposal p{margin:0}
+#quest-date-proposal-results .quest-date-proposal button{margin-top:6px}

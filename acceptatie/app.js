@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.44-clean-game-ui-rc',
+  version: '0.17.45-dates-start-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -121,7 +121,7 @@ async function showApp(){
   // Do not misroute if Supabase is unavailable and the dashboard is unknown.
   setTab('home');
   await syncAll();
-  if(state.session&&state.dashboard)setTab(paired()?'game':'pair');
+  if(state.session&&state.dashboard)setTab(paired()?'discover':'pair');
 }
 function showQuestAgenda(){
  const schedule=document.querySelector('[aria-labelledby="quest-schedule-heading"]');

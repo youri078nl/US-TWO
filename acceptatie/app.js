@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.27-incoming-changes-rc',
+  version: '0.17.28-pending-calendar-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -395,7 +395,10 @@ function renderDates(){
   const allDates=state.dashboard?.dates||[];
   const dateFilter=$('date-list-filter')?.value||'upcoming';
   const currentTime=Date.now();
-  const isUpcoming=d=>new Date(d.start_at).getTime()>=currentTime&&d.status!=='cancelled'&&d.status!=='declined';
+  const isUpcoming=d=>['accepted','proposed'].includes(d.status)&&(
+    new Date(d.start_at).getTime()>=currentTime||
+    d.pending_change&&new Date(d.pending_change.start_at).getTime()>=currentTime
+  );
   const me=state.session?.user?.id;
   const needsMyResponse=d=>dateNeedsMyResponse(d,me,currentTime);
   const incomingCount=allDates.filter(needsMyResponse).length;
@@ -419,7 +422,11 @@ function renderDates(){
     return isUpcoming(d);
   });
   const list=[...filteredDates].sort((a,b)=>{
-    const aTime=new Date(a.start_at).getTime(),bTime=new Date(b.start_at).getTime();
+    const activeTime=d=>{
+      const original=new Date(d.start_at).getTime(),proposed=new Date(d.pending_change?.start_at).getTime();
+      return d.pending_change&&Number.isFinite(proposed)&&proposed>=Date.now()?proposed:original;
+    };
+    const aTime=activeTime(a),bTime=activeTime(b);
     const now=Date.now();
     const aFuture=aTime>=now&&a.status!=='cancelled'&&a.status!=='declined';
     const bFuture=bTime>=now&&b.status!=='cancelled'&&b.status!=='declined';
@@ -437,6 +444,7 @@ function renderDates(){
     const own=d.proposer_id===me;
     const upcoming=new Date(d.start_at)>new Date();
     const pending=d.pending_change;
+    const pendingFuture=Boolean(pending&&new Date(pending.start_at)>new Date());
     const status=d.status==='accepted'?'<span class="tag active">Geaccepteerd</span>':
       d.status==='declined'?'<span class="tag declined">Afgewezen</span>':
       d.status==='cancelled'?'<span class="tag cancelled">Geannuleerd</span>':
@@ -446,7 +454,7 @@ function renderDates(){
       const isMine=pending.proposer_id===me;
       const isCounter=d.status==='proposed';
       actions+=`<div class="date-change-notice"><span class="eyebrow">${isCounter?'TEGENVOORSTEL':'VOORGESTELDE WIJZIGING'}</span><h4>${safe(pending.title)}</h4><p class="muted">Nieuw: ${timeFmt.format(new Date(pending.start_at))} · ${Number(pending.duration_minutes)} min</p><p class="muted">De oorspronkelijke afspraak blijft staan tot er akkoord is.</p>`;
-      actions+=isMine?'<p class="muted">Jouw voorstel wacht op de reactie van je partner.</p>':
+      actions+=!pendingFuture?'<p class="muted">Dit wijzigingsvoorstel is verlopen. Maak een nieuw voorstel wanneer dat mogelijk is.</p>':isMine?'<p class="muted">Jouw voorstel wacht op de reactie van je partner.</p>':
         `<div class="buttons"><button class="primary-btn" data-action="change-accept" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">${isCounter?'Tegenvoorstel accepteren':'Wijziging accepteren'}</button><button class="ghost-btn" data-action="change-decline" data-id="${safe(pending.id)}" data-revision="${Number(d.revision)}">Afwijzen</button></div>`;
       actions+='</div>';
     }else if(d.status==='proposed'&&!own&&upcoming){

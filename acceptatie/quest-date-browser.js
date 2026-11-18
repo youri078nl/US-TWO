@@ -15,7 +15,7 @@
   cafe:{label:'Café',test:t=>/caf[eé]|koffie|restaurant|eten|drinken|picknick|thee|gesprek|diner|menu|keuken|tafel|hapje|proef/.test(t)}
  });
  const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
- let loaded=null,loading=null,shown=12,active=false,proposalKeys=[],proposalRound=0;
+ let loaded=null,loading=null,shown=12,active=false,proposalKeys=[],proposalRound=0,proposalSeen=new Set();
  const hasBridge=()=>typeof window.USTwoDateBridge?.choose==='function';
  const say=t=>{if($('quest-date-status'))$('quest-date-status').textContent=t;};
  const opt=(select,value,label)=>{
@@ -85,14 +85,19 @@
  }
  function nextProposals(){
   const options=current();
-  const previous=new Set(proposalKeys);
-  let pool=options.filter(x=>!previous.has(x.key));
-  if(pool.length<3)pool=options.slice();
+  // Cycle through the matching collection before repeating previous suggestions.
+  let pool=options.filter(x=>!proposalSeen.has(x.key));
+  if(pool.length<Math.min(3,options.length)){
+   proposalSeen=new Set(proposalKeys);
+   pool=options.filter(x=>!proposalSeen.has(x.key));
+   if(!pool.length)pool=options.slice();
+  }
   for(let i=pool.length-1;i>0;i--){
    const j=Math.floor(Math.random()*(i+1));
    [pool[i],pool[j]]=[pool[j],pool[i]];
   }
   proposalKeys=pool.slice(0,3).map(x=>x.key);
+  proposalKeys.forEach(key=>proposalSeen.add(key));
   proposalRound++;
   renderProposals();
  }
@@ -109,13 +114,14 @@
   }
   for(const item of proposals){
    const card=document.createElement('article');card.className='quest-date-tile quest-date-proposal';
+   const category=document.createElement('span');category.className='quest-date-chip';category.textContent=item.category;
    const heading=document.createElement('h3');heading.textContent=item.title;
    const meta=document.createElement('p');meta.className='quest-date-meta';
-   meta.textContent=item.minutes+' minuten · '+(item.cost===null?'Bonusdate':item.cost===0?'Gratis':'± €'+item.cost);
+   meta.textContent=item.minutes+' minuten · '+(item.cost===null?'Bonusdate':item.cost===0?'Gratis':'± €'+item.cost)+' · '+(item.remote&&item.together?'Samen of op afstand':item.remote?'Op afstand':'Samen');
    const description=document.createElement('p');description.textContent=item.description;
    const button=document.createElement('button');button.type='button';button.className='primary-btn';
    button.textContent='Kies deze date ♡';button.dataset.dateKey=item.key;
-   card.append(heading,meta,description,button);target.append(card);
+   card.append(category,heading,meta,description,button);target.append(card);
   }
  }
  function render(){
@@ -186,7 +192,7 @@
   const areas=$('quest-date-area');areas.replaceChildren();
   for(const [key,info]of Object.entries(AREAS))opt(areas,key,info.label);
   for(const id of ['quest-date-search','quest-date-area','quest-date-budget','quest-date-category','quest-date-mode','quest-date-duration','quest-date-sort']){
-   const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;nextProposals();render();});
+   const el=$(id);if(el)el.addEventListener(id==='quest-date-search'?'input':'change',()=>{shown=12;proposalSeen.clear();nextProposals();render();});
   }
   $('quest-date-refresh-proposals')?.addEventListener('click',()=>nextProposals());
   $('quest-date-proposal-results')?.addEventListener('click',event=>{
@@ -220,7 +226,7 @@
    if(!isShown){active=false;return;}
    activate();
   });
-  window.addEventListener('us-two-session-cleared',()=>{active=false;shown=12;proposalKeys=[];
+  window.addEventListener('us-two-session-cleared',()=>{active=false;shown=12;proposalKeys=[];proposalSeen.clear();
    if($('quest-date-search'))$('quest-date-search').value='';
    if($('quest-date-area'))$('quest-date-area').value='all';
    if($('quest-date-category'))$('quest-date-category').value='all';

@@ -281,3 +281,8 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 /* Separate tasks screen reuses the live quest controls, never duplicates game state. */
 #game-panel.quest-tasks-view .quest-board-section{display:none}
 #game-panel.quest-tasks-view #quest-pilot-catalog{scroll-margin-top:80px}
+
+#quest-tasks-shortcuts{display:none}
+#game-panel.quest-tasks-view #quest-tasks-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 18px}
+#quest-tasks-shortcuts button{min-width:0;min-height:46px;padding:8px 5px}
+#quest-question-panel,#quest-pilot-catalog,#quest-pilot-actions,#full-deck-details{scroll-margin-top:22px}

@@ -333,6 +333,15 @@ function renderDates(){
   const dateFilter=$('date-list-filter')?.value||'upcoming';
   const currentTime=Date.now();
   const isUpcoming=d=>new Date(d.start_at).getTime()>=currentTime&&d.status!=='cancelled'&&d.status!=='declined';
+  const pendingCount=allDates.filter(d=>isUpcoming(d)&&(d.status==='proposed'||Boolean(d.pending_change))).length;
+  const acceptedCount=allDates.filter(d=>isUpcoming(d)&&d.status==='accepted'&&!d.pending_change).length;
+  const filter=$('date-list-filter');
+  if(filter){
+    const pendingOption=filter.querySelector('option[value="pending"]');
+    const acceptedOption=filter.querySelector('option[value="accepted"]');
+    if(pendingOption)pendingOption.textContent='Wachten op antwoord ('+pendingCount+')';
+    if(acceptedOption)acceptedOption.textContent='Bevestigde dates ('+acceptedCount+')';
+  }
   const filteredDates=allDates.filter(d=>{
     if(dateFilter==='all')return true;
     if(dateFilter==='history')return !isUpcoming(d);
@@ -350,7 +359,8 @@ function renderDates(){
   });
   $('date-form').querySelectorAll('input,select,button').forEach(x=>x.disabled=!paired());
   const me=state.session?.user?.id;
-  if(state.dateEditId&&!list.some(d=>d.id===state.dateEditId&&!d.pending_change&&new Date(d.start_at)>new Date()&&(d.status==='accepted'||(d.status==='proposed'&&d.proposer_id!==me)))){
+  // Editing is tied to the canonical date, not the currently selected list filter.
+  if(state.dateEditId&&!allDates.some(d=>d.id===state.dateEditId&&!d.pending_change&&new Date(d.start_at)>new Date()&&(d.status==='accepted'||(d.status==='proposed'&&d.proposer_id!==me)))){
     state.dateEditId=null;$('date-change-editor').classList.add('hidden');
   }
   if(!paired()){$('dates-list').innerHTML='<div class="card"><p class="muted">Koppel eerst jullie twee accounts om een date te plannen.</p></div>';return;}

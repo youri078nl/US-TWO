@@ -123,10 +123,31 @@ async function showApp(){
   await syncAll();
   if(state.session&&state.dashboard)setTab(paired()?'game':'pair');
 }
+let questScheduleHome=null;
+function showQuestAgenda(){
+ const schedule=document.querySelector('[aria-labelledby="quest-schedule-heading"]');
+ const agenda=$('dates-panel');
+ if(!schedule||!agenda)return;
+ if(!questScheduleHome){questScheduleHome=document.createComment('Quest schedule original location');schedule.parentNode.insertBefore(questScheduleHome,schedule);}
+ agenda.insertBefore(schedule,agenda.firstChild);
+ schedule.classList.add('quest-schedule-in-agenda');
+ setTab('dates');
+ schedule.scrollIntoView({behavior:'smooth',block:'start'});
+ const field=$('quest-pilot-schedule-time');
+ if(field&&!field.disabled)field.focus({preventScroll:true});
+}
+window.addEventListener('us-two-open-quest-agenda',showQuestAgenda);
 let gameView='board';
 function setTab(tab,view){
   if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
   if(tab==='game')gameView=view==='tasks'?'tasks':'board';
+  if(tab==='game'&&questScheduleHome?.parentNode){
+    const schedule=document.querySelector('[aria-labelledby="quest-schedule-heading"]');
+    if(schedule?.classList.contains('quest-schedule-in-agenda')){
+      questScheduleHome.parentNode.insertBefore(schedule,questScheduleHome.nextSibling);
+      schedule.classList.remove('quest-schedule-in-agenda');
+    }
+  }
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');
   $('game-panel')?.classList.toggle('quest-tasks-view',tab==='game'&&gameView==='tasks');

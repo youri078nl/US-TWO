@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.11-calendar-selection-rc',
+  version: '0.17.12-catalog-auth-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -665,12 +665,34 @@ window.USTwoQuestPilotBridge = Object.freeze({
       throw Error('Ongeldige catalogusselectie.');
     if(!paired())throw Error('Koppel eerst jullie accounts.');
     if(!state.session)throw Error('Log eerst in.');
+    const generation=authGeneration;
+    const userId=state.session.user?.id;
+    const coupleId=state.dashboard?.couple_id;
+    const current=()=>generation===authGeneration&&state.session?.user?.id===userId&&
+      state.dashboard?.couple_id===coupleId&&paired();
     if(state.session.expires_at<Date.now()/1000+80)await freshToken();
+    if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
     const type=mode==='afstand'?'remote':'together';
     const query='/rest/v1/us_quest_catalog?select=id,title,category,minutes,reward_steps,brief,remote,together,world,estimated_cost_eur&world=eq.'+world+'&category=neq.Flirt&'+type+'=eq.true&order=id.asc&limit=50';
-    const call=()=>request(query,{headers:{Authorization:'Bearer '+state.session.access_token}});
+    const call=async()=>{
+      if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
+      const token=state.session.access_token;
+      try{
+        const data=await request(query,{headers:{Authorization:'Bearer '+token}});
+        if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
+        return data;
+      }catch(error){
+        if(!current())throw Error('Inlogsessie of koppeling is gewijzigd.');
+        throw error;
+      }
+    };
     try{return await call();}
-    catch(e){if(e.status===401){await freshToken();return call();}throw e;}
+    catch(e){
+      if(e.status!==401||!current())throw e;
+      const previous=state.session.access_token;
+      if(previous&&state.session.access_token===previous)await freshToken();
+      return call();
+    }
   },
   call: async (name, args) => {
     try { return {data:await rpc(name,args),error:null}; }

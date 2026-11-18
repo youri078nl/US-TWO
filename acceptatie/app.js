@@ -25,7 +25,7 @@ function connection(ok) {
   const fresh=Number.isFinite(state.lastSyncAt)&&state.lastSyncAt>0;
   const time=fresh?new Intl.DateTimeFormat('nl-NL',{hour:'2-digit',minute:'2-digit'}).format(new Date(state.lastSyncAt)):'';
   const age=fresh?Date.now()-state.lastSyncAt:Infinity;
-  const current=ok&&fresh&&age<=60000;
+  const current=ok&&!state.syncError&&fresh&&age<=60000;
   label.textContent=!navigator.onLine?'Geen internet'+(fresh?' · laatst '+time:''):state.syncError?'Synchronisatie mislukt'+(fresh?' · laatst '+time:''):current?'Bijgewerkt '+time:fresh?'Niet actueel · '+time:'Nog niet gesynchroniseerd';
   label.classList.toggle('online',current);
   label.title=fresh?'Laatste succesvolle synchronisatie: '+new Date(state.lastSyncAt).toLocaleString('nl-NL'):'Er is nog geen succesvolle synchronisatie bevestigd.';

@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.1-sync-feedback-rc',
+  version: '0.17.2-account-sync-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -130,13 +130,20 @@ window.USTwoDateBridge=Object.freeze({
   }
 });
 async function syncAll({quiet=false}={}) {
-  if(!state.session||pollBusy)return;pollBusy=true;
+  if(!state.session||pollBusy)return false;
+  const account=state.session.user?.id;
+  pollBusy=true;
   try{
     const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
+    // A response from the previous account must never repopulate the screen after logout.
+    if(!account||state.session?.user?.id!==account)return false;
     state.dashboard=d;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
-    renderAll();if(!quiet)connection(true);return true;
-  }catch(e){if(!quiet)toast(failText(e),true);return false;}finally{pollBusy=false}
+    renderAll();connection(true);return true;
+  }catch(e){
+    if(account&&state.session?.user?.id===account){connection(false);if(!quiet)toast(failText(e),true);}
+    return false;
+  }finally{pollBusy=false}
 }
 function renderAll(){renderPair();renderDates();renderCalendar();renderMemories();renderHome()}
 function paired(){return Boolean(state.dashboard?.couple_id)&&(state.dashboard?.members||[]).length===2}

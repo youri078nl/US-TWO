@@ -424,8 +424,8 @@ function bind(){
     try{
       await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:duration,p_request_id:requestId});
       state.dateRequestId=null;$('date-form').reset();$('date-form-selected').textContent='';
-      toast('Uitnodiging verzonden.');
-      try{await syncAll({quiet:true});}catch(_error){toast('Uitnodiging verstuurd; het agendaoverzicht wordt later vernieuwd.',true);}
+      const refreshed=await syncAll({quiet:true});
+      toast(refreshed?'Uitnodiging verzonden.':'Uitnodiging verzonden; het agendaoverzicht wordt later vernieuwd.',!refreshed);
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});

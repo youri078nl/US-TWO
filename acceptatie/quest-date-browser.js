@@ -107,10 +107,12 @@
    const details=document.createElement('details');details.className='quest-date-details';
    const summary=document.createElement('summary');summary.textContent='Bekijk de date';
    const instructions=document.createElement('p');
+   details.append(summary);
    const mode=$('quest-date-mode')?.value||'all';
    const instructionText=mode==='remote'&&c.remote?c.remoteInstructions||c.description
     :c.instructions||c.description;
    instructions.textContent=instructionText||'Geen aanvullende uitleg beschikbaar.';
+   details.append(instructions);
    if(mode==='all'&&c.together&&c.remote&&c.remoteInstructions){
     const togetherHeading=document.createElement('strong');togetherHeading.textContent='Samen';
     details.insertBefore(togetherHeading,instructions);
@@ -120,7 +122,6 @@
     const remoteDetail=document.createElement('p');remoteDetail.textContent=c.remoteInstructions;
     details.append(remoteHeading,remoteDetail);
    }
-   details.append(summary,instructions);
    const button=document.createElement('button');button.type='button';
    button.className='secondary-btn quest-date-choose';button.textContent='Kies deze date';
    button.dataset.dateKey=c.key;

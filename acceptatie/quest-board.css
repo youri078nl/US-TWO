@@ -440,3 +440,8 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #game-panel.quest-tasks-view #quest-tasks-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
 #game-panel.quest-tasks-view #quest-tasks-shortcuts button{min-width:0;white-space:normal;line-height:1.25;padding-inline:6px}
 @media(max-width:350px){#game-panel.quest-tasks-view #quest-tasks-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Persistent mobile shortcuts: do not alter approved board artwork, size or hitmap. */
+.quest-board-quick-locations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 2px}
+#quest-pilot .quest-board-quick-locations button{min-width:0;min-height:44px;padding:9px 7px;font-size:13px;white-space:normal;border:1px solid #d4a574;border-radius:12px;background:#322337;color:#ffe6bc}
+@media(min-width:600px){.quest-board-quick-locations{grid-template-columns:repeat(4,minmax(0,1fr))}}

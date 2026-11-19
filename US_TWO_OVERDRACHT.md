@@ -32,3 +32,9 @@ Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, i
 - Backend SQL readback gecontroleerd op formule, supergrens, conflictcontrole en idempotentie. Geen live voltooiing met twee accounts getest.
 - GitHub app.js, index.html en service-worker.js bijgewerkt naar 0.8.6. App toont verwachte beloning bij actieve opdracht.
 - Belangrijk: stappen worden server-side toegepast, maar visuele stapsgewijze pionanimatie en goedgekeurde bordillustratie ontbreken nog. Niet gemerged of gepubliceerd.
+
+## Update 0.8.7
+- Frontend app.js: `boardMotion` houdt laatst getoonde positie en serverdoel bij; na synchronisatie loopt de zichtbare pion bij maximaal 12 stappen één vakje per 340 ms vooruit. Bij grotere sprongen, achteruitcorrectie of verminderde animatievoorkeur direct naar serverpositie.
+- De spelpositie wordt nooit vanuit de animatie naar Supabase geschreven. Animatie toont nog steeds tijdelijke letterpionnen, niet goedgekeurde 2D-assets.
+- GitHub app.js, index.html, service-worker.js, styles.css gecommit; JS-syntaxis gecontroleerd met JavaScript-parser via `new Function`, readback bevestigde 0.8.7.
+- Geen browser-/apparaat-/twee-account-end-to-endtest uitgevoerd. Niet gemerged of gepubliceerd.

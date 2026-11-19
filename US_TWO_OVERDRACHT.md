@@ -189,3 +189,8 @@
 - Screenshot Android: 6 bestanden geselecteerd maar import toont 'Selecteer alle zes bestanden'. ZIP op container gecontroleerd: bevat wereld-1.jpg t/m wereld-6.jpg.
 - `quest-world-images.js` accepteert nu Android file picker met leeg MIME-type en namen met downloadsuffix `(1)`; bij afwijzing worden de herkende wereldnummers en exacte ontvangen bestandsnamen getoond. Commit 5ce17e5. HTML/script cachebust 01783, app en SW versie verhoogd. Niet op toestel getest.
 - Open: gebruikersvalidatie import, automatische hosting van afbeeldingen, correcte waypoint-uitlijning en 40-stappen-backend.
+
+
+## 19 november 2026: 0.17.84-world-import-racefix-rc
+- Na Android screenshot en geen zichtbaar effect: in `acceptatie/index.html` stonden TWEE identieke `<script src="./quest-world-images.js">` tags. Daardoor werden dubbele change-listeners geregistreerd en konden twee asynchrone display() uitvoeringen elkaar overschrijven. Eén script verwijderd; app.js cachebust 01784. Importstatus toont nu 'Importfunctie gereed', daarna aantal ontvangen bestanden. `displayGeneration` beschermt tegen stale image loads. GitHub commits 37c0d09, d95ee13, 3a9931d, b8ee72f.
+- Niet op Android getest. Gebruiker moet op Meer de status 'Importfunctie gereed' zien; na import 'Alle zes wereldkaarten opgeslagen'. Als status ontbreekt, is scriptload/CSP/cache nog probleem. 6 afbeeldingen nog niet automatisch op server; 40-stappen-regels ongewijzigd.

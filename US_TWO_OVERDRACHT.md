@@ -38,3 +38,9 @@ Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, i
 - De spelpositie wordt nooit vanuit de animatie naar Supabase geschreven. Animatie toont nog steeds tijdelijke letterpionnen, niet goedgekeurde 2D-assets.
 - GitHub app.js, index.html, service-worker.js, styles.css gecommit; JS-syntaxis gecontroleerd met JavaScript-parser via `new Function`, readback bevestigde 0.8.7.
 - Geen browser-/apparaat-/twee-account-end-to-endtest uitgevoerd. Niet gemerged of gepubliceerd.
+
+## Belangrijke koerscorrectie 2026-11-19
+- Bij volledige GitHub-tree-inspectie ontdekt dat `acceptatie/` een veel uitgebreidere bestaande applicatie bevat (RELEASE_STATUS noemt 0.17.55-date-specific-art-rc), met goedgekeurde 2D-assets (`acceptatie/assets/approved-youri-kim.webp`, `us-two-user-board.png`, `ustwo-board-portrait.webp`), drag/zoom in `quest-board-interactions.js`, stapsgewijze pionanimatie in `quest-board.js`, datebrowser in `quest-date-browser.js`, kaartencatalogus en bestaande test `acceptatie/tests/board-pointer.test.cjs`.
+- **BELANGRIJK**: de eerdere rootwijzigingen 0.8.1 t/m 0.8.7 betroffen de eenvoudigere root-PWA en mogen NIET als vervanging voor `acceptatie/` worden gemerged of uitgerold zonder architectuurvergelijking. Root-Supabase RPC-wijzigingen zijn wel live uitgevoerd en kunnen impact hebben op root-flow; acceptatie gebruikt mogelijk andere RPC's, controle vereist.
+- Nieuwe GitHub Actions workflow `.github/workflows/acceptatie-board-tests.yml` gecommit (f511c88): Node 22 syntaxchecks plus bestaande pointer-regressietest op push/PR/handmatig. Workflow-uitvoering en uitslag nog niet bevestigd.
+- Vervolg: test de bestaande acceptatie-app en haar echte backend, bepaal welke releasecriteria nog werkelijk ontbreken. Gebruik `acceptatie/` als kandidaat voor de release, behoud goedgekeurde artwork. Geen 1.0.0-claim zonder end-to-endtest.

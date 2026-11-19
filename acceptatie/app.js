@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.75-board-fullscreen-rc',
+  version: '0.17.76-board-restore-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -137,7 +137,6 @@ function setTab(tab,view){
   if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
   if(tab==='game')gameView=view==='tasks'?'tasks':'board';
   state.tab=tab;
-  document.body.classList.toggle('us-two-board-fullscreen',tab==='game'&&gameView==='board');
   $('app-view')?.classList.toggle('us-two-home-view',tab==='home');
   document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');
@@ -158,7 +157,6 @@ function setTab(tab,view){
   if(tab==='game'&&state.session)window.dispatchEvent(new Event('us-two-quest-game-open'));
   window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab,gameView}}));
   window.scrollTo({top:0,behavior:'instant'});
-  if(tab==='game'&&gameView==='board')requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
 }
 // Read-only date discovery routes; only the existing date form submits invitations.
 window.USTwoDateBridge=Object.freeze({

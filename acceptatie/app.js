@@ -48,7 +48,7 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
-  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){authGeneration++;state.dashboard=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;}
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Geheime missies laden voor het nieuwe account.';authGeneration++;state.dashboard=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;}
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }

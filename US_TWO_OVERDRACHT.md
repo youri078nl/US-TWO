@@ -103,3 +103,9 @@
 - Beide triggers via `pg_trigger` bevestigd enabled (`O`).
 - Transactionele SQL-test met bestaande gekoppelde gebruikers als referentie: tijdelijke proposed date ingevoegd, geaccepteerd, precies één ontvanger-missie gecontroleerd, herhaalde accept-update gecontroleerd op geen duplicaat, daarna date geannuleerd en missie-status `cancelled` geverifieerd. Alles binnen `BEGIN ... ROLLBACK`; vervolgquery bevestigt nul achtergebleven testdates en nul missies. Geen echte mobiele twee-accounttest.
 - Frontend versie blijft 0.17.70, omdat uitsluitend backendlogica is aangepast. Nog open: echte Android/iPhone synchronisatietest, meerdaagse quests, PWA-releasechecks.
+
+
+## 19 november 2026: 0.17.71-private-screen-rc
+- Privacyfix in `acceptatie/app.js`: bij uitloggen en wisselen naar ander account wordt de DOM met geheime date-missies onmiddellijk leeggemaakt; eerdere `authGeneration`-controle blijft behouden tegen late netwerkantwoorden.
+- `acceptatie/service-worker.js` versie/cache naar 0.17.71. Bord en spelregels niet gewijzigd.
+- Code naar GitHub main geschreven. Geen browser/device test uitgevoerd. Meerdaagse quests en twee-device acceptatie blijven open.

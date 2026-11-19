@@ -24,16 +24,18 @@ async function display(force=false){
  const art=document.querySelector('#quest-board-stage .quest-world-art');
  if(!art)return;
  const world=worldNumber();
- if(!force&&lastWorld===world)return;
+ if(!force&&lastWorld===world&&art.dataset.worldImageApplied===String(world))return;
  lastWorld=world;
  const blob=await access('world-'+(world+1)).catch(()=>null);
  if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl='';}
  if(blob){
   activeUrl=URL.createObjectURL(blob);
   art.src=activeUrl;
+  art.dataset.worldImageApplied=String(world);
   art.alt='US TWO speelwereld '+(world+1)+': '+names[world];
  }else{
   art.src='./assets/us-two-user-board.png';
+  art.dataset.worldImageApplied=String(world);
   art.alt='Origineel US TWO speelbord';
  }
 }
@@ -49,7 +51,7 @@ async function importFiles(files){
  try{
   for(const [i,file] of picked)await access('world-'+i,file);
   lastWorld=-1;await display(true);
-  if(status)status.textContent='Alle zes wereldkaarten opgeslagen op dit toestel.';
+  if(status)status.textContent='Alle zes wereldkaarten opgeslagen. Open Bord om de kaart te bekijken.';
  }catch(e){if(status)status.textContent='Opslaan mislukt: '+(e?.message||'onbekende fout');}
 }
 function init(){
@@ -58,6 +60,7 @@ function init(){
  const heading=$('quest-world-heading');
  if(heading)new MutationObserver(()=>display()).observe(heading,{childList:true,characterData:true,subtree:true});
  display();
+ document.querySelectorAll('#bottom-nav [data-tab="game"], [data-tab="game"]').forEach(el=>el.addEventListener('click',()=>setTimeout(()=>display(true),120)));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

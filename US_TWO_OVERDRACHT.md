@@ -183,3 +183,9 @@
 ## 19 november 2026: 0.17.82-world-refresh-rc
 - Gebruiker meldt dat na herhaald importeren van zes JPG's de kaart niet verandert. Oorzaak nog niet op toestel bevestigd. In `quest-world-images.js` wordt geïmporteerde kaart opnieuw weergegeven bij terugkeer naar Bord; `index.html` scriptquery `01782`, appversie 0.17.82, service-worker cachebust. GitHub commits b1adee6, 9e71243, 6308b2c, bce44d4.
 - Nog NIET bevestigd dat dit op Android werkt; gebruiker moet de statusmelding onder Meer doorgeven als de kaart niet verandert. Automatische hosting van zes JPG's blijft open; 40-stappen-migratie blijft open.
+
+
+## 19 november 2026: 0.17.83-android-import-fix-rc
+- Screenshot Android: 6 bestanden geselecteerd maar import toont 'Selecteer alle zes bestanden'. ZIP op container gecontroleerd: bevat wereld-1.jpg t/m wereld-6.jpg.
+- `quest-world-images.js` accepteert nu Android file picker met leeg MIME-type en namen met downloadsuffix `(1)`; bij afwijzing worden de herkende wereldnummers en exacte ontvangen bestandsnamen getoond. Commit 5ce17e5. HTML/script cachebust 01783, app en SW versie verhoogd. Niet op toestel getest.
+- Open: gebruikersvalidatie import, automatische hosting van afbeeldingen, correcte waypoint-uitlijning en 40-stappen-backend.

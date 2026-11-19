@@ -176,3 +176,5 @@ Niet gevalideerd op fysieke telefoons of met nieuwe geautomatiseerde browsertest
 - SQL verified server gate and RLS enabled. Real two-device test NOT yet run. Erotic task cards remain separate from quiz category and are NOT newly enabled by this change.
 
 19-11-2026 | 0.17.50-agenda-cleanup-rc: Moved game-journey date status, refresh and .ics export unchanged from Agenda to Meer settings, retaining element IDs and handlers. GitHub commits 5daa47e4,3557c904,81548314. Static source-level check of relocation done; physical Android/iPhone verification pending. Provisional progress 95%.
+
+19-11-2026 | 0.17.51-date-artwork-rc: Dates discovery proposals and catalog cards now render original published artwork for official 240 quest entries, matching the 258 card archive filename mapping; bonus cards without matching art remain text-based. Existing choose->agenda bridge unchanged. CSS mobile image sizing, PWA cache bumped. GitHub commits 38a3d528,5fd066dd,210eb5a9,cb00dd9a. Two-phone visual test pending; provisional weighted progress 95%.

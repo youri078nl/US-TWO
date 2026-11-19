@@ -132,14 +132,7 @@
 
         <section id="dates-panel" class="tab-panel hidden" aria-label="Agenda">
           <div class="section-heading"><div><span class="eyebrow">SAMEN IETS PLANNEN</span><h2>Onze agenda</h2></div><button type="button" class="secondary-btn" data-action="open-discover">Kies een date</button></div>
-          <section class="panel inset stack" aria-labelledby="quest-agenda-schedule-heading">
-            <h3 id="quest-agenda-schedule-heading">Date uit jullie spelreis</h3>
-            <p id="quest-pilot-agenda-schedule" role="status" aria-live="polite">Open de agenda na het inloggen om jullie gezamenlijke spelreisdatum te bekijken.</p>
-            <button id="quest-pilot-agenda-refresh" class="secondary-btn" type="button">Spelreisdatum verversen</button>
-            <button id="quest-calendar-export" class="secondary-btn" type="button" disabled>Download bevestigde dates (.ics)</button>
-            <p class="muted">Importeer het gedownloade bestand in je telefoonagenda. Alleen bevestigde afspraken worden geëxporteerd; voorstellen en geheime voorbereidingen niet.</p>
-            <p class="muted">Deze afspraak komt rechtstreeks uit de gezamenlijke nieuwe spelreis. De bestaande agenda en uitnodigingen hieronder blijven afzonderlijk beschikbaar.</p>
-          </section>
+
 
           <div class="panel inset stack" id="calendar-panel">
             <div class="calendar-toolbar">
@@ -509,6 +502,14 @@
 
         <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
           <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
+          <section class="panel inset stack" id="quest-agenda-tools" aria-labelledby="quest-agenda-schedule-heading">
+            <h3 id="quest-agenda-schedule-heading">Date uit jullie spelreis</h3>
+            <p id="quest-pilot-agenda-schedule" role="status" aria-live="polite">Open de agenda na het inloggen om jullie gezamenlijke spelreisdatum te bekijken.</p>
+            <button id="quest-pilot-agenda-refresh" class="secondary-btn" type="button">Spelreisdatum verversen</button>
+            <button id="quest-calendar-export" class="secondary-btn" type="button" disabled>Download bevestigde dates (.ics)</button>
+            <p class="muted">Importeer het gedownloade bestand in je telefoonagenda. Alleen bevestigde afspraken worden geëxporteerd; voorstellen en geheime voorbereidingen niet.</p>
+            <p class="muted">Deze afspraak komt rechtstreeks uit de gezamenlijke nieuwe spelreis. De bestaande agenda en uitnodigingen hieronder blijven afzonderlijk beschikbaar.</p>
+          </section>
           <div class="panel inset stack" id="adult-settings"><h3>Erotiek (18+) ♡</h3><p class="muted">Deze categorie is alleen beschikbaar wanneer jullie allebei 18 jaar of ouder zijn en ieder afzonderlijk toestemming geven. Je kunt je toestemming altijd intrekken.</p><label class="adult-consent-row"><input type="checkbox" id="adult-consent-toggle"> Ik ben 18+ en wil erotische vragen inschakelen</label><p id="adult-consent-status" role="status" aria-live="polite">Toestemming ophalen…</p></div>
           <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.17.0</span></p><p class="muted">Eén gedeelde webapp voor Android en iPhone. Jullie spelstand en afspraken worden via de gekoppelde accounts opgeslagen.</p><button type="button" class="secondary-btn" data-action="open-pair">Account en koppeling</button><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
           <div class="panel inset install-tip"><h3>Installeer US TWO op je beginscherm</h3><p id="pwa-install-status" class="muted" role="status">Gebruik de installatie-instructies hieronder.</p><button type="button" id="pwa-install-button" class="primary-btn hidden">Installeer US TWO</button><p><strong>Android (Chrome):</strong> open het browsermenu (⋮) en kies <strong>App installeren</strong> of <strong>Toevoegen aan startscherm</strong>.</p><p><strong>iPhone (Safari):</strong> tik op <strong>Delen</strong>, kies <strong>Zet op beginscherm</strong> en schakel <strong>Open als webapp</strong> in wanneer die optie beschikbaar is.</p><p class="muted">Gebruik op beide telefoons dezezelfde webapp-link en log ieder in met je eigen gekoppelde account.</p><button type="button" id="pwa-share-link" class="secondary-btn">Deel app-link met je partner</button><p id="pwa-share-status" class="muted" role="status"></p></div>

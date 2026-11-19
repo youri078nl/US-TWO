@@ -128,3 +128,10 @@
 - Gebruiker meldt dat alle vier de snelknoppen onder het bord geen zichtbaar resultaat geven. Oorzaak in code: `openLocation()` wijzigde wel het locatieveld maar hergebruikte `proposalKeys` van een vorige locatie; `activate()` genereerde alleen nieuwe voorstellen als die lijst leeg was. Bovendien geen duidelijke feedback of scroll naar de gefilterde resultaten.
 - `quest-date-browser.js`: `openLocation` is nu async, wist oude voorstelcache, opent Dates, laadt catalogus, maakt nieuwe locatiegebonden voorstellen, toont aantal passende dates en scrollt naar de resultaten. `living`-label gewijzigd in Thuis. `acceptatie/index.html`: snelknop Woonkamer → Thuis. Vliegveld ongewijzigd op expliciet verzoek.
 - App en SW versie naar 0.17.74. Geen wijzigingen aan goedgekeurd bord, afmetingen, pion of database. GitHub commits 219a6f6, af60f2b, c26aae2, 3e9ad3c. Nog geen echte Android-browsertest: gebruiker moet bevestigen dat de knop de Dates-pagina opent en relevante voorstellen toont.
+
+
+## 19 november 2026: 0.17.75-board-fullscreen-rc
+- Gebruiker vraagt bij kiezen van Spelbord een fullscreen speelbord, zonder andere opties, uitsluitend bestaande onderste navigatiebalk; hotspots Bos/Vliegveld/Thuis/Strand op hun oorspronkelijke bordlocaties laten.
+- `acceptatie/app.js`: body-class `us-two-board-fullscreen` alleen voor game/board, niet voor opdrachten of andere tabs. Bij openen resize-event voor panningmeting.
+- `acceptatie/quest-board.css`: fullscreen fixed bord boven onderste navigatie; kopbalk, voortgang, extra snelknoppen onder het bord en overige spelbediening in bordmodus uit beeld. Bestaande hotspots, board art, pion en spelregels behouden. `acceptatie/service-worker.js` versie 0.17.75.
+- GitHub commits 5b8fae2, db6c1b0, 912c23d. Geen echte mobiele browsertest; controleer op Android dat bord scherm vult, slepen werkt, hotspots op originele plaats staan en onderste navigatie functioneert. CSS gebruikt geen Fullscreen API en laat de telefoonstatusbalk bestaan.

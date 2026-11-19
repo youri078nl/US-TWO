@@ -4,7 +4,7 @@
 const names=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
 const dbName='us-two-approved-worlds-v1',storeName='worlds';
 const $=id=>document.getElementById(id);
-let activeUrl='',lastWorld=-1,initialized=false;
+let activeUrl='',lastWorld=-1,initialized=false,displayGeneration=0;
 function openDb(){return new Promise((resolve,reject)=>{
  const req=indexedDB.open(dbName,1);
  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(storeName))req.result.createObjectStore(storeName);};
@@ -23,10 +23,12 @@ function worldNumber(){
 async function display(force=false){
  const art=document.querySelector('#quest-board-stage .quest-world-art');
  if(!art)return;
+ const generation=++displayGeneration;
  const world=worldNumber();
  if(!force&&lastWorld===world&&art.dataset.worldImageApplied===String(world))return;
  lastWorld=world;
  const blob=await access('world-'+(world+1)).catch(()=>null);
+ if(generation!==displayGeneration)return;
  if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl='';}
  if(blob){
   activeUrl=URL.createObjectURL(blob);
@@ -65,7 +67,14 @@ async function importFiles(files){
 }
 function init(){
  if(initialized)return;initialized=true;
- $('quest-world-images-upload')?.addEventListener('change',e=>importFiles([...e.target.files]));
+ const upload=$('quest-world-images-upload');
+ const status=$('quest-world-images-status');
+ if(status)status.textContent='Importfunctie gereed. Kies zes JPG-bestanden.';
+ upload?.addEventListener('change',e=>{
+  const files=[...e.target.files];
+  if(status)status.textContent=files.length+' bestanden ontvangen. Opslaan…';
+  importFiles(files);
+ });
  const heading=$('quest-world-heading');
  if(heading)new MutationObserver(()=>display()).observe(heading,{childList:true,characterData:true,subtree:true});
  display();

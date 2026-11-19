@@ -442,3 +442,13 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #game-panel.quest-tasks-view #quest-tasks-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
 #game-panel.quest-tasks-view #quest-tasks-shortcuts button{min-width:0;white-space:normal;line-height:1.25;padding-inline:6px}
 @media(max-width:350px){#game-panel.quest-tasks-view #quest-tasks-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Wide landscape board: locations follow the user-uploaded 1672x941 artwork. */
+#quest-board-stage{aspect-ratio:1672 / 941}
+#quest-location-airport{left:25%;top:12%;width:28%;height:19%}
+#quest-location-beach{left:2%;right:auto;top:57%;width:27%;height:26%}
+#quest-location-cinema{left:32%;top:27%;width:16%;height:19%}
+#quest-location-wellness{left:auto;right:1%;top:16%;width:17%;height:20%}
+#quest-location-living{left:53%;right:auto;top:25%;width:19%;height:19%}
+#quest-location-cafe{left:33%;right:auto;top:48%;width:18%;height:20%}
+#quest-pilot #quest-location-forest{left:1%;right:auto;top:8%;width:19%;height:14%}

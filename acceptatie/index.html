@@ -178,7 +178,7 @@
         </section>
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
-          <div class="section-heading quest-game-title"><div><span class="eyebrow">SAMEN OP PAD</span><h2>Jullie avontuur</h2></div></div>
+          <div class="section-heading quest-game-title"><div><span class="eyebrow">SAMEN OP PAD</span><h2 id="quest-game-view-heading">Jullie avontuur</h2></div></div>
           <p id="quest-game-section-note" class="muted" role="status">Het bord en de opdrachten gebruiken dezelfde gezamenlijke spelstand.</p>
           <section id="quest-cards-import-hint" class="panel inset stack" aria-label="Originele opdrachtkaartjes importeren">
             <h3>Bekijk jullie 258 opdrachtkaartjes</h3>
@@ -517,12 +517,12 @@
       </div>
     </main>
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
-      <button type="button" class="active" data-tab="game" data-game-view="board"><span class="nav-icon">♙</span>Bord</button>
-      <button type="button" data-tab="game" data-game-view="tasks"><span class="nav-icon">✦</span>Opdrachten</button>
-      <button type="button" data-tab="discover"><span class="nav-icon">♡</span>Dates</button>
-      <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
-      <button type="button" data-tab="memories"><span class="nav-icon">✧</span>Momenten</button>
-      <button type="button" data-tab="more"><span class="nav-icon">☷</span>Meer</button>
+      <button type="button" class="active" data-tab="game" data-game-view="board" aria-label="Speelbord bekijken"><span class="nav-icon">♙</span>Bord</button>
+      <button type="button" data-tab="game" data-game-view="tasks" aria-label="Opdrachten en vragen bekijken"><span class="nav-icon">✦</span>Opdrachten</button>
+      <button type="button" data-tab="discover" aria-label="Dates ontdekken"><span class="nav-icon">♡</span>Dates</button>
+      <button type="button" data-tab="dates" aria-label="Gedeelde agenda"><span class="nav-icon">▣</span>Agenda</button>
+      <button type="button" data-tab="memories" aria-label="Momenten bekijken"><span class="nav-icon">✧</span>Momenten</button>
+      <button type="button" data-tab="more" aria-label="Meer en instellingen"><span class="nav-icon">☷</span>Meer</button>
     </nav>
   </div>
   <div id="incoming-invite-overlay" class="incoming-invite-overlay hidden" role="presentation">

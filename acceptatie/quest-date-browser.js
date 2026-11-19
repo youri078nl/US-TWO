@@ -115,7 +115,12 @@
   frame.className='quest-date-art-frame';
   const ribbon=document.createElement('span');
   ribbon.className='quest-date-art-ribbon';ribbon.textContent='♡ US TWO · DATE ♡';
-  frame.append(img,ribbon);
+  const caption=document.createElement('div');caption.className='quest-date-art-caption';
+  const captionType=document.createElement('span');captionType.textContent='♡ JULLIE DATE ♡';
+  const captionTitle=document.createElement('strong');captionTitle.textContent=item.title;
+  const captionInfo=document.createElement('span');captionInfo.textContent=item.minutes+' min · '+(item.cost===0?'Gratis':item.cost===null?'Bonusdate':'± €'+item.cost);
+  caption.append(captionType,captionTitle,captionInfo);
+  frame.append(img,ribbon,caption);
   card.append(frame);
  }
  function renderProposals(){

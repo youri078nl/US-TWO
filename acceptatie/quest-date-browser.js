@@ -128,6 +128,45 @@
   frame.append(img,ribbon,caption);
   card.append(frame);
  }
+ // Een date-missie komt uit dezelfde officiële collectie en blijft zichtbaar
+ // in de gedeelde agenda via de bestaande uitnodigingstitel (geen schemawijziging).
+ function linkedMission(item){
+  const choices=(loaded||[]).filter(c=>c.source==='officieel'&&c.key!==item.key&&
+   (item.remote&&!item.together?c.remote:c.together)&&
+   (item.cost===null||c.cost===null||c.cost<=Math.max(0,item.cost)));
+  if(!choices.length)return null;
+  const words=normalize([item.title,item.description,item.category].join(' ')).split(/[^a-z0-9]+/).filter(w=>w.length>=5);
+  const score=c=>{
+   const text=normalize([c.title,c.description,c.category].join(' '));
+   return words.reduce((n,w)=>n+(text.includes(w)?1:0),0)+(c.category===item.category?3:0);
+  };
+  choices.sort((a,b)=>score(b)-score(a)||a.key.localeCompare(b.key));
+  return choices[0];
+ }
+ function plan(item,withMission){
+  if(!hasBridge())return;
+  const mission=withMission?linkedMission(item):null;
+  const title=mission?(item.title+' | Missie: '+mission.title).slice(0,120):item.title;
+  window.USTwoDateBridge.choose({title,minutes:item.minutes,source:item.source});
+ }
+ function addMissionChoice(card,item){
+  const mission=linkedMission(item);
+  if(!mission)return;
+  const details=document.createElement('details');
+  details.className='quest-date-details quest-date-mission';
+  const summary=document.createElement('summary');
+  summary.textContent='✦ Bijpassende date-missie';
+  const description=document.createElement('p');
+  description.textContent=mission.title+' · '+mission.description;
+  const instructions=document.createElement('p');
+  instructions.textContent=(item.remote&&!item.together?mission.remoteInstructions:mission.instructions)||mission.description;
+  const button=document.createElement('button');
+  button.type='button';button.className='secondary-btn';
+  button.dataset.dateKey=item.key;button.dataset.withMission='true';
+  button.textContent='Plan deze date met missie';
+  details.append(summary,description,instructions,button);
+  card.append(details);
+ }
  function renderProposals(){
   const target=$('quest-date-proposal-results');
   if(!target||!active)return;
@@ -148,7 +187,7 @@
    const description=document.createElement('p');description.textContent=item.description;
    const button=document.createElement('button');button.type='button';button.className='primary-btn';
    button.textContent='Kies deze date ♡';button.dataset.dateKey=item.key;
-   card.append(category);addArtwork(card,item);card.append(heading,meta,description,button);target.append(card);
+   card.append(category);addArtwork(card,item);card.append(heading,meta,description);addMissionChoice(card,item);card.append(button);target.append(card);
   }
  }
  function render(){
@@ -195,7 +234,7 @@
    const button=document.createElement('button');button.type='button';
    button.className='secondary-btn quest-date-choose';button.textContent='Kies deze date';
    button.dataset.dateKey=c.key;
-   article.append(top);addArtwork(article,c);article.append(title,description,meta,details,button);list.append(article);
+   article.append(top);addArtwork(article,c);article.append(title,description,meta,details);addMissionChoice(article,c);article.append(button);list.append(article);
   }
   const more=$('quest-date-more');
   if(more){more.hidden=matches.length<=shown;more.disabled=matches.length<=shown;}
@@ -226,7 +265,7 @@
    const button=event.target.closest('button[data-date-key]');
    if(!button||!hasBridge())return;
    const item=loaded?.find(c=>c.key===button.dataset.dateKey);
-   if(item)window.USTwoDateBridge.choose({title:item.title,minutes:item.minutes,source:item.source});
+   if(item)plan(item,button.dataset.withMission==='true');
   });
   $('quest-date-surprise')?.addEventListener('click',()=>{
    if(!loaded?.length||!hasBridge()){say('De dates zijn nog niet beschikbaar.');return;}
@@ -246,7 +285,7 @@
    const button=event.target.closest('button[data-date-key]');
    if(!button||!hasBridge())return;
    const item=loaded?.find(c=>c.key===button.dataset.dateKey);
-   if(item)window.USTwoDateBridge.choose({title:item.title,minutes:item.minutes,source:item.source});
+   if(item)plan(item,button.dataset.withMission==='true');
   });
   window.addEventListener('us-two-tab-changed',event=>{
    const isShown=event.detail?.tab==='discover';

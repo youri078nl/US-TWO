@@ -1,3 +1,8 @@
+US TWO 0.17.52-date-card-style-rc | 2026-11-19
+Implemented: Existing original illustrated 2D quest images now appear in gold-framed date proposal and date collection cards with explicit US TWO DATE ribbon; responsive three-column proposal grid on wider screens. No new character artwork substituted, no changes to backend or game progression. Commits 180676b, 90c7809, 757ce22, b07bf6c.
+Limitations: Date suggestions still reuse existing quest illustrations, which contain printed OPDRACHT labels; newly generated sample date artwork is a visual concept only and is not deployed. New 0.17.52 code not tested on Android/iPhone or in browser. Date selection still opens calendar through existing bridge. Weighted progress remains provisional 95%, not acceptance tested.
+Next: replace printed quest image date art with approved dedicated date art only after asset integration, validate mobile dates selection and calendar sync, then release criteria.
+
 US TWO 0.17.48-date-variety-rc | 2026-11-19
 Latest commits: 8ee0a609 (date variety), b406bbb1 (app version), f24f107c (service worker).
 Done: Dates landing screen confirmed working by user on Android in 0.17.47. Date suggestions now avoid repeats until the eligible pool is exhausted, with category, duration, cost and together/remote metadata.

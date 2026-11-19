@@ -414,3 +414,24 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-date-art-caption>span:first-child{font-size:clamp(8px,2vw,12px);font-weight:800;letter-spacing:.08em;color:#ffbf6e}
 .quest-date-art-caption strong{font-family:Georgia,serif;font-size:clamp(13px,3.5vw,25px);line-height:1.12;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .quest-date-art-caption>span:last-child{font-size:clamp(9px,2.1vw,13px)}
+
+/* Visual polish: keep the approved 2D art unchanged. */
+#quest-world-viewport{user-select:none;-webkit-user-select:none}
+#quest-world-viewport img{-webkit-user-drag:none;user-select:none}
+#quest-world-viewport button:focus-visible,
+.quest-date-proposal button:focus-visible,
+#quest-date-results button:focus-visible{outline:3px solid #ffe4a8;outline-offset:3px}
+.quest-date-art-frame{min-width:0}
+.quest-date-art-caption{min-width:0}
+.quest-date-art-caption strong{text-wrap:balance}
+@media(max-width:430px){
+ .quest-date-art-caption{right:3%;top:22%;bottom:5%;width:43%;gap:3px}
+ .quest-date-art-caption>span:first-child{font-size:9px;line-height:1.15}
+ .quest-date-art-caption strong{font-size:clamp(12px,3.5vw,17px);line-height:1.12;-webkit-line-clamp:3}
+ .quest-date-art-caption>span:last-child{font-size:10px;line-height:1.2}
+ .quest-date-art-ribbon{top:4px;padding:3px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .quest-world-pawn{transition:none!important}
+ #quest-world-viewport *, .quest-date-art-frame *{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}

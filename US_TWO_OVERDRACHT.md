@@ -122,3 +122,9 @@
 - Fix: vier permanent zichtbare knoppen direct onder het bord (Vliegveld, Strand, Woonkamer, Bos) in `acceptatie/index.html`, aangesloten op bestaande `USTwoDateBrowser.openLocation` in `quest-board-interactions.js`. Mobiele 2x2-layout in `quest-board.css`.
 - Goedgekeurde bordafbeelding, formaat, pionpositie en bestaande hotspots zijn NIET veranderd. App/SW naar 0.17.73. GitHub commits: ad930d9, 82ebafe, e0827bd, d360622, e8b6dae.
 - Nog geen fysieke Android-test; gebruiker moet controleren of Bos nu zichtbaar en aanklikbaar is.
+
+
+## 19 november 2026: 0.17.74-location-navigation-rc
+- Gebruiker meldt dat alle vier de snelknoppen onder het bord geen zichtbaar resultaat geven. Oorzaak in code: `openLocation()` wijzigde wel het locatieveld maar hergebruikte `proposalKeys` van een vorige locatie; `activate()` genereerde alleen nieuwe voorstellen als die lijst leeg was. Bovendien geen duidelijke feedback of scroll naar de gefilterde resultaten.
+- `quest-date-browser.js`: `openLocation` is nu async, wist oude voorstelcache, opent Dates, laadt catalogus, maakt nieuwe locatiegebonden voorstellen, toont aantal passende dates en scrollt naar de resultaten. `living`-label gewijzigd in Thuis. `acceptatie/index.html`: snelknop Woonkamer → Thuis. Vliegveld ongewijzigd op expliciet verzoek.
+- App en SW versie naar 0.17.74. Geen wijzigingen aan goedgekeurd bord, afmetingen, pion of database. GitHub commits 219a6f6, af60f2b, c26aae2, 3e9ad3c. Nog geen echte Android-browsertest: gebruiker moet bevestigen dat de knop de Dates-pagina opent en relevante voorstellen toont.

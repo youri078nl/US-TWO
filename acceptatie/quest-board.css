@@ -446,27 +446,3 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #quest-pilot .quest-board-quick-locations button{min-width:0;min-height:44px;padding:9px 7px;font-size:13px;white-space:normal;border:1px solid #d4a574;border-radius:12px;background:#322337;color:#ffe6bc}
 @media(min-width:600px){.quest-board-quick-locations{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
-/* v0.17.75: The board tab is an immersive board-only screen.
-   Keep the approved portrait artwork, hotspots and original board coordinates. */
-body.us-two-board-fullscreen{overflow:hidden}
-body.us-two-board-fullscreen .topbar{display:none}
-body.us-two-board-fullscreen #game-panel>.quest-game-title,
-body.us-two-board-fullscreen #quest-game-section-note,
-body.us-two-board-fullscreen #quest-cards-import-hint,
-body.us-two-board-fullscreen #quest-tasks-shortcuts,
-body.us-two-board-fullscreen #ustwo-sound-toggle{display:none!important}
-body.us-two-board-fullscreen #quest-board-card{
- position:fixed!important;z-index:9;inset:0 0 calc(74px + env(safe-area-inset-bottom)) 0;
- width:100vw;height:auto;max-width:none;margin:0;border:0;border-radius:0;
- display:flex;flex-direction:column;background:#171124;overflow:hidden;
-}
-body.us-two-board-fullscreen #quest-board-card>.quest-board-card-header,
-body.us-two-board-fullscreen #quest-board-card>.quest-world-progress,
-body.us-two-board-fullscreen #quest-board-card>.quest-board-replay,
-body.us-two-board-fullscreen #quest-board-card>.quest-board-caption,
-body.us-two-board-fullscreen #quest-board-card>.quest-board-quick-locations{display:none!important}
-body.us-two-board-fullscreen #quest-world-viewport.quest-world-viewport{
- flex:1 1 auto;height:100%!important;min-height:0!important;max-height:none!important;
- width:100%;border-radius:0;
-}
-body.us-two-board-fullscreen #bottom-nav{z-index:12}

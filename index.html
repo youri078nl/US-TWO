@@ -133,7 +133,13 @@
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
           <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
-          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang" tabindex="0"></div><p class="muted center board-pan-hint">Sleep het speelbord horizontaal om rond te kijken. De pionpositie wordt uitsluitend door afgeronde opdrachten bepaald.</p><p id="board-next-note" class="muted center"></p></div>
+          <div class="world-selector" role="group" aria-label="Kies speelwereld">
+            <button type="button" class="world-button selected" data-world="woonkamer" aria-pressed="true">🛋️ Woonkamer</button>
+            <button type="button" class="world-button" data-world="strand" aria-pressed="false">🏖️ Strand</button>
+            <button type="button" class="world-button" data-world="vliegveld" aria-pressed="false">✈️ Vliegveld</button>
+            <button type="button" class="world-button" data-world="bos" aria-pressed="false">🌲 Bos</button>
+          </div>
+          <div class="panel board-hero" data-world-theme="woonkamer"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang" tabindex="0"></div><p class="muted center board-pan-hint">Sleep het speelbord horizontaal om rond te kijken. De pionpositie wordt uitsluitend door afgeronde opdrachten bepaald.</p><p id="board-next-note" class="muted center"></p></div>
           <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
         </section>
 
@@ -165,7 +171,7 @@
 
         <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
           <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
-          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.8.2</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button type="button" class="secondary-btn" data-action="open-pair">Account en koppeling</button><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
+          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.8.3</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button type="button" class="secondary-btn" data-action="open-pair">Account en koppeling</button><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
           <div class="panel inset install-tip"><h3>Zet US TWO op het beginscherm</h3><p>Open deze pagina in Safari, tik op <strong>Delen</strong> en kies <strong>Zet op beginscherm</strong>. Vink <strong>Open als webapp</strong> aan als die optie verschijnt.</p></div>
         </section>
       </div>

@@ -26,3 +26,9 @@ Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, i
 - Read-back van SQL-functie bevestigd: ledencontrole, row lock en geen UPDATE van `us_board_progress`.
 - GitHub-ontwikkelbranch: app.js/index.html/service-worker.js bijgewerkt naar 0.8.5; uitleg in UI volgt nieuwe serverregel.
 - Geen live interactietest met twee accounts uitgevoerd. Opdrachtbeloning blijft één stap; variabele stappen zijn nog niet geïmplementeerd.
+
+## Update 0.8.6
+- Supabase migratie `board_deterministic_step_rewards` toegepast: `us_board_complete(uuid)` geeft deterministisch 1-3 stappen op basis van cell_no, superopdrachten 3, begrensd tot volgende 20e vakje. Twee bevestigingen vereist, ronde-lock en position-conflictcontrole, herhaalde completed calls zijn idempotent.
+- Backend SQL readback gecontroleerd op formule, supergrens, conflictcontrole en idempotentie. Geen live voltooiing met twee accounts getest.
+- GitHub app.js, index.html en service-worker.js bijgewerkt naar 0.8.6. App toont verwachte beloning bij actieve opdracht.
+- Belangrijk: stappen worden server-side toegepast, maar visuele stapsgewijze pionanimatie en goedgekeurde bordillustratie ontbreken nog. Niet gemerged of gepubliceerd.

@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.6',
+  version: '0.8.7',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -280,12 +280,36 @@ function setWorld(world){
   });
   try{sessionStorage.setItem('us-two-world',world)}catch(_e){}
 }
+// Alleen de weergave animeert; Supabase blijft de enige bron van spelvoortgang.
+const boardMotion = {displayed:null,target:null,timer:null};
+function updateBoardMotion(serverPosition) {
+  if(boardMotion.displayed===null){boardMotion.displayed=serverPosition;boardMotion.target=serverPosition;return;}
+  if(serverPosition===boardMotion.target)return;
+  boardMotion.target=serverPosition;
+  if(boardMotion.timer!==null){clearTimeout(boardMotion.timer);boardMotion.timer=null;}
+  if(serverPosition<boardMotion.displayed || serverPosition-boardMotion.displayed>12 ||
+     (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    boardMotion.displayed=serverPosition;return;
+  }
+  advanceBoardMotion();
+}
+function advanceBoardMotion(){
+  if(boardMotion.displayed>=boardMotion.target){boardMotion.timer=null;return;}
+  boardMotion.timer=setTimeout(()=>{
+    boardMotion.displayed++;
+    renderBoard();
+    advanceBoardMotion();
+  },340);
+}
 function renderBoard() {
   const board = state.board || {};
   const position = Math.max(1, Number(board.position) || 1);
+  updateBoardMotion(position);
+  const visualPosition = boardMotion.displayed;
+  const moving = visualPosition !== position;
   const round = board.round || null;
   const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
-  const first = Math.floor((position - 1) / 12) * 12 + 1;
+  const first = Math.floor((visualPosition - 1) / 12) * 12 + 1;
   const members = (state.dashboard?.members || []).slice(0, 2);
   const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
   const players = playerNames.map((name, i) =>
@@ -295,16 +319,17 @@ function renderBoard() {
     const row = Math.floor(slot / 4);
     const col = slot % 4;
     const number = first + row * 4 + (row % 2 ? 3 - col : col);
-    const isCurrent = number === position;
+    const isCurrent = number === visualPosition;
     const isTarget = number === activeCell;
     const isSuper = number % 20 === 0;
-    const completed = number < position;
+    const completed = number < visualPosition;
     return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
   }).join('');
-  $('board-position').textContent = String(position);
+  $('board-position').textContent = String(visualPosition);
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
+  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${visualPosition}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
   $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
+  $('board-trail').setAttribute('aria-busy',String(moving));
   $('board-next-note').textContent = `Na twee bevestigingen verdienen jullie 1 tot 3 stappen. Een superopdracht wordt nooit overgeslagen. Samen overslaan levert geen stappen op. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {

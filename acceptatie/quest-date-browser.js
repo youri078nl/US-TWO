@@ -115,7 +115,7 @@
   img.alt='Geïllustreerde US TWO-datekaart: '+item.title;
   img.loading='lazy';img.decoding='async';
   img.className='quest-date-artwork';
-  img.onerror=()=>{img.remove();};
+  img.onerror=()=>{if(custom){img.onerror=()=>img.remove();img.src='./assets/cards/'+filename;}else img.remove();};
   const frame=document.createElement('div');
   frame.className='quest-date-art-frame';
   const ribbon=document.createElement('span');

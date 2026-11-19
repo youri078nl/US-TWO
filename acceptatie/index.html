@@ -247,6 +247,12 @@
                 <div class="quest-board-caption">De pion beweegt na een voltooide opdracht. Jullie bevestigen allebei, zonder dobbelsteen.</div>
               </div>
               <p id="quest-world-position" class="quest-screenreader" role="status" aria-live="polite">De gezamenlijke pion verschijnt na het laden van de serverstand.</p>
+              <details class="quest-board-art-options" id="quest-world-images-options">
+                <summary>Zes goedgekeurde wereldkaarten toevoegen</summary>
+                <p>Importeer de zes JPG-afbeeldingen uit US_TWO_ZES_WERELDEN_PREVIEW.zip. De kaarten worden alleen op dit toestel opgeslagen; de gedeelde spelstand verandert niet.</p>
+                <input id="quest-world-images-import" type="file" accept="image/jpeg" multiple aria-label="Selecteer wereld-1.jpg tot en met wereld-6.jpg">
+                <p id="quest-world-images-status" role="status">Nog geen wereldkaarten geïmporteerd.</p>
+              </details>
               <details class="quest-board-art-options">
                 <summary>2D-pion en bewegingen beheren</summary>
                 <p class="muted">De goedgekeurde Youri-, Kim- en Pepsi-pionnen staan standaard op het bord. Een zelf gekozen origineel blijft alleen op dit toestel.</p>
@@ -560,5 +566,6 @@
    <script src="./quest-questions.js" defer></script>
    <script src="./quest-date-browser.js" defer></script>
 
+<script src="./quest-world-images.js?v=01780" defer></script>
 </body>
 </html>

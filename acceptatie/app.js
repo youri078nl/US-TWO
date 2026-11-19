@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.71-private-screen-rc',
+  version: '0.17.72-private-race-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -48,11 +48,11 @@ async function request(url, opts={}) {
 }
 function saveSession(obj) {
   if(!obj||typeof obj.access_token!=='string'||typeof obj.refresh_token!=='string')throw new Error('Ongeldig loginantwoord.');
-  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Geheime missies laden voor het nieuwe account.';authGeneration++;state.dashboard=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;}
+  if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){secretMissionRequestSeq++;const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Geheime missies laden voor het nieuwe account.';authGeneration++;state.dashboard=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;}
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Log in om jouw geheime missies te bekijken.';authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){secretMissionRequestSeq++;const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Log in om jouw geheime missies te bekijken.';authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending?.generation===authGeneration)return refreshPending.promise;
@@ -454,24 +454,25 @@ function renderMemories(){
   return '<article class="card memory-card">'+visibility+'<h3>'+safe(item.title)+'</h3><p class="meta">'+safe(item.happened_on)+' · '+(own?'Van jou':'Van '+safe(item.author_name||'je partner'))+'</p>'+note+actions+'</article>';
  }).join('');
 }
+let secretMissionRequestSeq=0;
 async function loadMySecretDateMissions(){
   const target=$('us-two-my-secret-missions');
   if(!target||!state.session?.user?.id)return;
-  const uid=state.session.user.id, generation=authGeneration;
+  const uid=state.session.user.id, generation=authGeneration, seq=++secretMissionRequestSeq;
   try{
     if(state.session.expires_at<Date.now()/1000+80)await freshToken();
-    if(generation!==authGeneration||state.session?.user?.id!==uid)return;
+    if(seq!==secretMissionRequestSeq||generation!==authGeneration||state.session?.user?.id!==uid)return;
     const rows=await request('/rest/v1/us_date_secret_missions?select=id,date_id,mission_text,status&order=created_at.desc&limit=50',{
       headers:{Authorization:'Bearer '+state.session.access_token}
     });
-    if(generation!==authGeneration||state.session?.user?.id!==uid)return;
+    if(seq!==secretMissionRequestSeq||generation!==authGeneration||state.session?.user?.id!==uid)return;
     const dates=new Map((state.dashboard?.dates||[]).map(d=>[d.id,d]));
     const visible=(Array.isArray(rows)?rows:[]).filter(m=>dates.get(m.date_id)?.status==='accepted');
     target.innerHTML=visible.length?visible.map(m=>{
       const d=dates.get(m.date_id);
       return '<article class="card"><span class="tag active">Alleen voor jou</span><h3>'+safe(d.title)+'</h3><p class="meta">'+timeFmt.format(new Date(d.start_at))+'</p><p>'+safe(m.mission_text)+'</p>'+(m.status==='completed'?'<p class="tag active">Missie afgerond</p>':m.status==='assigned'?'<button type="button" class="secondary-btn" data-action="complete-secret-mission" data-id="'+safe(m.id)+'">Missie afgerond</button>':'')+'</article>';
     }).join(''):'<p class="muted">Nog geen geheime date-missie voor jou.</p>';
-  }catch(e){if(generation===authGeneration)target.textContent='Geheime missies tijdelijk niet beschikbaar.';}
+  }catch(e){if(seq===secretMissionRequestSeq&&generation===authGeneration&&state.session?.user?.id===uid)target.textContent='Geheime missies tijdelijk niet beschikbaar.';}
 }
 function renderDates(){
   const allDates=state.dashboard?.dates||[];

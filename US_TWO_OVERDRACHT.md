@@ -44,3 +44,8 @@ Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, i
 - **BELANGRIJK**: de eerdere rootwijzigingen 0.8.1 t/m 0.8.7 betroffen de eenvoudigere root-PWA en mogen NIET als vervanging voor `acceptatie/` worden gemerged of uitgerold zonder architectuurvergelijking. Root-Supabase RPC-wijzigingen zijn wel live uitgevoerd en kunnen impact hebben op root-flow; acceptatie gebruikt mogelijk andere RPC's, controle vereist.
 - Nieuwe GitHub Actions workflow `.github/workflows/acceptatie-board-tests.yml` gecommit (f511c88): Node 22 syntaxchecks plus bestaande pointer-regressietest op push/PR/handmatig. Workflow-uitvoering en uitslag nog niet bevestigd.
 - Vervolg: test de bestaande acceptatie-app en haar echte backend, bepaal welke releasecriteria nog werkelijk ontbreken. Gebruik `acceptatie/` als kandidaat voor de release, behoud goedgekeurde artwork. Geen 1.0.0-claim zonder end-to-endtest.
+
+## Acceptatie CI update 2026-11-19
+- Via GitHub `fetch_commit_workflow_runs` gecontroleerd: workflow `US TWO acceptatie bordtests` voor commit ff0f2d5 heeft `completed/success` (eerste automatische regressietest aantoonbaar geslaagd).
+- Workflow uitgebreid in commit 89a6229: syntaxcontrole van alle JS-bestanden in `acceptatie/` en verplichte aanwezigheid van goedgekeurde originele 2D-art, manifest, service worker en 258-kaartencatalogus. Uitslag van deze nieuwe uitgebreide workflow nog niet bevestigd.
+- Nog geen Android/iPhone end-to-endtest, geen bewezen synchronisatie op twee accounts en geen release 1.0.0. De acceptatieversie is aanzienlijk verder dan root 0.8.7; geen root-merge zonder regressiecontrole.

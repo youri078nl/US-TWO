@@ -141,3 +141,9 @@
 - Gebruiker meldt: 'Speelbord is verdwenen' direct na 0.17.75 fullscreen CSS.
 - Direct 0.17.75 fullscreen CSS geheel teruggedraaid in `acceptatie/quest-board.css` (commit 52cd8e6); body-class en resize hook teruggedraaid in `acceptatie/app.js` (commit 146eac5). Serviceworker versie verhoogd naar 0.17.76 (commit e966c88).
 - Vorige zichtbare bordlayout teruggezet; niet opnieuw fullscreen activeren zonder echte mobiele layouttest. Bord/pion/database ongewijzigd. Gebruiker moet bevestigen dat bord weer zichtbaar is. Fullscreenwens staat OPEN.
+
+
+## 19 november 2026: zes wereldontwerpen, nog NIET geïntegreerd
+- Gebruiker keurt zes visuele ontwerpen goed en vraagt integratie. Een lokale ZIP `US_TWO_ZES_WERELDEN_PREVIEW.zip` is in de chat gemaakt, met zes afzonderlijk uitgesneden JPG's uit de laatst gegenereerde collage en een bladerbare `index.html`. Dit is GEEN production release; ZIP is niet in GitHub opgeslagen.
+- Kritiek: backend `us_two_private.quest_world(p_pair uuid,p_position integer)` gebruikt expliciet `%60` en `/60` en superdate-gates op 60; `acceptatie/quest-board.js` gebruikt `CELLS_PER_WORLD=60` en 6 oude wereldnamen. Alleen frontend op 40 zetten zou voortgang en superdate-gates desynchroniseren. Migratie pas doen met inventarisatie van alle 60-constanten, bestaande data en rollbackstrategie.
+- Productie blijft 0.17.76. Goedgekeurd ontwerp: zes thema's Bergbos, Moulin Rouge (licht erotisch), Middeleeuwen, Vakantie, Fantasie, Snoepland, identieke 2D-personages; nevelpoort onder brug en witte Kia Rio met zwaaiende Kim. Echte integratie van beeldbestanden en 40-vakjes regels nog OPEN.

@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./quest-board.css">
+  <link rel="stylesheet" href="./quest-board.css?v=01765">
   <title>US TWO | Samen op avontuur</title>
 </head>
 <body>
@@ -233,8 +233,9 @@
                   <div class="quest-board-map-controls" role="group" aria-label="Speelbord bedienen">
                     <button type="button" id="quest-board-zoom-in" aria-label="Speelbord inzoomen">+</button>
                     <button type="button" id="quest-board-zoom-out" aria-label="Speelbord uitzoomen">−</button>
+                    <button type="button" id="quest-board-fit" aria-label="Toon het hele speelbord">Heel bord</button>
                     <button type="button" id="quest-board-center" aria-label="Breng de pion in beeld">◎</button>
-                    <span id="quest-board-zoom-level" aria-live="polite">114%</span>
+                    <span id="quest-board-zoom-level" aria-live="polite">Passend</span>
                   </div>
                 </div>
                 <div class="quest-board-replay" aria-label="Voortgang op het bord">
@@ -541,8 +542,8 @@
   <script src="./us-two-offline.js" defer></script>
    <script type="module" src="./app.js"></script>
    <script src="./quest-catalog.js" defer></script>
-   <script src="./quest-board.js" defer></script>
-   <script src="./quest-board-interactions.js" defer></script>
+   <script src="./quest-board.js?v=01765" defer></script>
+   <script src="./quest-board-interactions.js?v=01765" defer></script>
    <script src="./quest-pose-archive.js" defer></script>
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>

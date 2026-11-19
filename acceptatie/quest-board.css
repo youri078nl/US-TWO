@@ -389,3 +389,8 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #app-view:not(.us-two-home-view)>.welcome{display:none!important}
 #discover-panel .quest-date-intro>h3:first-child,#discover-panel .quest-date-intro>p.muted:first-of-type{display:none}
 #discover-panel .quest-date-proposals{margin-top:0}
+
+/* Illustrated date selection: approved original artwork, mobile first. */
+.quest-date-artwork{display:block;width:100%;height:auto;max-height:390px;object-fit:contain;object-position:center;border-radius:16px;border:1px solid rgba(241,192,117,.45);background:#170f20;box-shadow:0 12px 26px rgba(0,0,0,.22);margin:10px auto 14px}
+.quest-date-proposal .quest-date-artwork{max-height:460px}
+.quest-date-tile .primary-btn,.quest-date-tile .quest-date-choose{width:100%;margin-top:12px}

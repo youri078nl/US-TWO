@@ -8,6 +8,19 @@
  let zoom=BASE,x=0,y=0,drag=null,suppressLocationClick=false;
  const viewport=()=> $('quest-world-viewport');
  const stage=()=> $('quest-board-stage');
+ function sizeStage(){
+  const el=viewport(),node=stage(),img=node?.querySelector('.quest-world-art');
+  if(!el||!node||!img)return;
+  const w=img.naturalWidth||941,h=img.naturalHeight||1672;
+  const ratio=w/h;
+  // Portrait: preserve the approved full-width artwork. Landscape: make the
+  // board wider than the phone so the player can pan left and right.
+  const desiredWidth=ratio>1?Math.max(el.clientWidth*1.65,el.clientHeight*ratio):el.clientWidth;
+  node.style.width=desiredWidth.toFixed(2)+'px';
+  node.style.height=(desiredWidth/ratio).toFixed(2)+'px';
+  node.style.aspectRatio=w+' / '+h;
+  node.style.left=((el.clientWidth-desiredWidth)/2).toFixed(2)+'px';
+ }
  function clamp(){
   const el=viewport();if(!el)return;
   const w=el.clientWidth,h=el.clientHeight,board=stage();
@@ -17,6 +30,7 @@
  }
  function paint(){
   const node=stage(),el=viewport();if(!node||!el)return;
+  sizeStage();
   // The full portrait image stays at its natural aspect ratio. Center it in
   // the shorter viewing window, then allow panning to BOTH distant ends.
   node.style.top=((el.clientHeight-node.offsetHeight)/2).toFixed(2)+'px';
@@ -95,6 +109,8 @@
     window.USTwoDateBrowser?.openLocation(button.dataset.location);
    });
   }
+  const art=stage().querySelector('.quest-world-art');
+  if(art&&!art.complete)art.addEventListener('load',paint,{once:true});
   window.addEventListener('resize',paint);
   // Responsive layout changes (including browser address-bar changes) must
   // recalculate the visible board boundaries without resetting the drag.

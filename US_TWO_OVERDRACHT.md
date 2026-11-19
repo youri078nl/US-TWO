@@ -135,3 +135,9 @@
 - `acceptatie/app.js`: body-class `us-two-board-fullscreen` alleen voor game/board, niet voor opdrachten of andere tabs. Bij openen resize-event voor panningmeting.
 - `acceptatie/quest-board.css`: fullscreen fixed bord boven onderste navigatie; kopbalk, voortgang, extra snelknoppen onder het bord en overige spelbediening in bordmodus uit beeld. Bestaande hotspots, board art, pion en spelregels behouden. `acceptatie/service-worker.js` versie 0.17.75.
 - GitHub commits 5b8fae2, db6c1b0, 912c23d. Geen echte mobiele browsertest; controleer op Android dat bord scherm vult, slepen werkt, hotspots op originele plaats staan en onderste navigatie functioneert. CSS gebruikt geen Fullscreen API en laat de telefoonstatusbalk bestaan.
+
+
+## 19 november 2026: NOODHERSTEL 0.17.76-board-restore-rc
+- Gebruiker meldt: 'Speelbord is verdwenen' direct na 0.17.75 fullscreen CSS.
+- Direct 0.17.75 fullscreen CSS geheel teruggedraaid in `acceptatie/quest-board.css` (commit 52cd8e6); body-class en resize hook teruggedraaid in `acceptatie/app.js` (commit 146eac5). Serviceworker versie verhoogd naar 0.17.76 (commit e966c88).
+- Vorige zichtbare bordlayout teruggezet; niet opnieuw fullscreen activeren zonder echte mobiele layouttest. Bord/pion/database ongewijzigd. Gebruiker moet bevestigen dat bord weer zichtbaar is. Fullscreenwens staat OPEN.

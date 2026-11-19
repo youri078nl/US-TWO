@@ -71,8 +71,59 @@ async function importFiles(files){
  try{
   for(const [i,file] of picked)await access('world-'+i,file);
   lastWorld=-1;await display(true);
+  lastSyncAttempt=0;syncWorldArt();
   if(status)status.textContent='Alle zes wereldkaarten opgeslagen. Open Bord om de kaart te bekijken.';
  }catch(e){if(status)status.textContent='Opslaan mislukt: '+(e?.message||'onbekende fout');}
+}
+const SYNC_URL='https://vuigivzwkxelsisbjjlk.supabase.co';
+const SYNC_KEY='sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7';
+let syncing=false,lastSyncAttempt=0;
+function authSession(){
+ try{
+  const key='us-two-web-session-v2:'+new URL('./',location.href).pathname;
+  const session=JSON.parse(localStorage.getItem(key)||'null');
+  return session?.access_token?session:null;
+ }catch{return null;}
+}
+async function syncWorldArt(){
+ if(syncing||Date.now()-lastSyncAttempt<12000)return;
+ const session=authSession();
+ if(!session)return;
+ syncing=true;lastSyncAttempt=Date.now();
+ const status=$('quest-world-images-status');
+ const headers={apikey:SYNC_KEY,Authorization:'Bearer '+session.access_token};
+ try{
+  const memberRes=await fetch(SYNC_URL+'/rest/v1/us_members?select=couple_id&user_id=eq.'+encodeURIComponent(session.user.id),{headers,cache:'no-store'});
+  if(!memberRes.ok)throw new Error('Koppeling ophalen mislukt ('+memberRes.status+')');
+  const memberships=await memberRes.json();
+  const pair=memberships?.[0]?.couple_id;
+  if(!pair)return;
+  let uploaded=0,downloaded=0;
+  for(let i=1;i<=6;i++){
+   const key='world-'+i;
+   let blob=await access(key).catch(()=>null);
+   const path=pair+'/wereld-'+i+'.jpg';
+   const url=SYNC_URL+'/storage/v1/object/us-two-world-art/'+path;
+   if(blob){
+    const res=await fetch(url,{method:'POST',headers:{...headers,'Content-Type':blob.type||'image/jpeg','x-upsert':'true'},body:blob});
+    if(!res.ok)throw new Error('Upload wereld '+i+' mislukt ('+res.status+')');
+    uploaded++;
+   }else{
+    const res=await fetch(url,{headers,cache:'no-store'});
+    if(res.status===404||res.status===400)continue;
+    if(!res.ok)throw new Error('Download wereld '+i+' mislukt ('+res.status+')');
+    blob=await res.blob();
+    if(!blob.type.startsWith('image/'))throw new Error('Ongeldige wereldafbeelding');
+    await access(key,blob);downloaded++;
+   }
+  }
+  if(uploaded||downloaded){
+   await display(true);
+   if(status)status.textContent=downloaded?'Wereldkaarten gesynchroniseerd: '+downloaded+' gedownload.':'Zes wereldkaarten gedeeld met je partner.';
+  }
+ }catch(e){
+  if(status)status.textContent='Wereldkaarten synchroniseren: '+(e?.message||'onbekende fout');
+ }finally{syncing=false;}
 }
 function init(){
  if(initialized)return;initialized=true;
@@ -84,6 +135,8 @@ function init(){
   if(status)status.textContent=files.length+' bestanden ontvangen. Opslaan…';
   importFiles(files);
  });
+ setTimeout(syncWorldArt,1800);
+ setInterval(syncWorldArt,30000);
  const heading=$('quest-world-heading');
  if(heading)new MutationObserver(()=>display()).observe(heading,{childList:true,characterData:true,subtree:true});
  display();

@@ -446,3 +446,27 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #quest-pilot .quest-board-quick-locations button{min-width:0;min-height:44px;padding:9px 7px;font-size:13px;white-space:normal;border:1px solid #d4a574;border-radius:12px;background:#322337;color:#ffe6bc}
 @media(min-width:600px){.quest-board-quick-locations{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
+
+/* 0.17.77 immersive board: fix the VIEWPORT itself, not its flex parents.
+   Explicit viewport dimensions prevent the zero-height regression in 0.17.75. */
+body.us-two-board-only .topbar,
+body.us-two-board-only #app-view>.welcome,
+body.us-two-board-only #game-panel>.quest-game-title,
+body.us-two-board-only #quest-game-section-note,
+body.us-two-board-only #quest-cards-import-hint,
+body.us-two-board-only #quest-tasks-shortcuts,
+body.us-two-board-only #quest-board-card>.quest-board-card-header,
+body.us-two-board-only #quest-board-card>.quest-world-progress,
+body.us-two-board-only #quest-board-card>.quest-board-quick-locations,
+body.us-two-board-only #quest-board-card>.quest-board-replay,
+body.us-two-board-only #quest-board-card>.quest-board-caption{display:none!important}
+body.us-two-board-only{overflow:hidden}
+body.us-two-board-only #quest-world-viewport.quest-world-viewport{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;
+ bottom:calc(74px + env(safe-area-inset-bottom))!important;
+ width:100vw!important;height:calc(100dvh - 74px - env(safe-area-inset-bottom))!important;
+ min-height:0!important;max-height:none!important;aspect-ratio:auto!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ z-index:9!important;background:#130c26!important;
+}
+body.us-two-board-only #bottom-nav{z-index:12}

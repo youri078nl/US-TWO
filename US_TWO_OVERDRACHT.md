@@ -165,3 +165,10 @@
 - Aantoonbaar codeprobleem: `acceptatie/index.html` CSP `script-src 'self'; style-src 'self'` blokkeert de in 0.17.78 toegevoegde inline `<script>` en `<style>`; deze waren dus onbruikbaar. Beide verwijderd (commit d5537c6).
 - `quest-board.css` bevat nu CSS-only `body:has(#bottom-nav ... .active)` fullscreen-selector, onafhankelijk van body-class en inline script (commit 4c21e1a). `index.html` gebruikt `quest-board.css?v=01779` en `app.js?v=01779`; app en SW naar 0.17.79 (commits a3af656, 2b32b9f).
 - Niet claimen dat Android-layout getest of hersteld is: wacht op concrete bevestiging. Indien nog oud: check geladen URL en DevTools/netwerk/CSP en laat gebruiker Chrome rechtstreeks openen. Nieuwe wereldkunst nog niet geïntegreerd.
+
+
+## 19 november 2026: 0.17.80-world-import-rc
+- Gebruiker bevestigde 0.17.79 fullscreen op Android als correct. Fullscreen CSS NIET gewijzigd.
+- Toegevoegd `acceptatie/quest-world-images.js`: zes lokale, door gebruiker goedgekeurde JPG/PNG/WebP `wereld-1` t/m `wereld-6` in IndexedDB opslaan en op basis van bestaande serverwereld automatisch op bord weergeven. In `index.html` onder spelbord een importdetails en file-input toegevoegd. Commits 44c70f6, 2f035e7. SW SHELL en app versie 0.17.80 commits 204ee39, 3d2ce9e.
+- Belangrijke beperking: bestanden worden NIET automatisch door GitHub geserveerd; gebruiker moet eenmalig de zes afbeeldingen uit ZIP op elk toestel importeren. Alleen wereld 1 is meteen zichtbaar zolang server op wereld 1 staat. De bestaande pion-PATH is afgestemd op OUDE bordillustratie, dus pion volgt op nieuwe afbeelding nog NIET exact het hartjespad. 60 stappen per wereld en backend onveranderd. 40-stappenmigratie, servergehoste assets en wereldpaden zijn nog OPEN. Niet claimen dat de volledige app klaar is.
+- Nog geen echte mobiele importtest. Bij vervolg eerst browserconsole/JS syntax check, daarna exact pad en backendmigratie; voorkom wijzigingen aan bewezen fullscreen.

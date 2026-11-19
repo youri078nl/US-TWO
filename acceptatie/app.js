@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.65-board-cache-fix-rc',
+  version: '0.17.67-original-board-restored',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

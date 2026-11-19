@@ -4,26 +4,10 @@
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id);
- const MAX=2.6;
- let zoom=1,x=0,y=0,drag=null,suppressLocationClick=false;
+ const BASE=1.14,MAX=2.6;
+ let zoom=BASE,x=0,y=0,drag=null,suppressLocationClick=false;
  const viewport=()=> $('quest-world-viewport');
  const stage=()=> $('quest-board-stage');
- function sizeStage(){
-  const el=viewport(),node=stage(),img=node?.querySelector('.quest-world-art');
-  if(!el||!node||!img)return;
-  const w=img.naturalWidth||941,h=img.naturalHeight||1672;
-  const ratio=w/h;
-  // Fit the ENTIRE original board into the visible window without applying
-  // a sub-1 CSS transform. The stage is always nonzero and visibly centered.
-  const width=Math.max(1,Math.min(el.clientWidth,el.clientHeight*ratio));
-  const height=width/ratio;
-  node.style.width=width.toFixed(2)+'px';
-  node.style.height=height.toFixed(2)+'px';
-  node.style.aspectRatio=w+' / '+h;
-  node.style.left=((el.clientWidth-width)/2).toFixed(2)+'px';
-  node.style.top=((el.clientHeight-height)/2).toFixed(2)+'px';
- }
- function fitZoom(){return 1;}
  function clamp(){
   const el=viewport();if(!el)return;
   const w=el.clientWidth,h=el.clientHeight,board=stage();
@@ -33,19 +17,19 @@
  }
  function paint(){
   const node=stage(),el=viewport();if(!node||!el)return;
-  sizeStage();
   // The full portrait image stays at its natural aspect ratio. Center it in
   // the shorter viewing window, then allow panning to BOTH distant ends.
+  node.style.top=((el.clientHeight-node.offsetHeight)/2).toFixed(2)+'px';
   clamp();
   node.style.transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) scale('+zoom.toFixed(3)+')';
-  const label=$('quest-board-zoom-level');if(label)label.textContent=zoom<=fitZoom()+.01?'Hele bord':Math.round(zoom*100)+'%';
-  const minus=$('quest-board-zoom-out');if(minus)minus.disabled=zoom<=fitZoom()+.01;
+  const label=$('quest-board-zoom-level');if(label)label.textContent=Math.round(zoom*100)+'%';
+  const minus=$('quest-board-zoom-out');if(minus)minus.disabled=zoom<=1.01;
   const plus=$('quest-board-zoom-in');if(plus)plus.disabled=zoom>=MAX-.01;
  }
  function changeZoom(value){
-  zoom=Math.max(fitZoom(),Math.min(MAX,Math.round(value*100)/100));paint();
+  zoom=Math.max(1,Math.min(MAX,Math.round(value*100)/100));paint();
  }
- function reset(){sizeStage();zoom=fitZoom();x=0;y=0;drag=null;paint();}
+ function reset(){zoom=BASE;x=0;y=0;drag=null;paint();}
  function centerPawn(){
   const pawn=$('quest-world-pawn'),el=viewport();
   if(!pawn||!el||pawn.hidden)return reset();
@@ -63,9 +47,6 @@
   if(drag)return;
   drag={id:event.pointerId,startX:event.clientX,startY:event.clientY,
     originX:x,originY:y,shifted:false};
-  // Capture immediately: on mobile a finger can leave a child element before
-  // the movement threshold, otherwise the lower half becomes unreachable.
-  try{viewport()?.setPointerCapture?.(event.pointerId);}catch(_e){}
  }
  function onMove(event){
   if(!drag||event.pointerId!==drag.id)return;
@@ -73,8 +54,8 @@
   if(!drag.shifted){
    if(Math.hypot(dx,dy)<=6)return;
    drag.shifted=true;
+   viewport()?.setPointerCapture?.(event.pointerId);
   }
-  if(event.cancelable)event.preventDefault();
   x=drag.originX+dx;y=drag.originY+dy;
   paint();
  }
@@ -86,9 +67,6 @@
  }
  function bind(){
   const el=viewport();if(!el||!stage())return;
-  // Remove the rejected 0–60 decorative overlay if an older cached module
-  // injected it before this module ran. It is NOT part of the approved board.
-  stage().querySelectorAll('#quest-route-guide').forEach(node=>node.remove());
   // A pan must never accidentally activate a location underneath the released finger.
   el.addEventListener('click',event=>{
    if(!suppressLocationClick)return;
@@ -96,7 +74,7 @@
    event.preventDefault();event.stopImmediatePropagation();
   },true);
   el.addEventListener('pointerdown',onDown);
-  el.addEventListener('pointermove',onMove,{passive:false});
+  el.addEventListener('pointermove',onMove);
   el.addEventListener('pointerup',onUp);
   el.addEventListener('pointercancel',onUp);
   el.addEventListener('lostpointercapture',()=>{drag=null;});
@@ -108,22 +86,13 @@
   $('quest-board-zoom-in')?.addEventListener('click',()=>changeZoom(zoom+.3));
   $('quest-board-zoom-out')?.addEventListener('click',()=>changeZoom(zoom-.3));
   $('quest-board-center')?.addEventListener('click',centerPawn);
-  $('quest-board-fit')?.addEventListener('click',reset);
   for(const button of el.querySelectorAll('button[data-location]')){
    button.addEventListener('click',()=>{
     // A location is a FILTER, never an extra pawn move or reward.
     window.USTwoDateBrowser?.openLocation(button.dataset.location);
    });
   }
-  const art=stage().querySelector('.quest-world-art');
-  if(art&&!art.complete)art.addEventListener('load',reset,{once:true});
   window.addEventListener('resize',paint);
-  // Responsive layout changes (including browser address-bar changes) must
-  // recalculate the visible board boundaries without resetting the drag.
-  if(typeof ResizeObserver!=='undefined'){
-   const observer=new ResizeObserver(()=>paint());
-   observer.observe(el);observer.observe(stage());
-  }
   window.addEventListener('us-two-session-cleared',reset);
   reset();
  }

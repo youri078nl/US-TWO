@@ -81,3 +81,11 @@
 - RLS ingeschakeld. SELECT voor `authenticated` is alleen toegestaan wanneer `recipient_id=auth.uid()` EN datum/couple kloppen EN gebruiker lid van het koppel is. `anon` heeft geen SELECT. INSERT/UPDATE/DELETE voor gewone clients expliciet ingetrokken; daardoor kan een partner geen geheime opdracht zelf toewijzen of herschrijven.
 - Databasechecks uitgevoerd: RLS true, ontvanger-policy aanwezig, anon SELECT false, authenticated SELECT true, INSERT false, UPDATE false. Geen echte gebruiker-impersonatie-/2-telefoon-test.
 - Nog niet klaar: server-side veilige toewijzing bij bevestigde date, afrondings-RPC met eigenaarscontrole, clientweergave voor ontvanger, realtime refresh en end-to-end tests. De tabel alleen is geen afgeronde feature. Bord en bestaande data ongewijzigd.
+
+
+## 19 november 2026: 0.17.69-secret-missions-rc
+- Servertrigger `us_two_assign_date_secret_mission` op `public.us_dates` aangemaakt en afzonderlijk gecontroleerd: enabled (`tgenabled='O'`). Bij nieuwe bevestigde date krijgt de andere partner dan de voorstelmaker exact één missie; `unique(date_id)` en `on conflict do nothing` voorkomen dubbele uitgifte. Zes standaardmissies.
+- RLS op `public.us_date_secret_missions`: alleen ontvanger met gekoppeld lidmaatschap mag SELECT; clients kunnen niet INSERT/UPDATE/DELETE. Geen backfill van bestaande geaccepteerde dates uitgevoerd; alleen nieuwe bevestigingen.
+- `acceptatie/index.html` en `app.js` tonen ontvanger-missies in agenda; sessie- en generatiecontrole voorkomt oude async-weergave na accountwissel. HTML ontsmet met `safe()`.
+- Versie/SW naar 0.17.69. Geen mobiele twee-account-test, geen daadwerkelijke trigger-uitgifte met testdate uitgevoerd. Nog open: missie afronden en serverzijdig vastleggen, correcte annulering/verschuiving, realtime tests en generieke meerdaagse opdrachten.
+- Speelbord niet gewijzigd; eerdere Android-bord-/navigatiecontrole door gebruiker voor 0.17.68 gemeld.

@@ -1,0 +1,52 @@
+name: Publish approved US TWO date artwork
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'US_TWO_DATE_KAARTEN_GITHUB.zip'
+      - '.github/workflows/publish-date-artwork.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Validate and extract approved date illustrations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          archive=Path('US_TWO_DATE_KAARTEN_GITHUB.zip')
+          if not archive.exists():
+              raise SystemExit('Upload US_TWO_DATE_KAARTEN_GITHUB.zip first.')
+          expected={
+              'acceptatie/assets/dates/US_TWO_DATE_Ruimtestenen_uit_de_keuken.jpg',
+              'acceptatie/assets/dates/US_TWO_DATE_Ontwerp_een_nieuwe_feestdag.jpg',
+          }
+          with ZipFile(archive) as z:
+              if set(z.namelist()) != expected:
+                  raise SystemExit('Unexpected date artwork archive contents.')
+              for name in sorted(expected):
+                  data=z.read(name)
+                  if not (1000 < len(data) < 1000000 and data.startswith(bytes.fromhex('ffd8ff'))):
+                      raise SystemExit('Invalid JPEG: '+name)
+                  dest=Path(name)
+                  dest.parent.mkdir(parents=True,exist_ok=True)
+                  dest.write_bytes(data)
+          print('Two approved date images extracted.')
+          PY
+      - name: Commit approved illustrations
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add acceptatie/assets/dates/
+          if git diff --cached --quiet; then
+            echo 'Images already up to date.'
+          else
+            git commit -m "assets: publish two approved date illustrations"
+            git push
+          fi

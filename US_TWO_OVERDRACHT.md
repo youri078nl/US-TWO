@@ -74,3 +74,10 @@
 - Verbeterd: de voorbereiding toont nu een leesbare Nederlandse datum en resterende dagen/uren/minuten in plaats van ruwe tijdstempel en debug-revisie. Commit `f56dd156`.
 - App/SW naar 0.17.68. Nog niet geverifieerd met twee echte accounts of op Android/iPhone. De gevraagde aparte ontvangergeheime date-missies en generieke meerdaagse opdrachten zijn nog open.
 - Volgende concrete werkstap: bestaand Supabase schema en RLS inspecteren; private missieopslag per ontvanger ontwerpen en autorisatietests uitvoeren; geen frontend-only geheimhouding.
+
+
+## 19 november 2026: veilige basis geheime date-missies (Supabase)
+- Project `vuigivzwkxelsisbjjlk`, public tabel `us_date_secret_missions` aangemaakt met `id`, `date_id`, `couple_id`, `recipient_id`, `mission_text`, status, completion/reveal timestamps; unieke `date_id` voorkomt meerdere missies bij dezelfde date.
+- RLS ingeschakeld. SELECT voor `authenticated` is alleen toegestaan wanneer `recipient_id=auth.uid()` EN datum/couple kloppen EN gebruiker lid van het koppel is. `anon` heeft geen SELECT. INSERT/UPDATE/DELETE voor gewone clients expliciet ingetrokken; daardoor kan een partner geen geheime opdracht zelf toewijzen of herschrijven.
+- Databasechecks uitgevoerd: RLS true, ontvanger-policy aanwezig, anon SELECT false, authenticated SELECT true, INSERT false, UPDATE false. Geen echte gebruiker-impersonatie-/2-telefoon-test.
+- Nog niet klaar: server-side veilige toewijzing bij bevestigde date, afrondings-RPC met eigenaarscontrole, clientweergave voor ontvanger, realtime refresh en end-to-end tests. De tabel alleen is geen afgeronde feature. Bord en bestaande data ongewijzigd.

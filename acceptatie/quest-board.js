@@ -5,33 +5,18 @@
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id);
- // The wide board is 1672x941. The game route is a SINGLE, ordered
- // 61-point path (start + 60 moves). The decorative paths in the painting
- // are not treated as extra branches or server game states.
- const ART_WIDTH=1672, ART_HEIGHT=941;
- const ROUTE_ANCHORS=[
-  [110,765],[330,790],[580,806],[830,813],[1060,790],[1270,780],[1500,730],
-  [1570,625],[1520,520],[1370,460],[1150,420],[920,412],[700,415],
-  [480,408],[270,397],[95,373],[70,315],[250,300],[470,285],
-  [700,280],[940,285],[1180,300],[1410,320],[1560,355]
+ // The author's original art is 941x1672. Waypoints follow its PINK heart
+ // tiles from the lower-right gold portal, around the cinema, towards the airport.
+ // They are IMAGE coordinates, not screen pixels, so mobile scaling is exact.
+ const ART_WIDTH=941, ART_HEIGHT=1672;
+ const PATH=[
+  [810,1000],[783,982],[743,958],[687,930],[625,916],
+  [569,894],[509,872],[449,851],[396,825],[348,802],
+  [311,769],[288,736],[297,697],[328,662],[374,634],
+  [418,603],[442,572],[443,543],[419,513],[388,481],
+  [351,454],[348,423],[373,402],[412,382],[458,364],
+  [518,346],[580,331],[648,329],[710,341],[777,369],[839,399]
  ];
- function makePath(){
-  const distances=[0];
-  for(let i=1;i<ROUTE_ANCHORS.length;i++){
-   const [x,y]=ROUTE_ANCHORS[i],[px,py]=ROUTE_ANCHORS[i-1];
-   distances.push(distances[i-1]+Math.hypot(x-px,y-py));
-  }
-  const total=distances[distances.length-1],points=[];
-  for(let step=0;step<=60;step++){
-   const d=total*step/60;
-   let i=1;while(i<distances.length-1&&distances[i]<d)i++;
-   const t=(d-distances[i-1])/(distances[i]-distances[i-1]);
-   const [x0,y0]=ROUTE_ANCHORS[i-1],[x1,y1]=ROUTE_ANCHORS[i];
-   points.push([Math.round(x0+(x1-x0)*t),Math.round(y0+(y1-y0)*t)]);
-  }
-  return points;
- }
- const PATH=makePath();
  // Supabase us_two_private.quest_world uses SIXTY steps per world, NOT 40.
  // The 40 authored quests per world are a catalogue size, not route length.
  const CELLS_PER_WORLD=60, DB='us-two-private-pawn-v1',TABLE='images';
@@ -88,10 +73,15 @@
   if(privateUrl){URL.revokeObjectURL(privateUrl);privateUrl='';}
  }
  function point(step,serverWorld=null){
+  // Sixty canonical moves along illustrated anchors. Every server tile is a
+  // distinct interpolation point until the next world actually unlocks.
   const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
   const previousWorld=((Math.floor(step/CELLS_PER_WORLD)-1)%6+6)%6;
-  const heldAtFinish=step>0&&local===0&&Number.isInteger(serverWorld)&&serverWorld===previousWorld;
-  return PATH[heldAtFinish?CELLS_PER_WORLD:local];
+  const heldAtPortal=step>0&&local===0&&Number.isInteger(serverWorld)&&serverWorld===previousWorld;
+  const fraction=(heldAtPortal?CELLS_PER_WORLD:local)*(PATH.length-1)/CELLS_PER_WORLD;
+  const a=Math.floor(fraction),b=Math.min(PATH.length-1,a+1),t=fraction-a;
+  return [Math.round(PATH[a][0]*(1-t)+PATH[b][0]*t),
+          Math.round(PATH[a][1]*(1-t)+PATH[b][1]*t)];
  }
  function renderWorld(step,serverWorld){
   const world=Number.isInteger(serverWorld)?serverWorld:Math.floor(step/CELLS_PER_WORLD)%6;
@@ -229,37 +219,8 @@
   try{await stored(key,file,true);if(activeKey===key)await loadImage(key);}
   catch(_error){if(activeKey===key)$('quest-world-art-status').textContent='Opslaan mislukt. De goedgekeurde standaardpion blijft bestaan.';}
  }
- function drawRoute(){
-  const stage=$('quest-board-stage');if(!stage||stage.querySelector('#quest-route-guide'))return;
-  const ns='http://www.w3.org/2000/svg';
-  const svg=document.createElementNS(ns,'svg');svg.id='quest-route-guide';
-  svg.setAttribute('viewBox','0 0 1672 941');svg.setAttribute('aria-hidden','true');
-  const line=document.createElementNS(ns,'polyline');
-  line.setAttribute('points',PATH.map(p=>p.join(',')).join(' '));
-  line.setAttribute('fill','none');line.setAttribute('stroke','#ffe6aa');
-  line.setAttribute('stroke-width','5');line.setAttribute('stroke-dasharray','10 8');
-  line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.85');
-  svg.appendChild(line);
-  PATH.forEach(([x,y],i)=>{
-   const dot=document.createElementNS(ns,'circle');
-   dot.setAttribute('cx',x);dot.setAttribute('cy',y);
-   dot.setAttribute('r',i%10===0?12:5);
-   dot.setAttribute('fill',i%10===0?'#fff4bc':'#ff9d67');
-   dot.setAttribute('stroke','#6a2a4e');dot.setAttribute('stroke-width','2');
-   svg.appendChild(dot);
-   if(i%10===0){
-    const label=document.createElementNS(ns,'text');
-    label.setAttribute('x',x);label.setAttribute('y',y+4);
-    label.setAttribute('text-anchor','middle');label.setAttribute('font-size','12');
-    label.setAttribute('font-weight','bold');label.setAttribute('fill','#391b30');
-    label.textContent=String(i);svg.appendChild(label);
-   }
-  });
-  stage.insertBefore(svg,stage.querySelector('#quest-world-pawn'));
- }
  function bind(){
   if(!$('quest-world-pawn'))return;
-  drawRoute();
   move(0);$('quest-world-pawn').hidden=true;
   $('quest-world-art-upload')?.addEventListener('change',upload);
   $('quest-world-replay')?.addEventListener('click',()=>{

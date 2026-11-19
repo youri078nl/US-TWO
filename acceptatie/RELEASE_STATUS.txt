@@ -1,3 +1,6 @@
+US TWO 0.17.55-date-specific-art-rc | 2026-11-19
+Done: mapped approved date art by normalized exact date title for Ruimtestenen uit de keuken and Ontwerp een nieuwe feestdag in acceptatie/quest-date-browser.js (commits 9e7d5a1, 059beaf). Added workflow .github/workflows/publish-date-artwork.yml (4b8e31d) to validate and publish two JPEG files from root US_TWO_DATE_KAARTEN_GITHUB.zip. Version/cache updated 9292840 / eacfc06. The ZIP is prepared as ChatGPT attachment but NOT yet uploaded to GitHub; workflow has NOT run; custom images are NOT live. Existing artwork is fallback until files publish. No phone/browser validation of 0.17.55. Next: upload ZIP to repo root and verify workflow succeeds, then test two named dates on Android/iPhone. Provisional progress 95%, release 1.0.0 blocked.
+
 US TWO 0.17.54-superdate-art-rc | 2026-11-19
 Fix: bonus date items previously had artIndex:null and addArtwork() skipped them; now use 240+i and map to assets/cards/US_TWO_SUPERDATE_01.jpg through _18.jpg, retaining approved original 2D art. Confirmed SUPERDATE_01.jpg exists in repo (binary UTF-8 fetch rejected, proving path exists); other 17 files not individually verified. Source committed 1c91fe2, version/cache 6499ca9 / 6f2cbbc. Not yet mobile tested. Provisional weighted progress 95%; next validate first/top date and cache on both devices.
 

@@ -115,3 +115,6 @@ textarea::placeholder{color:#a89db7}
 #game-panel .board-hero[data-world-theme="strand"] .board-map{background:radial-gradient(circle at 80% 15%,#ffe7a1aa,transparent 32%),linear-gradient(165deg,#387a9c 0%,#5aafbd 43%,#bba36d 45%,#675345 100%)}
 #game-panel .board-hero[data-world-theme="vliegveld"] .board-map{background:repeating-linear-gradient(90deg,transparent 0 64px,#ffffff10 64px 66px),linear-gradient(155deg,#4e6b86,#303b55 58%,#29263d)}
 #game-panel .board-hero[data-world-theme="bos"] .board-map{background:radial-gradient(circle at 30% 20%,#9dbb7499,transparent 42%),linear-gradient(140deg,#365d4c,#192e2c 75%)}
+
+/* v0.8.7: keep the pawn visible while the server-confirmed position is replayed. */
+.board-trail[aria-busy="true"] .map-cell.current{transition:background .25s ease,box-shadow .25s ease}

@@ -53,6 +53,15 @@ async function importFiles(files){
   if(!match||file.size===0||file.size>6*1024*1024)continue;
   picked.set(Number(match[1]),file);
  }
+ // Android image/gallery pickers frequently replace filenames with numeric IDs.
+ // Only fall back when exactly six distinct valid images were selected.
+ if(picked.size===0&&files.length===6){
+  const numeric=files.every(f=>/^\d+\.(jpe?g|png|webp)$/i.test(f.name||'')&&f.size>0&&f.size<=6*1024*1024);
+  if(numeric){
+   const ordered=[...files].sort((a,b)=>Number(a.name.split('.')[0])-Number(b.name.split('.')[0]));
+   ordered.forEach((file,i)=>picked.set(i+1,file));
+  }
+ }
  if(picked.size!==6){
   const found=[...picked.keys()].sort((a,b)=>a-b).join(', ')||'geen';
   const namesOnPhone=files.map(f=>f.name||'(zonder naam)').join('; ');

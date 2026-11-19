@@ -44,7 +44,7 @@
       key:'bonus-'+String(c.number||i+1),title:String(c.title||'').slice(0,120),
       description:Array.isArray(c.steps)?c.steps.join(' · '):'',
       instructions:'',remoteInstructions:'',category:String(c.category||'Bonus'),minutes:Number(c.minutes)||30,
-      cost:null,remote:false,together:true,source:'bonus',index:i,artIndex:null
+      cost:null,remote:false,together:true,source:'bonus',index:i,artIndex:240+i
     }));
    loaded=[...official,...bonus];
    const categories=[...new Set(loaded.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'nl'));
@@ -102,10 +102,10 @@
   renderProposals();
  }
  function addArtwork(card,item){
-  if(item.artIndex===null)return;
   const img=document.createElement('img');
   const i=item.artIndex;
-  const filename='US_TWO_W'+(Math.floor(i/40)+1)+'_'+String(i%40+1).padStart(2,'0')+'.jpg';
+  const filename=i>=240?'US_TWO_SUPERDATE_'+String(i-239).padStart(2,'0')+'.jpg':
+   'US_TWO_W'+(Math.floor(i/40)+1)+'_'+String(i%40+1).padStart(2,'0')+'.jpg';
   img.src='./assets/cards/'+filename;
   img.alt='Geïllustreerde US TWO-datekaart: '+item.title;
   img.loading='lazy';img.decoding='async';

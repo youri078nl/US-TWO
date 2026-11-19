@@ -194,3 +194,9 @@
 ## 19 november 2026: 0.17.84-world-import-racefix-rc
 - Na Android screenshot en geen zichtbaar effect: in `acceptatie/index.html` stonden TWEE identieke `<script src="./quest-world-images.js">` tags. Daardoor werden dubbele change-listeners geregistreerd en konden twee asynchrone display() uitvoeringen elkaar overschrijven. Eén script verwijderd; app.js cachebust 01784. Importstatus toont nu 'Importfunctie gereed', daarna aantal ontvangen bestanden. `displayGeneration` beschermt tegen stale image loads. GitHub commits 37c0d09, d95ee13, 3a9931d, b8ee72f.
 - Niet op Android getest. Gebruiker moet op Meer de status 'Importfunctie gereed' zien; na import 'Alle zes wereldkaarten opgeslagen'. Als status ontbreekt, is scriptload/CSP/cache nog probleem. 6 afbeeldingen nog niet automatisch op server; 40-stappen-regels ongewijzigd.
+
+
+## 20 november 2026: 0.17.85-gallery-names-rc
+- Android screenshot bewijst de fout: zes geselecteerde bestanden heten 125215.jpg, 125216.jpg, 125217.jpg, 125218.jpg, 125219.jpg, 125220.jpg. Voorheen herkende regex alleen wereld-1.jpg ... wereld-6.jpg.
+- `quest-world-images.js` heeft fallback voor exact zes numeriek benoemde afbeeldingsbestanden; sorteert op bestandsnummer en koppelt aan wereld 1 t/m 6. Commit c852d42. App, HTML en SW cache versie 0.17.85. Dit is niet live op Android gevalideerd. Let op: volgorde op basis van bestandsnummer veronderstelt dat beelden in juiste volgorde zijn geselecteerd.
+- Open: bevestiging van juiste kaart/volgorde; automatisch serverhosten van zes beelden, waypoint-alignering en backend 40-stappen-regels.

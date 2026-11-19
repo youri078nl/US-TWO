@@ -18,6 +18,15 @@
   [518,346],[580,331],[648,329],[710,341],[777,369],[839,399]
  ];
  // Server and client both use 40 earned steps per world (240 across six worlds).
+ // Bergbos has a different illustrated route from the original board.
+ // Coordinates are measured on the approved 409x626 Bergbos preview.
+ const BERGBOS_PATH=[
+  [245,520],[270,513],[299,494],[325,468],[345,438],[350,412],
+  [331,392],[300,377],[263,361],[225,347],[185,334],[145,323],
+  [105,307],[72,286],[55,260],[66,241],[97,229],[134,217],
+  [171,203],[204,186],[215,164],[195,147],[168,133],[150,119],
+  [168,110],[200,104],[231,101],[264,97],[298,93],[331,86]
+ ].map(([x,y])=>[x*ART_WIDTH/409,y*ART_HEIGHT/626]);
  const CELLS_PER_WORLD=40, DB='us-two-private-pawn-v1',TABLE='images';
  const WORLD_NAMES=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
  let activeKey='',position=null,worldIndex=null,revision=0,privateUrl='',defaultPromise=null;
@@ -77,10 +86,13 @@
   const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
   const previousWorld=((Math.floor(step/CELLS_PER_WORLD)-1)%6+6)%6;
   const heldAtPortal=step>0&&local===0&&Number.isInteger(serverWorld)&&serverWorld===previousWorld;
-  const fraction=(heldAtPortal?CELLS_PER_WORLD:local)*(PATH.length-1)/CELLS_PER_WORLD;
-  const a=Math.floor(fraction),b=Math.min(PATH.length-1,a+1),t=fraction-a;
-  return [Math.round(PATH[a][0]*(1-t)+PATH[b][0]*t),
-          Math.round(PATH[a][1]*(1-t)+PATH[b][1]*t)];
+  const art=$('quest-world-stage')||$('quest-board-stage');
+  const hasBergbos=Number(art?.querySelector('.quest-world-art')?.dataset.worldImageApplied)===1;
+  const anchors=hasBergbos&&Number.isInteger(serverWorld)&&serverWorld===0?BERGBOS_PATH:PATH;
+  const fraction=(heldAtPortal?CELLS_PER_WORLD:local)*(anchors.length-1)/CELLS_PER_WORLD;
+  const a=Math.floor(fraction),b=Math.min(anchors.length-1,a+1),t=fraction-a;
+  return [Math.round(anchors[a][0]*(1-t)+anchors[b][0]*t),
+          Math.round(anchors[a][1]*(1-t)+anchors[b][1]*t)];
  }
  function renderWorld(step,serverWorld){
   const world=Number.isInteger(serverWorld)?serverWorld:Math.floor(step/CELLS_PER_WORLD)%6;

@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  const AREAS=Object.freeze({
   all:{label:'Alle plekken',test:()=>true},
-  living:{label:'Woonkamer',test:t=>/thuis|woonkamer|bank|huis|keuken|tafel|spel|quiz|foto|muziek|dans|puzzel|film|knus|diner|knutsel|creatief|schilder/.test(t)},
+  living:{label:'Thuis',test:t=>/thuis|woonkamer|bank|huis|keuken|tafel|spel|quiz|foto|muziek|dans|puzzel|film|knus|diner|knutsel|creatief|schilder/.test(t)},
   airport:{label:'Vliegveld',test:t=>/reis|avontuur|route|eiland|vlieg|verre|ontdek|missie|wereld|speurtocht|landen|toekomst|schat/.test(t)},
   beach:{label:'Strand',test:t=>/strand|water|zee|zand|zon|picknick|buiten|zomer|schelp|kust|boot|meer|zwem/.test(t)},
   forest:{label:'Bos',test:t=>/bos|wandel|natuur|park|buiten|route|boom|bloem|lucht|speur|dieren|pepsi|groen|picknick/.test(t)},
@@ -245,13 +245,26 @@
   try{await ensure();if(!active)return;say('Kies een date. De agenda opent zonder iets te versturen.');if(!proposalKeys.length)nextProposals();render();}
   catch(e){say(String(e.message||e));}
  }
- function openLocation(area){
+ async function openLocation(area){
   const selected=AREAS[area]?area:'all';
   const select=$('quest-date-area');
   if(select)select.value=selected;
-  shown=12;
-  window.USTwoDateBridge?.open();
-  activate();
+  // Every board shortcut must replace the previous location's proposals.
+  // Otherwise the new filter may show an empty card strip with no explanation.
+  shown=12;proposalKeys=[];proposalSeen.clear();proposalRound=0;
+  if(typeof window.USTwoDateBridge?.open!=='function'){
+   say('De datemodule is nog niet klaar. Ververs de pagina.');
+   return;
+  }
+  window.USTwoDateBridge.open();
+  await activate();
+  if(!active||!loaded)return;
+  nextProposals();
+  const count=current().length;
+  say(AREAS[selected].label+': '+count+' passende dates. Kies een date om deze in de agenda te plannen.');
+  // Focus the result heading for a visible and accessible transition.
+  const heading=$('quest-date-count')||$('quest-date-proposal-results');
+  heading?.scrollIntoView?.({behavior:'smooth',block:'start'});
  }
  function bind(){
   const panel=$('discover-panel');if(!panel)return;

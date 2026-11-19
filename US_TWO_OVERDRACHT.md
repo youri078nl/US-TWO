@@ -152,3 +152,9 @@
 ## 19 november 2026: 0.17.77-borderless-board-rc
 - Op expliciet verzoek een randloos, volledig speelbord (alleen onderste navigatie) gebouwd. In tegenstelling tot mislukte 0.17.75 wordt `#quest-world-viewport` zelf fixed gepositioneerd met expliciete `100dvh - navigatie` hoogte; geen flex-parent die viewport tot nul kan reduceren. Header, voortgang, snelle locaties onder bord en rand verborgen; originele hotspots op de afbeelding behouden. Board-only bodyclass in `setTab` uitsluitend bij game/board. Versie/cache 0.17.77. Commits d181924, 249cabe, dfccbaa.
 - Nog niet op echte Android/iPhone getest; bij onzichtbaar bord direct terugrollen naar 0.17.76. Zes nieuwe thema-afbeeldingen en 40-stappen-migratie nog NIET in productie.
+
+
+## 19 november 2026: 0.17.78-immersive-cachefix-rc
+- Screenshot gebruiker toont nog oude US TWO header, titel, voortgang, oude afbeelding, niet fullscreen na 0.17.77. Dit bewijst dat gewenste weergave niet bereikt is, maar bewijst niet definitief waarom (cache, stylesheet of state).
+- `acceptatie/index.html` commit 1cd208f: inline fullscreen CSS in HTML als extra zekerheid, app.js en quest-board.css URL met `?v=01778` voor cache-busting, onafhankelijke event handler die board-only class synchroniseert op onderste navigatie en tab-change. `app.js` en serviceworker versie 0.17.78 commits f449da9 en 0a64520.
+- Nieuwe bergbos-illustratie nog NIET in GitHub/PWA; huidige bordkunst blijft `assets/us-two-user-board.png`. Geen Android runtime-test beschikbaar; gebruiker opnieuw laten controleren. Als fullscreen nog faalt, inspecteer echte browser DOM/runtime i.p.v. CSS blijven stapelen.

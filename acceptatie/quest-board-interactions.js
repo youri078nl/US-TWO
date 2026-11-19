@@ -13,19 +13,17 @@
   if(!el||!node||!img)return;
   const w=img.naturalWidth||941,h=img.naturalHeight||1672;
   const ratio=w/h;
-  // Portrait: preserve the approved full-width artwork. Landscape: make the
-  // board wider than the phone so the player can pan left and right.
-  const desiredWidth=ratio>1?Math.max(el.clientWidth*1.65,el.clientHeight*ratio):el.clientWidth;
-  node.style.width=desiredWidth.toFixed(2)+'px';
-  node.style.height=(desiredWidth/ratio).toFixed(2)+'px';
+  // Fit the ENTIRE original board into the visible window without applying
+  // a sub-1 CSS transform. The stage is always nonzero and visibly centered.
+  const width=Math.max(1,Math.min(el.clientWidth,el.clientHeight*ratio));
+  const height=width/ratio;
+  node.style.width=width.toFixed(2)+'px';
+  node.style.height=height.toFixed(2)+'px';
   node.style.aspectRatio=w+' / '+h;
-  node.style.left=((el.clientWidth-desiredWidth)/2).toFixed(2)+'px';
+  node.style.left=((el.clientWidth-width)/2).toFixed(2)+'px';
+  node.style.top=((el.clientHeight-height)/2).toFixed(2)+'px';
  }
- function fitZoom(){
-  const el=viewport(),board=stage();
-  if(!el||!board)return 1;
-  return Math.min(1,el.clientWidth/Math.max(1,board.offsetWidth),el.clientHeight/Math.max(1,board.offsetHeight));
- }
+ function fitZoom(){return 1;}
  function clamp(){
   const el=viewport();if(!el)return;
   const w=el.clientWidth,h=el.clientHeight,board=stage();
@@ -38,7 +36,6 @@
   sizeStage();
   // The full portrait image stays at its natural aspect ratio. Center it in
   // the shorter viewing window, then allow panning to BOTH distant ends.
-  node.style.top=((el.clientHeight-node.offsetHeight)/2).toFixed(2)+'px';
   clamp();
   node.style.transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) scale('+zoom.toFixed(3)+')';
   const label=$('quest-board-zoom-level');if(label)label.textContent=zoom<=fitZoom()+.01?'Hele bord':Math.round(zoom*100)+'%';

@@ -178,3 +178,8 @@
 - Gebruiker vraagt expliciet automatische integratie van de zes nieuwe wereldkaarten in PWA, zonder handmatige import. De zes JPG's zijn in chat ZIP `/mnt/data/US_TWO_ZES_WERELDEN_PREVIEW.zip` (wereld-1.jpg t/m wereld-6.jpg; elk 409x625/626), maar zijn NIET op GitHub geüpload. Huidige GitHub connector ondersteunt tekstbestanden en blob base64, maar de container heeft geen netwerktoegang; geen binaire bridge beschikbaar. Claim dus niet dat automatische afbeeldingen geïntegreerd zijn.
 - Wel opgelost: import was onzichtbaar onder fullscreen bord en dubbel in HTML. In `acceptatie/index.html` zijn beide verborgen/duplicaat-invoervelden verwijderd en één importpaneel onder tab Meer toegevoegd (commit 7cb7542). App/SW versie 0.17.81 (commits 64ed6a2, da4b577). Fullscreen onaangeroerd.
 - OPEN: upload zes echte JPG assets naar `acceptatie/assets/worlds/` via Work/cloud browser of geschikte binaire GitHub upload, update `quest-world-images.js` voor automatische statische assets en corrigeer artwork/pion-pad; backend 40 stappen nog niet aangepast. Geen mobiele test uitgevoerd.
+
+
+## 19 november 2026: 0.17.82-world-refresh-rc
+- Gebruiker meldt dat na herhaald importeren van zes JPG's de kaart niet verandert. Oorzaak nog niet op toestel bevestigd. In `quest-world-images.js` wordt geïmporteerde kaart opnieuw weergegeven bij terugkeer naar Bord; `index.html` scriptquery `01782`, appversie 0.17.82, service-worker cachebust. GitHub commits b1adee6, 9e71243, 6308b2c, bce44d4.
+- Nog NIET bevestigd dat dit op Android werkt; gebruiker moet de statusmelding onder Meer doorgeven als de kaart niet verandert. Automatische hosting van zes JPG's blijft open; 40-stappen-migratie blijft open.

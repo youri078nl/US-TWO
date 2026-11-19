@@ -394,3 +394,11 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 .quest-date-artwork{display:block;width:100%;height:auto;max-height:390px;object-fit:contain;object-position:center;border-radius:16px;border:1px solid rgba(241,192,117,.45);background:#170f20;box-shadow:0 12px 26px rgba(0,0,0,.22);margin:10px auto 14px}
 .quest-date-proposal .quest-date-artwork{max-height:460px}
 .quest-date-tile .primary-btn,.quest-date-tile .quest-date-choose{width:100%;margin-top:12px}
+
+/* Date-card frame: existing approved 2D art, distinct date identity. */
+.quest-date-art-frame{position:relative;width:100%;overflow:hidden;border:2px solid #e5b76b;border-radius:18px;background:#170f20;box-shadow:0 10px 26px #0006;margin:10px 0 12px}
+.quest-date-art-frame .quest-date-artwork{margin:0;width:100%;border:0;border-radius:0;box-shadow:none;max-height:460px}
+.quest-date-art-ribbon{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:1;padding:6px 14px;border:1px solid #ffdd91;border-radius:99px;background:linear-gradient(120deg,#4c2916ee,#26141aee);color:#ffe0a2;font-weight:800;letter-spacing:.11em;font-size:11px;white-space:nowrap;box-shadow:0 2px 12px #0008}
+.quest-date-proposal{overflow:hidden}
+.quest-date-proposal .quest-date-art-frame{flex-shrink:0}
+@media(min-width:760px){#quest-date-proposal-results{grid-template-columns:repeat(3,minmax(0,1fr))}}

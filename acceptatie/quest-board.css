@@ -246,10 +246,8 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
    labels of the original untouched 941x1672 PNG. All transforms are visual only. */
 #quest-world-viewport.quest-world-viewport{touch-action:none;cursor:grab;overscroll-behavior:contain}
 #quest-world-viewport:active{cursor:grabbing}
-#quest-board-stage{position:absolute;left:0;top:0;right:auto;bottom:auto;width:100%;height:auto;aspect-ratio:941 / 1672;transform-origin:center center;
+#quest-board-stage{position:absolute;inset:0;width:100%;height:100%;transform-origin:center center;
   will-change:transform}
-/* A landscape-sized viewport is only a window onto the complete portrait board. */
-#quest-board-stage .quest-board-art-picture,#quest-board-stage .quest-world-art{inset:0;object-fit:fill}
 #quest-board-stage .quest-board-art-picture,#quest-board-stage .quest-world-art{width:100%;height:100%}
 #quest-board-hitmap,.quest-board-hitmap{position:absolute;inset:0;z-index:6;pointer-events:none}
 #quest-pilot .quest-location-hit{position:absolute;min-height:0;margin:0;padding:0;border:0;border-radius:11px;
@@ -442,8 +440,3 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 #game-panel.quest-tasks-view #quest-tasks-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
 #game-panel.quest-tasks-view #quest-tasks-shortcuts button{min-width:0;white-space:normal;line-height:1.25;padding-inline:6px}
 @media(max-width:350px){#game-panel.quest-tasks-view #quest-tasks-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
-/* Reject experimental route overlay, including if injected by stale cached JS. */
-#quest-route-guide{display:none!important}
-
-#quest-board-fit{min-width:65px;padding:4px 7px;font-size:11px;white-space:nowrap}

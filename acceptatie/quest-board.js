@@ -17,10 +17,9 @@
   [351,454],[348,423],[373,402],[412,382],[458,364],
   [518,346],[580,331],[648,329],[710,341],[777,369],[839,399]
  ];
- // Supabase us_two_private.quest_world uses SIXTY steps per world, NOT 40.
- // The 40 authored quests per world are a catalogue size, not route length.
- const CELLS_PER_WORLD=60, DB='us-two-private-pawn-v1',TABLE='images';
- const WORLD_NAMES=['Liefdesbos','Avonturenland','Samen sterk','Droomwereld','Sterrenreis','Onze toekomst'];
+ // Server and client both use 40 earned steps per world (240 across six worlds).
+ const CELLS_PER_WORLD=40, DB='us-two-private-pawn-v1',TABLE='images';
+ const WORLD_NAMES=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
  let activeKey='',position=null,worldIndex=null,revision=0,privateUrl='',defaultPromise=null;
  let animationTimer=null,lastMotion=null,replaying=false;
  const artChanged=()=>window.dispatchEvent(new Event('us-two-pawn-art-changed'));
@@ -73,7 +72,7 @@
   if(privateUrl){URL.revokeObjectURL(privateUrl);privateUrl='';}
  }
  function point(step,serverWorld=null){
-  // Sixty canonical moves along illustrated anchors. Every server tile is a
+  // Forty canonical moves along illustrated anchors. Every server tile is a
   // distinct interpolation point until the next world actually unlocks.
   const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
   const previousWorld=((Math.floor(step/CELLS_PER_WORLD)-1)%6+6)%6;

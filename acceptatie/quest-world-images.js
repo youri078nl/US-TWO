@@ -34,6 +34,7 @@ async function display(force=false){
   activeUrl=URL.createObjectURL(blob);
   art.src=activeUrl;
   art.dataset.worldImageApplied=String(world);
+  window.dispatchEvent(new Event('us-two-world-art-updated'));
   art.alt='US TWO speelwereld '+(world+1)+': '+names[world];
  }else{
   art.src='./assets/us-two-user-board.png';

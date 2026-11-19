@@ -1,7 +1,7 @@
 // Updates: bump CACHE when changing assets. Network first keeps updates fresh.
 // A SW under /acceptatie/ must never delete caches from /test-2-telefoons/.
 const CACHE_PREFIX = 'us-two-web-scope-' + encodeURIComponent(new URL(self.registration.scope).pathname) + '-';
-const CACHE = CACHE_PREFIX + 'v0.17.54-superdate-art-rc';
+const CACHE = CACHE_PREFIX + 'v0.17.55-date-specific-art-rc';
 const SHELL = ['./','./index.html','./styles.css','./app.js','./us-two-offline.js','./quest-catalog.js','./quest-board.js','./quest-board-interactions.js','./quest-date-browser.js','./quest-pose-archive.js','./quest-poses.js','./quest-card-data.js','./quest-card-archive.js','./quest-card-gallery.js','./quest-full-deck.js','./quest-sounds.js','./quest-calendar-ics.js','./catalog/quest-full-258.json','./quest-cinematics.js','./quest-board.css','./assets/ustwo-world-original.webp','./assets/us-two-user-board.png','./assets/us-two-user-pawn.png','./quest-pilot.js','./quest-adult-consent.js','./quest-questions.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(CACHE_PREFIX)&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));

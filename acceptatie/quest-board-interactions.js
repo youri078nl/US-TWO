@@ -41,7 +41,7 @@
   node.style.top=((el.clientHeight-node.offsetHeight)/2).toFixed(2)+'px';
   clamp();
   node.style.transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) scale('+zoom.toFixed(3)+')';
-  const label=$('quest-board-zoom-level');if(label)label.textContent=Math.round(zoom*100)+'%';
+  const label=$('quest-board-zoom-level');if(label)label.textContent=zoom<=fitZoom()+.01?'Hele bord':Math.round(zoom*100)+'%';
   const minus=$('quest-board-zoom-out');if(minus)minus.disabled=zoom<=fitZoom()+.01;
   const plus=$('quest-board-zoom-in');if(plus)plus.disabled=zoom>=MAX-.01;
  }
@@ -111,6 +111,7 @@
   $('quest-board-zoom-in')?.addEventListener('click',()=>changeZoom(zoom+.3));
   $('quest-board-zoom-out')?.addEventListener('click',()=>changeZoom(zoom-.3));
   $('quest-board-center')?.addEventListener('click',centerPawn);
+  $('quest-board-fit')?.addEventListener('click',reset);
   for(const button of el.querySelectorAll('button[data-location]')){
    button.addEventListener('click',()=>{
     // A location is a FILTER, never an extra pawn move or reward.

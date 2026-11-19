@@ -115,3 +115,10 @@
 - Concurrencyfix in `acceptatie/app.js`: `secretMissionRequestSeq` voorkomt dat vertraagde oudere GET-antwoorden of fouten een nieuwer geheim missieoverzicht overschrijven. Bij logout/accountwissel wordt requestgeneratie direct ongeldig gemaakt. Eerdere auth-generationcontrole blijft actief.
 - `acceptatie/service-worker.js` cacheversie verhoogd naar 0.17.72. Speelbord en gameplay niet gewijzigd.
 - Code op main vastgelegd; geen browser- of tweetelefoontest. Database-inspectie toont 240 catalogusopdrachten, max `minutes=210`, geen opdrachten met `minutes>=1440`. Algemene meerdaagse opdrachten zijn dus nog NIET geïmplementeerd; dit vergt aparte servergebaseerde voortgang in plaats van alleen een frontendlabel.
+
+
+## 19 november 2026: 0.17.73-forest-shortcut-rc
+- Gebruiker meldt dat Bos op speelbord niet zichtbaar/aanklikbaar is. Inspectie: bestaande `#quest-location-forest` zit op 7% bovenaan het hoge, sleepbare bord en kan buiten de zichtbare viewport vallen.
+- Fix: vier permanent zichtbare knoppen direct onder het bord (Vliegveld, Strand, Woonkamer, Bos) in `acceptatie/index.html`, aangesloten op bestaande `USTwoDateBrowser.openLocation` in `quest-board-interactions.js`. Mobiele 2x2-layout in `quest-board.css`.
+- Goedgekeurde bordafbeelding, formaat, pionpositie en bestaande hotspots zijn NIET veranderd. App/SW naar 0.17.73. GitHub commits: ad930d9, 82ebafe, e0827bd, d360622, e8b6dae.
+- Nog geen fysieke Android-test; gebruiker moet controleren of Bos nu zichtbaar en aanklikbaar is.

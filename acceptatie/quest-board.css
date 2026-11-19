@@ -445,3 +445,5 @@ html,body,.app-shell,.tab-panel,#quest-pilot{max-width:100%;overflow-x:clip}
 
 /* Reject experimental route overlay, including if injected by stale cached JS. */
 #quest-route-guide{display:none!important}
+
+#quest-board-fit{min-width:65px;padding:4px 7px;font-size:11px;white-space:nowrap}

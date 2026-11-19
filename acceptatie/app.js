@@ -454,8 +454,28 @@ function renderMemories(){
   return '<article class="card memory-card">'+visibility+'<h3>'+safe(item.title)+'</h3><p class="meta">'+safe(item.happened_on)+' · '+(own?'Van jou':'Van '+safe(item.author_name||'je partner'))+'</p>'+note+actions+'</article>';
  }).join('');
 }
+async function loadMySecretDateMissions(){
+  const target=$('us-two-my-secret-missions');
+  if(!target||!state.session?.user?.id)return;
+  const uid=state.session.user.id, generation=authGeneration;
+  try{
+    if(state.session.expires_at<Date.now()/1000+80)await freshToken();
+    if(generation!==authGeneration||state.session?.user?.id!==uid)return;
+    const rows=await request('/rest/v1/us_date_secret_missions?select=date_id,mission_text,status&order=created_at.desc&limit=50',{
+      headers:{Authorization:'Bearer '+state.session.access_token}
+    });
+    if(generation!==authGeneration||state.session?.user?.id!==uid)return;
+    const dates=new Map((state.dashboard?.dates||[]).map(d=>[d.id,d]));
+    const visible=(Array.isArray(rows)?rows:[]).filter(m=>dates.get(m.date_id)?.status==='accepted');
+    target.innerHTML=visible.length?visible.map(m=>{
+      const d=dates.get(m.date_id);
+      return '<article class="card"><span class="tag active">Alleen voor jou</span><h3>'+safe(d.title)+'</h3><p class="meta">'+timeFmt.format(new Date(d.start_at))+'</p><p>'+safe(m.mission_text)+'</p></article>';
+    }).join(''):'<p class="muted">Nog geen geheime date-missie voor jou.</p>';
+  }catch(e){if(generation===authGeneration)target.textContent='Geheime missies tijdelijk niet beschikbaar.';}
+}
 function renderDates(){
   const allDates=state.dashboard?.dates||[];
+  if($('us-two-my-secret-missions'))void loadMySecretDateMissions();
   const dateFilter=$('date-list-filter')?.value||'upcoming';
   const currentTime=Date.now();
   const isUpcoming=d=>['accepted','proposed'].includes(d.status)&&(

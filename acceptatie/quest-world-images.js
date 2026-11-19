@@ -71,13 +71,14 @@ async function importFiles(files){
  try{
   for(const [i,file] of picked)await access('world-'+i,file);
   lastWorld=-1;await display(true);
-  lastSyncAttempt=0;syncWorldArt();
+  uploadedKeys.clear();lastSyncAttempt=0;syncWorldArt();
   if(status)status.textContent='Alle zes wereldkaarten opgeslagen. Open Bord om de kaart te bekijken.';
  }catch(e){if(status)status.textContent='Opslaan mislukt: '+(e?.message||'onbekende fout');}
 }
 const SYNC_URL='https://vuigivzwkxelsisbjjlk.supabase.co';
 const SYNC_KEY='sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7';
 let syncing=false,lastSyncAttempt=0;
+const uploadedKeys=new Set();
 function authSession(){
  try{
   const key='us-two-web-session-v2:'+new URL('./',location.href).pathname;
@@ -105,9 +106,10 @@ async function syncWorldArt(){
    const path=pair+'/wereld-'+i+'.jpg';
    const url=SYNC_URL+'/storage/v1/object/us-two-world-art/'+path;
    if(blob){
+    if(uploadedKeys.has(path))continue;
     const res=await fetch(url,{method:'POST',headers:{...headers,'Content-Type':blob.type||'image/jpeg','x-upsert':'true'},body:blob});
     if(!res.ok)throw new Error('Upload wereld '+i+' mislukt ('+res.status+')');
-    uploaded++;
+    uploadedKeys.add(path);uploaded++;
    }else{
     const res=await fetch(url,{headers,cache:'no-store'});
     if(res.status===404||res.status===400)continue;

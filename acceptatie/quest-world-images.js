@@ -43,11 +43,20 @@ async function importFiles(files){
  const status=$('quest-world-images-status');
  const picked=new Map();
  for(const file of files){
-  const match=/^wereld-([1-6])\.(jpe?g|png|webp)$/i.exec(file.name);
-  if(!match||!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>6*1024*1024)continue;
+  // Android's document picker can return an empty MIME type or append (1)
+  // to files downloaded more than once. The extension and size are sufficient
+  // for candidate selection; the browser decodes the image on display.
+  const name=(file.name||'').normalize('NFC');
+  const match=/(?:^|[\\/])wereld[-_ ]?([1-6])(?:\s*\(\d+\))?\.(jpe?g|png|webp)$/i.exec(name);
+  if(!match||file.size===0||file.size>6*1024*1024)continue;
   picked.set(Number(match[1]),file);
  }
- if(picked.size!==6){if(status)status.textContent='Selecteer alle zes bestanden wereld-1.jpg t/m wereld-6.jpg tegelijk.';return;}
+ if(picked.size!==6){
+  const found=[...picked.keys()].sort((a,b)=>a-b).join(', ')||'geen';
+  const namesOnPhone=files.map(f=>f.name||'(zonder naam)').join('; ');
+  if(status)status.textContent='Geselecteerd: '+files.length+' bestanden. Herkende werelden: '+found+'. Bestandsnamen: '+namesOnPhone;
+  return;
+ }
  try{
   for(const [i,file] of picked)await access('world-'+i,file);
   lastWorld=-1;await display(true);

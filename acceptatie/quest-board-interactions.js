@@ -47,6 +47,9 @@
   if(drag)return;
   drag={id:event.pointerId,startX:event.clientX,startY:event.clientY,
     originX:x,originY:y,shifted:false};
+  // Capture immediately: on mobile a finger can leave a child element before
+  // the movement threshold, otherwise the lower half becomes unreachable.
+  try{viewport()?.setPointerCapture?.(event.pointerId);}catch(_e){}
  }
  function onMove(event){
   if(!drag||event.pointerId!==drag.id)return;
@@ -54,8 +57,8 @@
   if(!drag.shifted){
    if(Math.hypot(dx,dy)<=6)return;
    drag.shifted=true;
-   viewport()?.setPointerCapture?.(event.pointerId);
   }
+  if(event.cancelable)event.preventDefault();
   x=drag.originX+dx;y=drag.originY+dy;
   paint();
  }
@@ -74,7 +77,7 @@
    event.preventDefault();event.stopImmediatePropagation();
   },true);
   el.addEventListener('pointerdown',onDown);
-  el.addEventListener('pointermove',onMove);
+  el.addEventListener('pointermove',onMove,{passive:false});
   el.addEventListener('pointerup',onUp);
   el.addEventListener('pointercancel',onUp);
   el.addEventListener('lostpointercapture',()=>{drag=null;});
@@ -93,6 +96,12 @@
    });
   }
   window.addEventListener('resize',paint);
+  // Responsive layout changes (including browser address-bar changes) must
+  // recalculate the visible board boundaries without resetting the drag.
+  if(typeof ResizeObserver!=='undefined'){
+   const observer=new ResizeObserver(()=>paint());
+   observer.observe(el);observer.observe(stage());
+  }
   window.addEventListener('us-two-session-cleared',reset);
   reset();
  }

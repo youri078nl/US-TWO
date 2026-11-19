@@ -106,3 +106,12 @@ textarea::placeholder{color:#a89db7}
 .board-trail:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
 .board-pan-hint{font-size:12px;line-height:1.5;margin:8px auto 14px}
 @media(min-width:560px){.board-trail .board-map{width:100%}}
+
+/* v0.8.3: selectable worlds, presentation-only; board/server state unchanged. */
+.world-selector{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 14px}
+.world-button{border:1px solid #756383;border-radius:13px;background:#282139;color:#fff5ef;padding:9px 7px;font-size:13px;font-weight:750;min-width:0}
+.world-button.selected{border-color:#ffbd9e;background:#523b55;box-shadow:inset 0 0 0 1px #ffbd9e}
+#game-panel .board-hero[data-world-theme="woonkamer"] .board-map{background:radial-gradient(circle at 25% 25%,#93687888,transparent 50%),linear-gradient(135deg,#49334d,#261e38)}
+#game-panel .board-hero[data-world-theme="strand"] .board-map{background:radial-gradient(circle at 80% 15%,#ffe7a1aa,transparent 32%),linear-gradient(165deg,#387a9c 0%,#5aafbd 43%,#bba36d 45%,#675345 100%)}
+#game-panel .board-hero[data-world-theme="vliegveld"] .board-map{background:repeating-linear-gradient(90deg,transparent 0 64px,#ffffff10 64px 66px),linear-gradient(155deg,#4e6b86,#303b55 58%,#29263d)}
+#game-panel .board-hero[data-world-theme="bos"] .board-map{background:radial-gradient(circle at 30% 20%,#9dbb7499,transparent 42%),linear-gradient(140deg,#365d4c,#192e2c 75%)}

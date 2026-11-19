@@ -238,6 +238,7 @@
    if(!activeKey||!lastMotion||replaying||position!==lastMotion.to)return;
    animate(lastMotion.from,lastMotion.to,null,worldIndex);
   });
+  window.addEventListener('us-two-world-art-updated',()=>{if(position!==null)move(position,worldIndex);});
   window.addEventListener('us-two-session-cleared',clear);
   replayControls();
  }

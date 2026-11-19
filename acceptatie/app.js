@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.69-secret-missions-rc',
+  version: '0.17.70-secret-completion-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -461,7 +461,7 @@ async function loadMySecretDateMissions(){
   try{
     if(state.session.expires_at<Date.now()/1000+80)await freshToken();
     if(generation!==authGeneration||state.session?.user?.id!==uid)return;
-    const rows=await request('/rest/v1/us_date_secret_missions?select=date_id,mission_text,status&order=created_at.desc&limit=50',{
+    const rows=await request('/rest/v1/us_date_secret_missions?select=id,date_id,mission_text,status&order=created_at.desc&limit=50',{
       headers:{Authorization:'Bearer '+state.session.access_token}
     });
     if(generation!==authGeneration||state.session?.user?.id!==uid)return;
@@ -469,7 +469,7 @@ async function loadMySecretDateMissions(){
     const visible=(Array.isArray(rows)?rows:[]).filter(m=>dates.get(m.date_id)?.status==='accepted');
     target.innerHTML=visible.length?visible.map(m=>{
       const d=dates.get(m.date_id);
-      return '<article class="card"><span class="tag active">Alleen voor jou</span><h3>'+safe(d.title)+'</h3><p class="meta">'+timeFmt.format(new Date(d.start_at))+'</p><p>'+safe(m.mission_text)+'</p></article>';
+      return '<article class="card"><span class="tag active">Alleen voor jou</span><h3>'+safe(d.title)+'</h3><p class="meta">'+timeFmt.format(new Date(d.start_at))+'</p><p>'+safe(m.mission_text)+'</p>'+(m.status==='completed'?'<p class="tag active">Missie afgerond</p>':m.status==='assigned'?'<button type="button" class="secondary-btn" data-action="complete-secret-mission" data-id="'+safe(m.id)+'">Missie afgerond</button>':'')+'</article>';
     }).join(''):'<p class="muted">Nog geen geheime date-missie voor jou.</p>';
   }catch(e){if(generation===authGeneration)target.textContent='Geheime missies tijdelijk niet beschikbaar.';}
 }
@@ -716,7 +716,14 @@ function bind(){
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='incoming';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='calendar-open-game'){if(!paired()){toast('Koppel eerst jullie accounts.',true);return;}setTab('game');return;}if(a==='calendar-open-date'){
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='complete-secret-mission'){
+    if(!validUuid(x.dataset.id)){toast('Ongeldige missie.',true);return;}
+    if(state.working)return;
+    setBusy(true);
+    try{await rpc('us_complete_date_secret_mission',{p_mission_id:x.dataset.id});await loadMySecretDateMissions();toast('Geheime missie afgerond.');}
+    catch(err){toast(failText(err),true)}finally{setBusy(false)}
+    return;
+  }if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-pending-dates'){$('date-list-filter').value='incoming';setTab('dates');renderDates();return}if(a==='open-discover'){setTab('discover');return}if(a==='open-game'){setTab('game');return}if(a==='calendar-open-game'){if(!paired()){toast('Koppel eerst jullie accounts.',true);return;}setTab('game');return;}if(a==='calendar-open-date'){
     const appointment=(state.dashboard?.dates||[]).find(d=>d.id===x.dataset.id);
     if(!appointment)return;
     $('date-list-filter').value='all';renderDates();

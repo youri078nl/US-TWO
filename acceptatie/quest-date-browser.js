@@ -111,7 +111,12 @@
   img.loading='lazy';img.decoding='async';
   img.className='quest-date-artwork';
   img.onerror=()=>{img.remove();};
-  card.append(img);
+  const frame=document.createElement('div');
+  frame.className='quest-date-art-frame';
+  const ribbon=document.createElement('span');
+  ribbon.className='quest-date-art-ribbon';ribbon.textContent='♡ US TWO · DATE ♡';
+  frame.append(img,ribbon);
+  card.append(frame);
  }
  function renderProposals(){
   const target=$('quest-date-proposal-results');

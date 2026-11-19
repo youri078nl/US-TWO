@@ -92,6 +92,11 @@
     window.USTwoDateBrowser?.openLocation(button.dataset.location);
    });
   }
+  for(const button of document.querySelectorAll('[data-quick-location]')){
+   button.addEventListener('click',()=>{
+    window.USTwoDateBrowser?.openLocation(button.dataset.quickLocation);
+   });
+  }
   window.addEventListener('resize',paint);
   window.addEventListener('us-two-session-cleared',reset);
   reset();

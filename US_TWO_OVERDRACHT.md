@@ -20,3 +20,9 @@ Ontwikkelversie: 0.8.3. Main was bij eerste inspectie 0.8.0. Geen merge of publi
 
 ## Volgende actie
 Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, implementeer correcte pionbeweging met behoud van server-authority en idempotentie. Daarna gerichte browsertests en toesteltests, dan merge en publicatie.
+
+## Update 0.8.5
+- Supabase project vuigivzwkxelsisbjjlk: migratie `us_board_skip_without_unearned_progress` toegepast. De functie `public.us_board_skip(uuid)` werkt bij twee skipbevestigingen uitsluitend de ronde bij naar `skipped`; `us_board_progress` wordt niet meer verhoogd.
+- Read-back van SQL-functie bevestigd: ledencontrole, row lock en geen UPDATE van `us_board_progress`.
+- GitHub-ontwikkelbranch: app.js/index.html/service-worker.js bijgewerkt naar 0.8.5; uitleg in UI volgt nieuwe serverregel.
+- Geen live interactietest met twee accounts uitgevoerd. Opdrachtbeloning blijft één stap; variabele stappen zijn nog niet geïmplementeerd.

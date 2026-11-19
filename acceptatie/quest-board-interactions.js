@@ -4,8 +4,8 @@
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id);
- const BASE=1.14,MAX=2.6;
- let zoom=BASE,x=0,y=0,drag=null,suppressLocationClick=false;
+ const MAX=2.6;
+ let zoom=1,x=0,y=0,drag=null,suppressLocationClick=false;
  const viewport=()=> $('quest-world-viewport');
  const stage=()=> $('quest-board-stage');
  function sizeStage(){
@@ -20,6 +20,11 @@
   node.style.height=(desiredWidth/ratio).toFixed(2)+'px';
   node.style.aspectRatio=w+' / '+h;
   node.style.left=((el.clientWidth-desiredWidth)/2).toFixed(2)+'px';
+ }
+ function fitZoom(){
+  const el=viewport(),board=stage();
+  if(!el||!board)return 1;
+  return Math.min(1,el.clientWidth/Math.max(1,board.offsetWidth),el.clientHeight/Math.max(1,board.offsetHeight));
  }
  function clamp(){
   const el=viewport();if(!el)return;
@@ -37,13 +42,13 @@
   clamp();
   node.style.transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) scale('+zoom.toFixed(3)+')';
   const label=$('quest-board-zoom-level');if(label)label.textContent=Math.round(zoom*100)+'%';
-  const minus=$('quest-board-zoom-out');if(minus)minus.disabled=zoom<=1.01;
+  const minus=$('quest-board-zoom-out');if(minus)minus.disabled=zoom<=fitZoom()+.01;
   const plus=$('quest-board-zoom-in');if(plus)plus.disabled=zoom>=MAX-.01;
  }
  function changeZoom(value){
-  zoom=Math.max(1,Math.min(MAX,Math.round(value*100)/100));paint();
+  zoom=Math.max(fitZoom(),Math.min(MAX,Math.round(value*100)/100));paint();
  }
- function reset(){zoom=BASE;x=0;y=0;drag=null;paint();}
+ function reset(){sizeStage();zoom=fitZoom();x=0;y=0;drag=null;paint();}
  function centerPawn(){
   const pawn=$('quest-world-pawn'),el=viewport();
   if(!pawn||!el||pawn.hidden)return reset();
@@ -84,6 +89,9 @@
  }
  function bind(){
   const el=viewport();if(!el||!stage())return;
+  // Remove the rejected 0–60 decorative overlay if an older cached module
+  // injected it before this module ran. It is NOT part of the approved board.
+  stage().querySelectorAll('#quest-route-guide').forEach(node=>node.remove());
   // A pan must never accidentally activate a location underneath the released finger.
   el.addEventListener('click',event=>{
    if(!suppressLocationClick)return;
@@ -110,7 +118,7 @@
    });
   }
   const art=stage().querySelector('.quest-world-art');
-  if(art&&!art.complete)art.addEventListener('load',paint,{once:true});
+  if(art&&!art.complete)art.addEventListener('load',reset,{once:true});
   window.addEventListener('resize',paint);
   // Responsive layout changes (including browser address-bar changes) must
   // recalculate the visible board boundaries without resetting the drag.

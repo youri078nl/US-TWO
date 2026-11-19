@@ -200,3 +200,9 @@
 - Android screenshot bewijst de fout: zes geselecteerde bestanden heten 125215.jpg, 125216.jpg, 125217.jpg, 125218.jpg, 125219.jpg, 125220.jpg. Voorheen herkende regex alleen wereld-1.jpg ... wereld-6.jpg.
 - `quest-world-images.js` heeft fallback voor exact zes numeriek benoemde afbeeldingsbestanden; sorteert op bestandsnummer en koppelt aan wereld 1 t/m 6. Commit c852d42. App, HTML en SW cache versie 0.17.85. Dit is niet live op Android gevalideerd. Let op: volgorde op basis van bestandsnummer veronderstelt dat beelden in juiste volgorde zijn geselecteerd.
 - Open: bevestiging van juiste kaart/volgorde; automatisch serverhosten van zes beelden, waypoint-alignering en backend 40-stappen-regels.
+
+
+## 20 november 2026: gerichte spelreset Youri + Kim
+- Profielen in `us_members`/`us_profiles` geïdentificeerd: koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6` bevat `Youri` en `Kim`; tweede koppel `ee36a0ed-50e2-44b4-adc5-6e213b13ac04` bevat `Henk` en `Kim` en is ongemoeid gelaten.
+- In Supabase transactie voor alleen Youri+Kim: `us_quest_games` positie 0/phase choose en actieve opdracht/vraagvelden leeggemaakt; `us_board_progress` positie 1 (minimum volgens check constraint); `us_question_games` positie 1 en vraagstatus gereset; `us_quest_completed`, `us_quest_question_results`, `us_quest_milestones` voor dat koppel verwijderd. Accounts, koppel, dates en agenda niet verwijderd. Verificatie: Youri+Kim quest 0, board 1, completed 0, dates 14; ander koppel quest 2, board 2, completed 1, dates 7.
+- Screenshot iPhone Kim toont OUDE board art; Android Youri toont nieuwe Bergbos art. Lokale IndexedDB import is niet gesynchroniseerd; zes JPG's nog niet op GitHub gehost. Prioriteit: automatische gedeelde wereld-assets, daarna pionpad/40-stappen migratie.

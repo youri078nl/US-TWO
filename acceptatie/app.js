@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.70-secret-completion-rc',
+  version: '0.17.71-private-screen-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -52,7 +52,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
+function clearSession(){const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Log in om jouw geheime missies te bekijken.';authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending?.generation===authGeneration)return refreshPending.promise;

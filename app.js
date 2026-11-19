@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.4',
+  version: '0.8.5',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -305,7 +305,7 @@ function renderBoard() {
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
   const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
   $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
-  $('board-next-note').textContent = `Huidige spelregel: na twee bevestigingen gaat de pion één vakje vooruit. Ook samen overslaan verplaatst de pion nu één vakje. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
+  $('board-next-note').textContent = `Na twee bevestigingen van een afgeronde opdracht gaat de pion één vakje vooruit. Samen overslaan levert geen stappen op. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {
     $('round-detail').innerHTML = '<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';
@@ -344,7 +344,7 @@ function renderBoard() {
     else html += '<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';
     if (round.partner_completed) html += '<p class="muted">Je partner heeft de opdracht al afgerond.</p>';
   }
-  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<p class="muted">Let op: in de huidige spelregels levert samen overslaan ook één vakje voortgang op.</p><button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
+  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<p class="muted">Samen overslaan levert geen stappen op. De volgende opdracht wordt opnieuw op het eerstvolgende vakje gestart.</p><button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
   else if (round.my_skip_requested) html += '<p class="muted">Jij hebt voorgesteld om over te slaan. Je partner moet dat ook bevestigen.</p>';
   $('round-detail').innerHTML = html;
 }

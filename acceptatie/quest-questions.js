@@ -6,7 +6,7 @@
  'use strict';
  const $=id=>document.getElementById(id);
  const CATEGORIES=['Liefde','Intimiteit','Elkaar kennen','Humor','Avontuur',
-   'Diepgang','Durven','Verrassing','Vertrouwen'];
+   'Diepgang','Durven','Verrassing','Vertrouwen','Erotiek'];
  let identityKey='',source=null,question=null,pending=false,loading=false,serial=0;
  const SCENE_BY_CATEGORY={'Liefde':'kiss','Intimiteit':'hug','Elkaar kennen':'calm',
   'Humor':'play','Avontuur':'walk','Diepgang':'stars','Durven':'five',
@@ -85,7 +85,9 @@
     :'Wachten op de gezamenlijke spelstand';
   }
   const available=!loading&&!pending&&ok;
-  $('quest-question-start').disabled=!(available&&phase==='idle'&&source.phase==='choose'&&myTurn);
+  const erotiek=$('quest-question-category')?.value==='Erotiek';
+  const adultActive=window.USTwoAdultConsentActive===true;
+  $('quest-question-start').disabled=!(available&&phase==='idle'&&source.phase==='choose'&&myTurn&&(!erotiek||adultActive));
   $('quest-question-category').disabled=!(available&&phase==='idle');
   $('quest-question-submit').disabled=!(available&&phase==='question'&&myTurn);
   $('quest-question-skip').disabled=!(available&&phase==='question'&&myTurn);
@@ -191,10 +193,12 @@
   const select=$('quest-question-category');
   select.replaceChildren();
   for(const name of CATEGORIES){const opt=document.createElement('option');opt.value=name;opt.textContent=name;select.append(opt);}
+  select.addEventListener('change',render);
   const bindings={start:'category',submit:'submit',approve:'approve',reject:'reject',skip:'skip',cancel:'cancel'};
   for(const [name,action]of Object.entries(bindings))
    $('quest-question-'+name).addEventListener('click',()=>act(action));
   $('quest-question-play-pose')?.addEventListener('click',playQuestionPose);
+  window.addEventListener('us-two-adult-consent',event=>{window.USTwoAdultConsentActive=event.detail?.active===true;render();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopQuestionPose();});
   window.addEventListener('us-two-tab-changed',event=>{if(event.detail?.tab!=='game')stopQuestionPose();});
   window.addEventListener('us-two-session-cleared',clear);

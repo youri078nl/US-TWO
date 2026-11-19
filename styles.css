@@ -99,3 +99,10 @@ textarea::placeholder{color:#a89db7}
 .memory-card .buttons button{width:100%}
 #memory-form .primary-btn{width:100%}
 @media(max-width:380px){.calendar-grid{gap:3px}.calendar-day{font-size:12px;min-height:36px}.calendar-toolbar h3{font-size:17px}}
+
+/* v0.8.2: native touch and pointer panning, without modifying server progress. */
+.board-trail{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#a999ff #242038}
+.board-trail .board-map{width:max(100%,520px);max-width:none}
+.board-trail:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+.board-pan-hint{font-size:12px;line-height:1.5;margin:8px auto 14px}
+@media(min-width:560px){.board-trail .board-map{width:100%}}

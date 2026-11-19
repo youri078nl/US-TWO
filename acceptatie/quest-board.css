@@ -470,3 +470,25 @@ body.us-two-board-only #quest-world-viewport.quest-world-viewport{
  z-index:9!important;background:#130c26!important;
 }
 body.us-two-board-only #bottom-nav{z-index:12}
+
+/* v0.17.79: CSS-only board detection works even if cached app.js omits body class.
+   Android Chrome supports :has(); no inline scripts (blocked by CSP). */
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) .topbar,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #game-panel>.quest-game-title,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-game-section-note,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-cards-import-hint,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-tasks-shortcuts,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #ustwo-sound-toggle,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-board-card>.quest-board-card-header,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-board-card>.quest-world-progress,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-board-card>.quest-board-quick-locations,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-board-card>.quest-board-replay,
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-board-card>.quest-board-caption{display:none!important}
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #quest-world-viewport.quest-world-viewport{
+position:fixed!important;inset:0 0 calc(74px + env(safe-area-inset-bottom)) 0!important;
+width:100vw!important;height:calc(100dvh - 74px - env(safe-area-inset-bottom))!important;
+min-height:0!important;max-height:none!important;aspect-ratio:auto!important;
+margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+z-index:90!important;display:block!important;
+}
+body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #bottom-nav{z-index:100!important}

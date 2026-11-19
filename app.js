@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.0',
+  version: '0.8.7',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -90,7 +90,7 @@ async function showApp(){
   setTab('home');await syncAll();
 }
 function setTab(tab){
-  if(!['home','pair','dates','game','memories','more'].includes(tab))return;
+  if(!['home','pair','ideas','dates','game','memories','more'].includes(tab))return;
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   window.scrollTo({top:0,behavior:'instant'});
@@ -267,12 +267,49 @@ function openDateChangeEditor(id){
   $('date-change-editor').classList.remove('hidden');
   $('date-change-editor').scrollIntoView({behavior:'smooth',block:'start'});
 }
+const WORLD_NAMES = Object.freeze({woonkamer:'Woonkamer',strand:'Strand',vliegveld:'Vliegveld',bos:'Bos'});
+function setWorld(world){
+  if(!Object.prototype.hasOwnProperty.call(WORLD_NAMES,world))return;
+  const hero=document.querySelector('#game-panel .board-hero');
+  if(!hero)return;
+  hero.dataset.worldTheme=world;
+  document.querySelectorAll('#game-panel [data-world]').forEach(button=>{
+    const active=button.dataset.world===world;
+    button.classList.toggle('selected',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  try{sessionStorage.setItem('us-two-world',world)}catch(_e){}
+}
+// Alleen de weergave animeert; Supabase blijft de enige bron van spelvoortgang.
+const boardMotion = {displayed:null,target:null,timer:null};
+function updateBoardMotion(serverPosition) {
+  if(boardMotion.displayed===null){boardMotion.displayed=serverPosition;boardMotion.target=serverPosition;return;}
+  if(serverPosition===boardMotion.target)return;
+  boardMotion.target=serverPosition;
+  if(boardMotion.timer!==null){clearTimeout(boardMotion.timer);boardMotion.timer=null;}
+  if(serverPosition<boardMotion.displayed || serverPosition-boardMotion.displayed>12 ||
+     (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+    boardMotion.displayed=serverPosition;return;
+  }
+  advanceBoardMotion();
+}
+function advanceBoardMotion(){
+  if(boardMotion.displayed>=boardMotion.target){boardMotion.timer=null;return;}
+  boardMotion.timer=setTimeout(()=>{
+    boardMotion.displayed++;
+    renderBoard();
+    advanceBoardMotion();
+  },340);
+}
 function renderBoard() {
   const board = state.board || {};
   const position = Math.max(1, Number(board.position) || 1);
+  updateBoardMotion(position);
+  const visualPosition = boardMotion.displayed;
+  const moving = visualPosition !== position;
   const round = board.round || null;
   const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
-  const first = Math.floor((position - 1) / 12) * 12 + 1;
+  const first = Math.floor((visualPosition - 1) / 12) * 12 + 1;
   const members = (state.dashboard?.members || []).slice(0, 2);
   const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
   const players = playerNames.map((name, i) =>
@@ -282,17 +319,18 @@ function renderBoard() {
     const row = Math.floor(slot / 4);
     const col = slot % 4;
     const number = first + row * 4 + (row % 2 ? 3 - col : col);
-    const isCurrent = number === position;
+    const isCurrent = number === visualPosition;
     const isTarget = number === activeCell;
     const isSuper = number % 20 === 0;
-    const completed = number < position;
+    const completed = number < visualPosition;
     return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
   }).join('');
-  $('board-position').textContent = String(position);
+  $('board-position').textContent = String(visualPosition);
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
+  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${visualPosition}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
   $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
-  $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
+  $('board-trail').setAttribute('aria-busy',String(moving));
+  $('board-next-note').textContent = `Na twee bevestigingen verdienen jullie 1 tot 3 stappen. Een superopdracht wordt nooit overgeslagen. Samen overslaan levert geen stappen op. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {
     $('round-detail').innerHTML = '<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';
@@ -302,6 +340,10 @@ function renderBoard() {
     $('round-detail').innerHTML = '<h3>Klaar voor de volgende opdracht?</h3><p class="muted">Jullie krijgen ieder een andere, geheime voorbereiding. De gezamenlijke opdracht verschijnt pas nadat de start is bevestigd.</p><label for="prep-days">Voorbereidingstijd</label><select id="prep-days"><option value="1">1 dag</option><option value="2">2 dagen</option><option value="3" selected>3 dagen</option><option value="4">4 dagen</option><option value="5">5 dagen</option><option value="7">7 dagen</option></select><p class="muted">Bij superopdrachten is minstens 3 dagen voorbereiding vereist.</p><button class="primary-btn" data-action="board-begin">Begin de volgende opdracht</button>';
     return;
   }
+  const earnedSteps = round.is_super ? 3 : 1 + ((Number(round.cell) - 2) % 3);
+  const nextSuper = (Math.floor(position / 20) + 1) * 20;
+  const actualSteps = Math.max(0, Math.min(earnedSteps, nextSuper - position));
+  const rewardText = '<p class="muted">Beloning bij afronden: <strong>' + actualSteps + ' ' + (actualSteps === 1 ? 'stap' : 'stappen') + '</strong>' + (actualSteps < earnedSteps ? ' (tot aan de volgende superopdracht)' : '') + '.</p>';
   const isPreparing = round.status === 'preparing';
   const isActive = round.status === 'active';
   let html = `<span class="tag ${round.is_super ? 'pending' : 'active'}">${round.is_super ? '✦ Superopdracht' : 'Missie op vakje ' + Number(round.cell)}</span><h3>${safe(round.title)}</h3>`;
@@ -326,12 +368,13 @@ function renderBoard() {
       html += '<p class="muted">Beiden moeten voorbereid zijn en de voorbereidingstijd moet verstreken zijn voordat jullie kunnen starten.</p>';
     }
   } else if (isActive) {
+    html += rewardText;
     html += `<div class="task-box"><span class="eyebrow">DE GEZAMENLIJKE MISSIE</span><p>${safe(round.shared_challenge)}</p></div>`;
     if (round.my_completed) html += '<span class="tag active">Jij hebt de opdracht afgerond ✓</span>';
     else html += '<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';
     if (round.partner_completed) html += '<p class="muted">Je partner heeft de opdracht al afgerond.</p>';
   }
-  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
+  if ((isPreparing || isActive) && !round.my_skip_requested) html += '<p class="muted">Samen overslaan levert geen stappen op. De volgende opdracht wordt opnieuw op het eerstvolgende vakje gestart.</p><button class="ghost-btn" data-action="board-skip">Samen overslaan (verzoek)</button>';
   else if (round.my_skip_requested) html += '<p class="muted">Jij hebt voorgesteld om over te slaan. Je partner moet dat ook bevestigen.</p>';
   $('round-detail').innerHTML = html;
 }
@@ -408,7 +451,7 @@ function bind(){
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  document.addEventListener('click',async e=>{const world=e.target.closest('[data-world]');if(world){setWorld(world.dataset.world);return;}const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);setTab('dates');$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
   $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
   $('date-change-form').addEventListener('submit',async e=>{
     e.preventDefault();
@@ -465,7 +508,7 @@ function bind(){
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
-  bind();renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
+  bind();renderDateIdeas();try{setWorld(sessionStorage.getItem('us-two-world')||'woonkamer')}catch(_e){setWorld('woonkamer')}$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
   try{
     const params=new URLSearchParams(location.hash.slice(1));
     const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');

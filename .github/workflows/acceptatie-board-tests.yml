@@ -1,0 +1,41 @@
+name: US TWO acceptatie bordtests
+on:
+  push:
+    paths:
+      - 'acceptatie/**'
+      - 'acceptatie/tests/board-pointer.test.cjs'
+      - '.github/workflows/acceptatie-board-tests.yml'
+  pull_request:
+    paths:
+      - 'acceptatie/**'
+      - 'acceptatie/tests/board-pointer.test.cjs'
+      - '.github/workflows/acceptatie-board-tests.yml'
+  workflow_dispatch:
+jobs:
+  board-pointer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check acceptatie/quest-board.js
+          node --check acceptatie/quest-board-interactions.js
+          node --check acceptatie/quest-date-browser.js
+          find acceptatie -maxdepth 1 -name '*.js' ! -name 'app.js' -print0 | xargs -0 -r -n1 node --check
+          node --check acceptatie/app.js
+      - name: Required approved art and PWA files
+        run: |
+          test -s acceptatie/assets/approved-youri-kim.webp
+          test -s acceptatie/assets/us-two-user-board.png
+          test -s acceptatie/assets/ustwo-board-portrait.webp
+          test -s acceptatie/manifest.webmanifest
+          test -s acceptatie/service-worker.js
+          test -s acceptatie/catalog/quest-full-258.json
+          test -s acceptatie/quest-board.css
+          grep -q 'prefers-reduced-motion:reduce' acceptatie/quest-board.css
+          grep -q 'quest-date-art-caption' acceptatie/quest-board.css
+      - name: Pointer regression tests
+        run: node --test acceptatie/tests/board-pointer.test.cjs

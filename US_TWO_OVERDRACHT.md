@@ -1,0 +1,60 @@
+# US TWO overdracht 2026-11-19
+
+Repository: https://github.com/youri078nl/US-TWO
+Branch: feature/separate-dates-20261119
+Pull request: https://github.com/youri078nl/US-TWO/pull/3 (draft)
+Ontwikkelversie: 0.8.3. Main was bij eerste inspectie 0.8.0. Geen merge of publicatie uitgevoerd.
+
+## Uitgevoerd
+- 0.8.1: zelfstandig Dates-tabblad, date kiezen vult agendaformulier en opent Agenda.
+- 0.8.2: speelbord horizontaal scrollbaar op kleine schermen; serverpositie blijft leidend.
+- 0.8.3: vier werkende keuzeknoppen Woonkamer, Strand, Vliegveld, Bos. Elke knop verandert de CSS-achtergrond van de bestaande bordweergave. Geselecteerde wereld wordt lokaal in sessionStorage bewaard, niet tussen apparaten gesynchroniseerd.
+- HTML/JS/CSS/service-worker op branch bijgewerkt en via GitHub opnieuw uitgelezen; statische aanwezigheid van knoppen, handler, vier thema's en versie/cache gecontroleerd.
+
+## Nog NIET af
+- Geen browser-, Android- of iPhone-test uitgevoerd. Geen bewijs van werkende synchronisatie op echte toestellen.
+- De werelden zijn voorlopig CSS-thema's, geen goedgekeurde uitgewerkte omgevingen.
+- Het speelbord is nog de bestaande 12-vakken-weergave; goedgekeurde volledige bordillustratie en 2D-personages ontbreken nog in deze code.
+- Exacte pionstappen, serverlogica, vragen/opdrachten, volledige kaartcollectie en database-integratie moeten gecontroleerd worden.
+- PR niet mergen zonder regressietests.
+
+## Volgende actie
+Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, implementeer correcte pionbeweging met behoud van server-authority en idempotentie. Daarna gerichte browsertests en toesteltests, dan merge en publicatie.
+
+## Update 0.8.5
+- Supabase project vuigivzwkxelsisbjjlk: migratie `us_board_skip_without_unearned_progress` toegepast. De functie `public.us_board_skip(uuid)` werkt bij twee skipbevestigingen uitsluitend de ronde bij naar `skipped`; `us_board_progress` wordt niet meer verhoogd.
+- Read-back van SQL-functie bevestigd: ledencontrole, row lock en geen UPDATE van `us_board_progress`.
+- GitHub-ontwikkelbranch: app.js/index.html/service-worker.js bijgewerkt naar 0.8.5; uitleg in UI volgt nieuwe serverregel.
+- Geen live interactietest met twee accounts uitgevoerd. Opdrachtbeloning blijft één stap; variabele stappen zijn nog niet geïmplementeerd.
+
+## Update 0.8.6
+- Supabase migratie `board_deterministic_step_rewards` toegepast: `us_board_complete(uuid)` geeft deterministisch 1-3 stappen op basis van cell_no, superopdrachten 3, begrensd tot volgende 20e vakje. Twee bevestigingen vereist, ronde-lock en position-conflictcontrole, herhaalde completed calls zijn idempotent.
+- Backend SQL readback gecontroleerd op formule, supergrens, conflictcontrole en idempotentie. Geen live voltooiing met twee accounts getest.
+- GitHub app.js, index.html en service-worker.js bijgewerkt naar 0.8.6. App toont verwachte beloning bij actieve opdracht.
+- Belangrijk: stappen worden server-side toegepast, maar visuele stapsgewijze pionanimatie en goedgekeurde bordillustratie ontbreken nog. Niet gemerged of gepubliceerd.
+
+## Update 0.8.7
+- Frontend app.js: `boardMotion` houdt laatst getoonde positie en serverdoel bij; na synchronisatie loopt de zichtbare pion bij maximaal 12 stappen één vakje per 340 ms vooruit. Bij grotere sprongen, achteruitcorrectie of verminderde animatievoorkeur direct naar serverpositie.
+- De spelpositie wordt nooit vanuit de animatie naar Supabase geschreven. Animatie toont nog steeds tijdelijke letterpionnen, niet goedgekeurde 2D-assets.
+- GitHub app.js, index.html, service-worker.js, styles.css gecommit; JS-syntaxis gecontroleerd met JavaScript-parser via `new Function`, readback bevestigde 0.8.7.
+- Geen browser-/apparaat-/twee-account-end-to-endtest uitgevoerd. Niet gemerged of gepubliceerd.
+
+## Belangrijke koerscorrectie 2026-11-19
+- Bij volledige GitHub-tree-inspectie ontdekt dat `acceptatie/` een veel uitgebreidere bestaande applicatie bevat (RELEASE_STATUS noemt 0.17.55-date-specific-art-rc), met goedgekeurde 2D-assets (`acceptatie/assets/approved-youri-kim.webp`, `us-two-user-board.png`, `ustwo-board-portrait.webp`), drag/zoom in `quest-board-interactions.js`, stapsgewijze pionanimatie in `quest-board.js`, datebrowser in `quest-date-browser.js`, kaartencatalogus en bestaande test `acceptatie/tests/board-pointer.test.cjs`.
+- **BELANGRIJK**: de eerdere rootwijzigingen 0.8.1 t/m 0.8.7 betroffen de eenvoudigere root-PWA en mogen NIET als vervanging voor `acceptatie/` worden gemerged of uitgerold zonder architectuurvergelijking. Root-Supabase RPC-wijzigingen zijn wel live uitgevoerd en kunnen impact hebben op root-flow; acceptatie gebruikt mogelijk andere RPC's, controle vereist.
+- Nieuwe GitHub Actions workflow `.github/workflows/acceptatie-board-tests.yml` gecommit (f511c88): Node 22 syntaxchecks plus bestaande pointer-regressietest op push/PR/handmatig. Workflow-uitvoering en uitslag nog niet bevestigd.
+- Vervolg: test de bestaande acceptatie-app en haar echte backend, bepaal welke releasecriteria nog werkelijk ontbreken. Gebruik `acceptatie/` als kandidaat voor de release, behoud goedgekeurde artwork. Geen 1.0.0-claim zonder end-to-endtest.
+
+## Acceptatie CI update 2026-11-19
+- Via GitHub `fetch_commit_workflow_runs` gecontroleerd: workflow `US TWO acceptatie bordtests` voor commit ff0f2d5 heeft `completed/success` (eerste automatische regressietest aantoonbaar geslaagd).
+- Workflow uitgebreid in commit 89a6229: syntaxcontrole van alle JS-bestanden in `acceptatie/` en verplichte aanwezigheid van goedgekeurde originele 2D-art, manifest, service worker en 258-kaartencatalogus. Uitslag van deze nieuwe uitgebreide workflow nog niet bevestigd.
+- Nog geen Android/iPhone end-to-endtest, geen bewezen synchronisatie op twee accounts en geen release 1.0.0. De acceptatieversie is aanzienlijk verder dan root 0.8.7; geen root-merge zonder regressiecontrole.
+
+## Visuele afwerking 2026-11-19
+- `acceptatie/quest-board.css` commit b3f095d: mobiele leesbaarheid date-kaarten, focusmarkeringen, drag-vriendelijke image-selectie en prefers-reduced-motion. Goedgekeurde 2D-afbeeldingen niet gewijzigd.
+- Workflow commit dbe5f95: visuele CSS-aanwezigheidschecks toegevoegd; uitslag nog niet bevestigd.
+- Dit is een broncodewijziging, **geen bevestigde visuele acceptatie**. Beeldcontrole op Android/iPhone, exacte approved reference-match en de twee nog ontbrekende specifieke date-JPEG's blijven open. Niet als visueel 100% af rapporteren.
+
+## Navigatie en overzichtelijkheid 2026-11-19
+- In `acceptatie/` zonder nieuwe visuele stijl: bord-/opdrachtenscherm hebben nu aparte contextkoppen; zes navigatieknoppen hebben duidelijke aria-labels; opdrachtensnelkoppelingen zijn compact in 3 kolommen (2 op smalle schermen); volledige kaartencollectie klapt niet langer automatisch open. Commits b7584a1, b16ff9e, 505c259.
+- De goedgekeurde kleuren, typografie, 2D-art en speelbordafmetingen zijn niet bewust gewijzigd. De wijziging is niet visueel getest op telefoons. Eerder gepubliceerde acceptatieversie nog niet bijgewerkt.

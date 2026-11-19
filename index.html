@@ -74,6 +74,21 @@
           <div class="panel inset stack" id="pair-controls"><h3>Jullie verbinden</h3><p class="muted">Maak eerst je profiel aan.</p></div>
         </section>
 
+        <section id="ideas-panel" class="tab-panel hidden" aria-label="Dates kiezen">
+          <div class="section-heading"><div><span class="eyebrow">KIES SAMEN IETS LEUKS</span><h2>Dates ontdekken</h2></div></div>
+          <div class="panel inset stack" id="date-ideas">
+            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
+            <div class="idea-filters">
+              <label for="idea-budget">Maximaal budget</label>
+              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
+              <label for="idea-place">Locatie</label>
+              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
+            </div>
+            <div id="idea-results" class="stack" aria-live="polite"></div>
+            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
+          </div>
+        </section>
+
         <section id="dates-panel" class="tab-panel hidden" aria-label="Agenda">
           <div class="section-heading"><div><span class="eyebrow">TIJD VOOR IETS LEUKS</span><h2>Onze dates</h2></div></div>
 
@@ -94,17 +109,6 @@
               <label for="date-duration">Hoe lang?</label><select id="date-duration"><option value="30">30 minuten</option><option value="45">45 minuten</option><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select>
               <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
             </form>
-          </div>
-          <div class="panel inset stack" id="date-ideas">
-            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
-            <div class="idea-filters">
-              <label for="idea-budget">Maximaal budget</label>
-              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
-              <label for="idea-place">Locatie</label>
-              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
-            </div>
-            <div id="idea-results" class="stack" aria-live="polite"></div>
-            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
           </div>
           <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div>
           <div class="panel inset stack hidden" id="date-change-editor" aria-labelledby="date-change-heading">
@@ -129,7 +133,13 @@
 
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
           <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
-          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
+          <div class="world-selector" role="group" aria-label="Kies speelwereld">
+            <button type="button" class="world-button selected" data-world="woonkamer" aria-pressed="true">🛋️ Woonkamer</button>
+            <button type="button" class="world-button" data-world="strand" aria-pressed="false">🏖️ Strand</button>
+            <button type="button" class="world-button" data-world="vliegveld" aria-pressed="false">✈️ Vliegveld</button>
+            <button type="button" class="world-button" data-world="bos" aria-pressed="false">🌲 Bos</button>
+          </div>
+          <div class="panel board-hero" data-world-theme="woonkamer"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang" tabindex="0"></div><p class="muted center board-pan-hint">Sleep het speelbord horizontaal om rond te kijken. De pionpositie wordt uitsluitend door afgeronde opdrachten bepaald.</p><p id="board-next-note" class="muted center"></p></div>
           <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
         </section>
 
@@ -161,13 +171,14 @@
 
         <section id="more-panel" class="tab-panel hidden" aria-label="Instellingen">
           <div class="section-heading"><div><span class="eyebrow">JOUW INSTELLINGEN</span><h2>Meer</h2></div></div>
-          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.8.0</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button type="button" class="secondary-btn" data-action="open-pair">Account en koppeling</button><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
+          <div class="panel inset stack"><h3>US TWO</h3><p class="muted">Webapp-versie <span id="app-version">0.8.7</span></p><p class="muted">De webapp gebruikt dezelfde beveiligde database als de Android-app.</p><button type="button" class="secondary-btn" data-action="open-pair">Account en koppeling</button><button id="update-check" class="secondary-btn">Controleer op updates</button><button id="logout-btn" class="ghost-btn">Uitloggen</button></div>
           <div class="panel inset install-tip"><h3>Zet US TWO op het beginscherm</h3><p>Open deze pagina in Safari, tik op <strong>Delen</strong> en kies <strong>Zet op beginscherm</strong>. Vink <strong>Open als webapp</strong> aan als die optie verschijnt.</p></div>
         </section>
       </div>
     </main>
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
       <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
+      <button type="button" data-tab="ideas"><span class="nav-icon">♡</span>Dates</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
       <button type="button" data-tab="game"><span class="nav-icon">◇</span>Spel</button>
       <button type="button" data-tab="memories"><span class="nav-icon">♡</span>Momenten</button>

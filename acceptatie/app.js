@@ -141,6 +141,8 @@ function setTab(tab,view){
   document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');
   $('game-panel')?.classList.toggle('quest-tasks-view',tab==='game'&&gameView==='tasks');
+  const gameHeading=$('quest-game-view-heading');
+  if(gameHeading)gameHeading.textContent=gameView==='tasks'?'Opdrachten en vragen':'Jullie speelbord';
   const note=$('quest-game-section-note');
   if(note)note.textContent=tab==='game'&&gameView==='tasks'?
     'Opdrachten en vragen: kies, beantwoord en keur goed. De gezamenlijke pion verdient hiermee stappen op het bord.':
@@ -149,10 +151,8 @@ function setTab(tab,view){
     const active=x.dataset.tab===tab&&(tab!=='game'||(x.dataset.gameView||'board')===gameView);
     x.classList.toggle('active',active);x.setAttribute('aria-current',active?'page':'false');
   });
-  if(tab==='game'&&gameView==='tasks'){
-    const deck=$('full-deck-details');
-    if(deck)deck.open=true;
-  }
+  // De volledige kaartencollectie blijft op aanvraag beschikbaar.
+  // Automatisch uitklappen maakt het opdrachtenscherm onnodig lang.
   if(tab==='dates'&&state.session)window.dispatchEvent(new Event('us-two-quest-calendar-refresh'));
   if(tab==='game'&&state.session)window.dispatchEvent(new Event('us-two-quest-game-open'));
   window.dispatchEvent(new CustomEvent('us-two-tab-changed',{detail:{tab,gameView}}));

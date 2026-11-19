@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.8.5',
+  version: '0.8.6',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -305,7 +305,7 @@ function renderBoard() {
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
   const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
   $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
-  $('board-next-note').textContent = `Na twee bevestigingen van een afgeronde opdracht gaat de pion één vakje vooruit. Samen overslaan levert geen stappen op. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
+  $('board-next-note').textContent = `Na twee bevestigingen verdienen jullie 1 tot 3 stappen. Een superopdracht wordt nooit overgeslagen. Samen overslaan levert geen stappen op. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {
     $('round-detail').innerHTML = '<h3>Nog even wachten</h3><p class="muted">Het speelbord start zodra jullie twee accounts gekoppeld zijn.</p>';
@@ -315,6 +315,10 @@ function renderBoard() {
     $('round-detail').innerHTML = '<h3>Klaar voor de volgende opdracht?</h3><p class="muted">Jullie krijgen ieder een andere, geheime voorbereiding. De gezamenlijke opdracht verschijnt pas nadat de start is bevestigd.</p><label for="prep-days">Voorbereidingstijd</label><select id="prep-days"><option value="1">1 dag</option><option value="2">2 dagen</option><option value="3" selected>3 dagen</option><option value="4">4 dagen</option><option value="5">5 dagen</option><option value="7">7 dagen</option></select><p class="muted">Bij superopdrachten is minstens 3 dagen voorbereiding vereist.</p><button class="primary-btn" data-action="board-begin">Begin de volgende opdracht</button>';
     return;
   }
+  const earnedSteps = round.is_super ? 3 : 1 + ((Number(round.cell) - 2) % 3);
+  const nextSuper = (Math.floor(position / 20) + 1) * 20;
+  const actualSteps = Math.max(0, Math.min(earnedSteps, nextSuper - position));
+  const rewardText = '<p class="muted">Beloning bij afronden: <strong>' + actualSteps + ' ' + (actualSteps === 1 ? 'stap' : 'stappen') + '</strong>' + (actualSteps < earnedSteps ? ' (tot aan de volgende superopdracht)' : '') + '.</p>';
   const isPreparing = round.status === 'preparing';
   const isActive = round.status === 'active';
   let html = `<span class="tag ${round.is_super ? 'pending' : 'active'}">${round.is_super ? '✦ Superopdracht' : 'Missie op vakje ' + Number(round.cell)}</span><h3>${safe(round.title)}</h3>`;
@@ -339,6 +343,7 @@ function renderBoard() {
       html += '<p class="muted">Beiden moeten voorbereid zijn en de voorbereidingstijd moet verstreken zijn voordat jullie kunnen starten.</p>';
     }
   } else if (isActive) {
+    html += rewardText;
     html += `<div class="task-box"><span class="eyebrow">DE GEZAMENLIJKE MISSIE</span><p>${safe(round.shared_challenge)}</p></div>`;
     if (round.my_completed) html += '<span class="tag active">Jij hebt de opdracht afgerond ✓</span>';
     else html += '<button class="primary-btn" data-action="board-complete">Ik heb hem afgerond</button>';

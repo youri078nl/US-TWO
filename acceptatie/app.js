@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.76-board-restore-rc',
+  version: '0.17.77-borderless-board-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -137,6 +137,7 @@ function setTab(tab,view){
   if(!['home','pair','dates','discover','game','memories','more'].includes(tab))return;
   if(tab==='game')gameView=view==='tasks'?'tasks':'board';
   state.tab=tab;
+  document.body.classList.toggle('us-two-board-only',tab==='game'&&gameView==='board');
   $('app-view')?.classList.toggle('us-two-home-view',tab==='home');
   document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');

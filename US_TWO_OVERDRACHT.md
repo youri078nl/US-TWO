@@ -96,3 +96,10 @@
 - Alleen `authenticated` mag RPC uitvoeren; `anon` niet. Privilegecheck uitgevoerd; `mission_count=0` dus geen echte missievoltooiing getest.
 - Agenda toont `Missie afgerond`-knop voor toegewezen missies en status bij voltooide missies; API-call via bestaande `rpc()` met sessie. App/SW 0.17.70.
 - Open: end-to-end twee gebruikers, annuleringen en datewijzigingen, generieke meerdaagse opdrachten, volledige PWA-tests. Bord ongemoeid.
+
+
+## 19 november 2026: annulering geheime date-missies + transactionele test
+- `us_two_private.sync_date_secret_mission()` + `us_two_sync_date_secret_mission` trigger op statuswijziging `public.us_dates` toegevoegd. Bij `cancelled` of `declined` worden alleen nog `assigned` geheime missies `cancelled`; voltooide historie blijft behouden. De bestaande frontend toont alleen missies voor dates met status `accepted`.
+- Beide triggers via `pg_trigger` bevestigd enabled (`O`).
+- Transactionele SQL-test met bestaande gekoppelde gebruikers als referentie: tijdelijke proposed date ingevoegd, geaccepteerd, precies één ontvanger-missie gecontroleerd, herhaalde accept-update gecontroleerd op geen duplicaat, daarna date geannuleerd en missie-status `cancelled` geverifieerd. Alles binnen `BEGIN ... ROLLBACK`; vervolgquery bevestigt nul achtergebleven testdates en nul missies. Geen echte mobiele twee-accounttest.
+- Frontend versie blijft 0.17.70, omdat uitsluitend backendlogica is aangepast. Nog open: echte Android/iPhone synchronisatietest, meerdaagse quests, PWA-releasechecks.

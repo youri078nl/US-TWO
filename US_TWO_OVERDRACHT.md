@@ -54,3 +54,7 @@ Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, i
 - `acceptatie/quest-board.css` commit b3f095d: mobiele leesbaarheid date-kaarten, focusmarkeringen, drag-vriendelijke image-selectie en prefers-reduced-motion. Goedgekeurde 2D-afbeeldingen niet gewijzigd.
 - Workflow commit dbe5f95: visuele CSS-aanwezigheidschecks toegevoegd; uitslag nog niet bevestigd.
 - Dit is een broncodewijziging, **geen bevestigde visuele acceptatie**. Beeldcontrole op Android/iPhone, exacte approved reference-match en de twee nog ontbrekende specifieke date-JPEG's blijven open. Niet als visueel 100% af rapporteren.
+
+## Navigatie en overzichtelijkheid 2026-11-19
+- In `acceptatie/` zonder nieuwe visuele stijl: bord-/opdrachtenscherm hebben nu aparte contextkoppen; zes navigatieknoppen hebben duidelijke aria-labels; opdrachtensnelkoppelingen zijn compact in 3 kolommen (2 op smalle schermen); volledige kaartencollectie klapt niet langer automatisch open. Commits b7584a1, b16ff9e, 505c259.
+- De goedgekeurde kleuren, typografie, 2D-art en speelbordafmetingen zijn niet bewust gewijzigd. De wijziging is niet visueel getest op telefoons. Eerder gepubliceerde acceptatieversie nog niet bijgewerkt.

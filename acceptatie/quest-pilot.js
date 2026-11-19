@@ -190,10 +190,13 @@
       text('quest-pilot-super-timing','De voorbereidingstijd verschijnt zodra een superdate is ontgrendeld.');
       return;
     }
+    const prepDate=typeof v.prep_until==='string'?new Date(v.prep_until):null;
+    const prepDateValid=prepDate&&Number.isFinite(prepDate.getTime());
+    const formattedPrep=prepDateValid?new Intl.DateTimeFormat('nl-NL',{dateStyle:'full',timeStyle:'short'}).format(prepDate):'nog onbekend';
+    const statusLabels={preparing:'Voorbereiden',revealed:'Samen uitvoeren',completed:'Afgerond',skipped:'Overgeslagen'};
     text('quest-pilot-super-status','Vak '+v.cell+' · '+String(v.title||'Superdate')+
-      ' · status '+String(v.status)+' · revisie '+v.revision+
-      ' · voorbereiding tot '+String(v.prep_until||'onbekend')+
-      ' · jij klaar: '+(v.my_ready?'ja':'nee')+' · partner klaar: '+(v.partner_ready?'ja':'nee'));
+      ' · '+(statusLabels[v.status]||String(v.status))+
+      ' · uiterste voorbereiding: '+formattedPrep);
     const consentCount=Number(Boolean(v.my_reveal))+Number(Boolean(v.partner_reveal));
     const readyCount=Number(Boolean(v.my_ready))+Number(Boolean(v.partner_ready));
     const doneCount=Number(Boolean(v.my_done))+Number(Boolean(v.partner_done));
@@ -201,14 +204,14 @@
       'Voorbereiding: '+readyCount+'/2 klaar · toestemming finale: '+consentCount+
       '/2 · voltooiing: '+doneCount+'/2'+
       (v.my_reveal&&v.status==='preparing'?' · jouw toestemming is opgeslagen, wacht op je partner':''));
-    const deadline=typeof v.prep_until==='string'?Date.parse(v.prep_until):NaN;
+    const deadline=prepDateValid?prepDate.getTime():NaN;
     const remaining=Number.isFinite(deadline)?deadline-Date.now():NaN;
     text('quest-pilot-super-timing',
       v.status==='preparing'
       ? !Number.isFinite(remaining)
         ? 'Voorbereidingstijd niet bevestigd: finale blijft gesloten.'
         : remaining>0
-          ? 'Voorbereiding nog '+Math.ceil(remaining/3600000)+' uur. Daarna zijn twee afzonderlijke toestemmingen nodig.'
+          ? 'Voorbereiding nog '+(remaining>=86400000?Math.ceil(remaining/86400000)+' dagen':remaining>=3600000?Math.ceil(remaining/3600000)+' uur':Math.ceil(remaining/60000)+' minuten')+'. Daarna zijn twee afzonderlijke toestemmingen nodig.'
           : 'De voorbereidingstijd is verstreken. Beide spelers moeten klaar zijn en afzonderlijk toestemming geven.'
       : v.status==='revealed'?'De finale is door beide spelers ontgrendeld.'
       : v.status==='completed'?'Deze superdate is afgerond.'

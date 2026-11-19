@@ -37,14 +37,14 @@
     remoteInstructions:String(c.remote_instructions||''),
     category:String(c.category||'Algemeen'),minutes:Number(c.minutes)||30,
     cost:Number(c.estimated_cost_eur)||0,remote:Boolean(c.remote),
-    together:Boolean(c.together),source:'officieel',index:i
+    together:Boolean(c.together),source:'officieel',index:i,artIndex:i
    }));
    const bonus=(Array.isArray(window.USTwoCardDeckData)?window.USTwoCardDeckData:[])
     .map((c,i)=>({
       key:'bonus-'+String(c.number||i+1),title:String(c.title||'').slice(0,120),
       description:Array.isArray(c.steps)?c.steps.join(' · '):'',
       instructions:'',remoteInstructions:'',category:String(c.category||'Bonus'),minutes:Number(c.minutes)||30,
-      cost:null,remote:false,together:true,source:'bonus',index:i
+      cost:null,remote:false,together:true,source:'bonus',index:i,artIndex:null
     }));
    loaded=[...official,...bonus];
    const categories=[...new Set(loaded.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'nl'));
@@ -101,6 +101,18 @@
   proposalRound++;
   renderProposals();
  }
+ function addArtwork(card,item){
+  if(item.artIndex===null)return;
+  const img=document.createElement('img');
+  const i=item.artIndex;
+  const filename='US_TWO_W'+(Math.floor(i/40)+1)+'_'+String(i%40+1).padStart(2,'0')+'.jpg';
+  img.src='./assets/cards/'+filename;
+  img.alt='Geïllustreerde US TWO-datekaart: '+item.title;
+  img.loading='lazy';img.decoding='async';
+  img.className='quest-date-artwork';
+  img.onerror=()=>{img.remove();};
+  card.append(img);
+ }
  function renderProposals(){
   const target=$('quest-date-proposal-results');
   if(!target||!active)return;
@@ -121,7 +133,7 @@
    const description=document.createElement('p');description.textContent=item.description;
    const button=document.createElement('button');button.type='button';button.className='primary-btn';
    button.textContent='Kies deze date ♡';button.dataset.dateKey=item.key;
-   card.append(category,heading,meta,description,button);target.append(card);
+   card.append(category);addArtwork(card,item);card.append(heading,meta,description,button);target.append(card);
   }
  }
  function render(){
@@ -168,7 +180,7 @@
    const button=document.createElement('button');button.type='button';
    button.className='secondary-btn quest-date-choose';button.textContent='Kies deze date';
    button.dataset.dateKey=c.key;
-   article.append(top,title,description,meta,details,button);list.append(article);
+   article.append(top);addArtwork(article,c);article.append(title,description,meta,details,button);list.append(article);
   }
   const more=$('quest-date-more');
   if(more){more.hidden=matches.length<=shown;more.disabled=matches.length<=shown;}

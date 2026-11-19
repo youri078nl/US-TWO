@@ -49,3 +49,8 @@ Controleer de bestaande backend-spelregels en beschikbare goedgekeurde assets, i
 - Via GitHub `fetch_commit_workflow_runs` gecontroleerd: workflow `US TWO acceptatie bordtests` voor commit ff0f2d5 heeft `completed/success` (eerste automatische regressietest aantoonbaar geslaagd).
 - Workflow uitgebreid in commit 89a6229: syntaxcontrole van alle JS-bestanden in `acceptatie/` en verplichte aanwezigheid van goedgekeurde originele 2D-art, manifest, service worker en 258-kaartencatalogus. Uitslag van deze nieuwe uitgebreide workflow nog niet bevestigd.
 - Nog geen Android/iPhone end-to-endtest, geen bewezen synchronisatie op twee accounts en geen release 1.0.0. De acceptatieversie is aanzienlijk verder dan root 0.8.7; geen root-merge zonder regressiecontrole.
+
+## Visuele afwerking 2026-11-19
+- `acceptatie/quest-board.css` commit b3f095d: mobiele leesbaarheid date-kaarten, focusmarkeringen, drag-vriendelijke image-selectie en prefers-reduced-motion. Goedgekeurde 2D-afbeeldingen niet gewijzigd.
+- Workflow commit dbe5f95: visuele CSS-aanwezigheidschecks toegevoegd; uitslag nog niet bevestigd.
+- Dit is een broncodewijziging, **geen bevestigde visuele acceptatie**. Beeldcontrole op Android/iPhone, exacte approved reference-match en de twee nog ontbrekende specifieke date-JPEG's blijven open. Niet als visueel 100% af rapporteren.

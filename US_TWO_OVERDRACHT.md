@@ -66,3 +66,11 @@
 - Afgewezen `#quest-route-guide` wordt bij initialisatie verwijderd en via CSS `display:none!important` verborgen als stale cache-JS hem toch injecteert. Commit `0c04bad`.
 - App + service worker versie `0.17.64-fit-entire-board-rc` voor cacheverversing. `index.html` blijft de oorspronkelijke `us-two-user-board.png` gebruiken; `quest-board.js` bevat geen `drawRoute()` meer.
 - Code-inhoud en GitHub commits gecontroleerd; echte telefoon-/browser-rendering niet getest. Bij klachten over oude weergave eerst harde herlaadactie of PWA-cache verifiëren.
+
+
+## 19 november 2026: 0.17.68-preparation-ux-rc
+- Het oorspronkelijke speelbord blijft vastgezet op de teruggezette bron van commit `1ed86aaf` voor de bordbestanden. Geen nieuwe bordwijzigingen.
+- Inspectie van `quest-pilot.js` bevestigt dat superdates al een servergestuurde voorbereiding met `prep_until`, eigen geheime `my_prep`, gereedmeldingen, tweezijdige toestemming en afronding hebben. Dit is NIET hetzelfde als willekeurige meerdaagse opdrachten of geheime missies bij iedere geplande date.
+- Verbeterd: de voorbereiding toont nu een leesbare Nederlandse datum en resterende dagen/uren/minuten in plaats van ruwe tijdstempel en debug-revisie. Commit `f56dd156`.
+- App/SW naar 0.17.68. Nog niet geverifieerd met twee echte accounts of op Android/iPhone. De gevraagde aparte ontvangergeheime date-missies en generieke meerdaagse opdrachten zijn nog open.
+- Volgende concrete werkstap: bestaand Supabase schema en RLS inspecteren; private missieopslag per ontvanger ontwerpen en autorisatietests uitvoeren; geen frontend-only geheimhouding.

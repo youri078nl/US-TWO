@@ -229,8 +229,37 @@
   try{await stored(key,file,true);if(activeKey===key)await loadImage(key);}
   catch(_error){if(activeKey===key)$('quest-world-art-status').textContent='Opslaan mislukt. De goedgekeurde standaardpion blijft bestaan.';}
  }
+ function drawRoute(){
+  const stage=$('quest-board-stage');if(!stage||stage.querySelector('#quest-route-guide'))return;
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');svg.id='quest-route-guide';
+  svg.setAttribute('viewBox','0 0 1672 941');svg.setAttribute('aria-hidden','true');
+  const line=document.createElementNS(ns,'polyline');
+  line.setAttribute('points',PATH.map(p=>p.join(',')).join(' '));
+  line.setAttribute('fill','none');line.setAttribute('stroke','#ffe6aa');
+  line.setAttribute('stroke-width','5');line.setAttribute('stroke-dasharray','10 8');
+  line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','.85');
+  svg.appendChild(line);
+  PATH.forEach(([x,y],i)=>{
+   const dot=document.createElementNS(ns,'circle');
+   dot.setAttribute('cx',x);dot.setAttribute('cy',y);
+   dot.setAttribute('r',i%10===0?12:5);
+   dot.setAttribute('fill',i%10===0?'#fff4bc':'#ff9d67');
+   dot.setAttribute('stroke','#6a2a4e');dot.setAttribute('stroke-width','2');
+   svg.appendChild(dot);
+   if(i%10===0){
+    const label=document.createElementNS(ns,'text');
+    label.setAttribute('x',x);label.setAttribute('y',y+4);
+    label.setAttribute('text-anchor','middle');label.setAttribute('font-size','12');
+    label.setAttribute('font-weight','bold');label.setAttribute('fill','#391b30');
+    label.textContent=String(i);svg.appendChild(label);
+   }
+  });
+  stage.insertBefore(svg,stage.querySelector('#quest-world-pawn'));
+ }
  function bind(){
   if(!$('quest-world-pawn'))return;
+  drawRoute();
   move(0);$('quest-world-pawn').hidden=true;
   $('quest-world-art-upload')?.addEventListener('change',upload);
   $('quest-world-replay')?.addEventListener('click',()=>{

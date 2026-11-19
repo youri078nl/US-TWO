@@ -158,3 +158,10 @@
 - Screenshot gebruiker toont nog oude US TWO header, titel, voortgang, oude afbeelding, niet fullscreen na 0.17.77. Dit bewijst dat gewenste weergave niet bereikt is, maar bewijst niet definitief waarom (cache, stylesheet of state).
 - `acceptatie/index.html` commit 1cd208f: inline fullscreen CSS in HTML als extra zekerheid, app.js en quest-board.css URL met `?v=01778` voor cache-busting, onafhankelijke event handler die board-only class synchroniseert op onderste navigatie en tab-change. `app.js` en serviceworker versie 0.17.78 commits f449da9 en 0a64520.
 - Nieuwe bergbos-illustratie nog NIET in GitHub/PWA; huidige bordkunst blijft `assets/us-two-user-board.png`. Geen Android runtime-test beschikbaar; gebruiker opnieuw laten controleren. Als fullscreen nog faalt, inspecteer echte browser DOM/runtime i.p.v. CSS blijven stapelen.
+
+
+## 19 november 2026: 0.17.79-csp-boardfix-rc
+- Gebruiker meldt dat 0.17.78 nog steeds de oude, niet-fullscreen weergave toont.
+- Aantoonbaar codeprobleem: `acceptatie/index.html` CSP `script-src 'self'; style-src 'self'` blokkeert de in 0.17.78 toegevoegde inline `<script>` en `<style>`; deze waren dus onbruikbaar. Beide verwijderd (commit d5537c6).
+- `quest-board.css` bevat nu CSS-only `body:has(#bottom-nav ... .active)` fullscreen-selector, onafhankelijk van body-class en inline script (commit 4c21e1a). `index.html` gebruikt `quest-board.css?v=01779` en `app.js?v=01779`; app en SW naar 0.17.79 (commits a3af656, 2b32b9f).
+- Niet claimen dat Android-layout getest of hersteld is: wacht op concrete bevestiging. Indien nog oud: check geladen URL en DevTools/netwerk/CSP en laat gebruiker Chrome rechtstreeks openen. Nieuwe wereldkunst nog niet geïntegreerd.

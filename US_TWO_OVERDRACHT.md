@@ -50,3 +50,11 @@
 - `quest-board.js` tekent een genummerde 0/10/20/30/40/50/60 SVG routeguide boven het brede bord (`5936aa8b`), zodat het werkelijke piontraject zichtbaar is. Dit is een expliciete **spelroute-overlay**, niet de claim dat alle decoratieve roze wegen in de gegenereerde illustratie exact dezelfde route vormen. Voor volledige pixelnauwkeurigheid is handmatige board-art-herziening nodig.
 - Locatiehitzones aangepast aan het brede bord (`b82c14c2`). Versie en SW-cache verhoogd naar `0.17.62-wide-board-route-rc`.
 - Nog geen live telefoon-/end-to-end test. Eerste volgende stap: testen op beide telefoons, met nadruk op pannen, 60 stappen, zichtbare route en aanklikbare locaties. Daarna route-overlay esthetisch integreren in definitieve art.
+
+
+## Besluit gebruiker 19 november 2026: terug naar vorige halve speelbord
+- De gebruiker heeft het brede speelbord en de nieuwe 60-stappen-overlay afgewezen omdat de getekende route niet klopte. NIET opnieuw activeren zonder uitdrukkelijk verzoek.
+- `acceptatie/index.html`, `acceptatie/quest-board.js` en `acceptatie/quest-board.css` zijn inhoudelijk teruggezet naar de eerdere `0.17.61`-situatie van commit `c3990981` (originele staande halve speelbordafbeelding en oorspronkelijke pionroute).
+- PWA-versie/cache verhoogd naar `0.17.63-half-board-restored-rc` om oude breedbeeld-assets uit cache te halen. De brede upload blijft als ongebruikt bestand staan; spelgegevens en Supabase-schema niet aangepast.
+- Meerdaagse voorbereidingsopdrachten en geheime date-missies blijven goedgekeurde, nog niet geïmplementeerde functies.
+- Geen live Android/iPhone-test uitgevoerd; na deploy visueel controleren dat de oude halve speelbordweergave weer actief is.

@@ -106,7 +106,12 @@
   const i=item.artIndex;
   const filename=i>=240?'US_TWO_SUPERDATE_'+String(i-239).padStart(2,'0')+'.jpg':
    'US_TWO_W'+(Math.floor(i/40)+1)+'_'+String(i%40+1).padStart(2,'0')+'.jpg';
-  img.src='./assets/cards/'+filename;
+  const dedicated={
+   'ruimtestenen uit de keuken':'US_TWO_DATE_Ruimtestenen_uit_de_keuken.jpg',
+   'ontwerp een nieuwe feestdag':'US_TWO_DATE_Ontwerp_een_nieuwe_feestdag.jpg'
+  };
+  const custom=dedicated[normalize(item.title).trim()];
+  img.src=custom?'./assets/dates/'+custom:'./assets/cards/'+filename;
   img.alt='Geïllustreerde US TWO-datekaart: '+item.title;
   img.loading='lazy';img.decoding='async';
   img.className='quest-date-artwork';

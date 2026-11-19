@@ -89,3 +89,10 @@
 - `acceptatie/index.html` en `app.js` tonen ontvanger-missies in agenda; sessie- en generatiecontrole voorkomt oude async-weergave na accountwissel. HTML ontsmet met `safe()`.
 - Versie/SW naar 0.17.69. Geen mobiele twee-account-test, geen daadwerkelijke trigger-uitgifte met testdate uitgevoerd. Nog open: missie afronden en serverzijdig vastleggen, correcte annulering/verschuiving, realtime tests en generieke meerdaagse opdrachten.
 - Speelbord niet gewijzigd; eerdere Android-bord-/navigatiecontrole door gebruiker voor 0.17.68 gemeld.
+
+
+## 19 november 2026: 0.17.70-secret-completion-rc
+- `public.us_complete_date_secret_mission(uuid)` toegevoegd. Controleert `auth.uid()`, exact ontvangerschap, koppellidmaatschap en bevestigde date; row lock en herhaalde complete-oproep leveren dezelfde status op (idempotent). Geen automatische bordbeloning.
+- Alleen `authenticated` mag RPC uitvoeren; `anon` niet. Privilegecheck uitgevoerd; `mission_count=0` dus geen echte missievoltooiing getest.
+- Agenda toont `Missie afgerond`-knop voor toegewezen missies en status bij voltooide missies; API-call via bestaande `rpc()` met sessie. App/SW 0.17.70.
+- Open: end-to-end twee gebruikers, annuleringen en datewijzigingen, generieke meerdaagse opdrachten, volledige PWA-tests. Bord ongemoeid.

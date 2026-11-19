@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.79-csp-boardfix-rc',
+  version: '0.17.80-world-import-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

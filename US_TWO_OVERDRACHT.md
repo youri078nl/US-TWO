@@ -58,3 +58,11 @@
 - PWA-versie/cache verhoogd naar `0.17.63-half-board-restored-rc` om oude breedbeeld-assets uit cache te halen. De brede upload blijft als ongebruikt bestand staan; spelgegevens en Supabase-schema niet aangepast.
 - Meerdaagse voorbereidingsopdrachten en geheime date-missies blijven goedgekeurde, nog niet geïmplementeerde functies.
 - Geen live Android/iPhone-test uitgevoerd; na deploy visueel controleren dat de oude halve speelbordweergave weer actief is.
+
+
+## Update 19 november 2026: 0.17.64-fit-entire-board-rc
+- Gebruiker zag nog het afgewezen genummerde brede routepad en wilde het volledige oorspronkelijke speelpad tegelijk kunnen zien.
+- `acceptatie/quest-board-interactions.js` gebruikt nu `fitZoom()` op basis van viewport- en bordafmetingen; `reset()` opent het originele portretbord geheel in beeld (zoom kan kleiner dan 1), waarna de gebruiker handmatig kan inzoomen en pannen. Bij beeldladen opnieuw resetten. Bestaande gamepositionering niet veranderd. Commit `b1d41d1`.
+- Afgewezen `#quest-route-guide` wordt bij initialisatie verwijderd en via CSS `display:none!important` verborgen als stale cache-JS hem toch injecteert. Commit `0c04bad`.
+- App + service worker versie `0.17.64-fit-entire-board-rc` voor cacheverversing. `index.html` blijft de oorspronkelijke `us-two-user-board.png` gebruiken; `quest-board.js` bevat geen `drawRoute()` meer.
+- Code-inhoud en GitHub commits gecontroleerd; echte telefoon-/browser-rendering niet getest. Bij klachten over oude weergave eerst harde herlaadactie of PWA-cache verifiëren.

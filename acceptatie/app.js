@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.88-forty-worlds-rc',
+  version: '0.17.89-bergbos-startfix-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

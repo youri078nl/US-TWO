@@ -13,30 +13,9 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./quest-board.css?v=01778">
+  <link rel="stylesheet" href="./quest-board.css?v=01779">
   <title>US TWO | Samen op avontuur</title>
-<style id="us-two-board-immersive-v178">
-body.us-two-board-only .topbar,
-body.us-two-board-only #game-panel>.quest-game-title,
-body.us-two-board-only #quest-game-section-note,
-body.us-two-board-only #quest-cards-import-hint,
-body.us-two-board-only #quest-tasks-shortcuts,
-body.us-two-board-only #ustwo-sound-toggle,
-body.us-two-board-only #quest-board-card>.quest-board-card-header,
-body.us-two-board-only #quest-board-card>.quest-world-progress,
-body.us-two-board-only #quest-board-card>.quest-board-quick-locations,
-body.us-two-board-only #quest-board-card>.quest-board-replay,
-body.us-two-board-only #quest-board-card>.quest-board-caption{display:none!important}
-body.us-two-board-only{overflow:hidden!important}
-body.us-two-board-only #quest-world-viewport.quest-world-viewport{
-position:fixed!important;inset:0 0 calc(74px + env(safe-area-inset-bottom)) 0!important;
-width:100vw!important;height:calc(100dvh - 74px - env(safe-area-inset-bottom))!important;
-min-height:0!important;max-height:none!important;aspect-ratio:auto!important;
-margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
-z-index:90!important;background:#130c26!important;display:block!important;
-}
-body.us-two-board-only #bottom-nav{z-index:100!important}
-</style>
+
 </head>
 <body>
   <div class="app-shell">
@@ -563,7 +542,7 @@ body.us-two-board-only #bottom-nav{z-index:100!important}
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="update-bar" class="update-bar hidden" role="status"><span>Een nieuwe versie van US TWO staat klaar.</span><button id="apply-update" type="button">Bijwerken</button></div>
   <script src="./us-two-offline.js" defer></script>
-   <script type="module" src="./app.js?v=01778"></script>
+   <script type="module" src="./app.js?v=01779"></script>
    <script src="./quest-catalog.js" defer></script>
    <script src="./quest-board.js" defer></script>
    <script src="./quest-board-interactions.js" defer></script>
@@ -580,20 +559,6 @@ body.us-two-board-only #bottom-nav{z-index:100!important}
    <script src="./quest-adult-consent.js" defer></script>
    <script src="./quest-questions.js" defer></script>
    <script src="./quest-date-browser.js" defer></script>
-<script>
-/* Redundant, independent board mode activation for stale installed PWA bundles. */
-(function(){
- function syncBoardMode(){
-  var active=document.querySelector('#bottom-nav [data-tab="game"][data-game-view="board"].active');
-  var game=document.getElementById('game-panel');
-  document.body.classList.toggle('us-two-board-only',!!active&&!!game&&!game.classList.contains('hidden'));
- }
- document.addEventListener('click',function(e){
-  if(e.target.closest('#bottom-nav [data-tab]'))requestAnimationFrame(syncBoardMode);
- });
- window.addEventListener('us-two-tab-changed',syncBoardMode);
- window.addEventListener('DOMContentLoaded',syncBoardMode);
-})();
-</script>
+
 </body>
 </html>

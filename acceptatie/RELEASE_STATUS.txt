@@ -166,3 +166,11 @@ Niet gevalideerd op fysieke telefoons of met nieuwe geautomatiseerde browsertest
 18 november 2026: v0.17.45-dates-start-rc. Startup after successful authenticated dashboard hydration now routes paired users to discover (Dates) rather than game (Bord), preserving pair route for unpaired and home fallback on unavailable dashboard. app.js a193288b, service-worker.js 02785a53. No phone regression test yet. Provisional progress 95%.
 
 18 November 2026: v0.17.46-date-proposals-rc. User screenshot proved legacy full-deck import still visible despite earlier CSS rule. Added inline display:none!important on #full-deck-details in index.html (1722ca54), leaving data and IDs intact. Dates default now presents 3 randomly selected matching dates and 'Toon drie andere dates'; selected card uses existing USTwoDateBridge.choose to open agenda. Advanced filters and full catalog are inside collapsed details, visible only when opened; previous 12 quick ideas stay separately collapsed. quest-date-browser.js 634098f6, styles ab244230 and b8e64484, index final 3130bfea, version app 4a105629, SW 1dbc8156. No phone test of these changes; provisional 95%. Verify PWA cache update, 3 cards, refresh no repeats when >=6 available, selection -> agenda, filters -> updated 3, full list accessible only when expanded, old gallery hidden. 
+
+
+19-11-2026 | 0.17.49-adult-consent-rc
+- Supabase migration adult_mutual_consent_controls: per-user 18+ opt-in, RLS, authenticated RPC state/set; default OFF.
+- us_quest_question_action category Erotiek now requires BOTH partners' server-verified opt-in.
+- Meer > Erotiek 18+ toggle connected to server; question category exposed, disabled without both opt-ins.
+- GitHub commits b6939aea, 6ab7c89b, c2d30e1e, 9698ebcb, b6271e2d.
+- SQL verified server gate and RLS enabled. Real two-device test NOT yet run. Erotic task cards remain separate from quiz category and are NOT newly enabled by this change.

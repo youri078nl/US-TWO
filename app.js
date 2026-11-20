@@ -43,7 +43,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY)}
+function clearSession(){if(boardMoveTimer!==null){clearTimeout(boardMoveTimer);boardMoveTimer=null;}lastBoardPosition=null;const camera=$('board-trail');if(camera)delete camera.dataset.initialFocus;state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY)}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;

@@ -15,7 +15,7 @@ async function refresh(){
  if(t)t.disabled=busy;
  const result=await bridge().call('us_adult_consent_state',{});
  if(n!==seq||key!==newKey)return;
- if(result.error){active=false;emit();status('Toestemming kon niet worden opgehaald. Probeer opnieuw.');return;}
+ if(result.error){active=false;emit();if(t){t.checked=false;t.disabled=false;}status('Toestemming ophalen mislukt: '+(result.error.message||'onbekende fout')+'. Open Meer opnieuw om te herladen.');return;}
  const data=result.data||{};
  active=data.active===true;
  if(t)t.checked=data.mine===true;
@@ -40,6 +40,8 @@ function init(){
  $('adult-consent-toggle')?.addEventListener('change',change);
  window.addEventListener('us-two-tab-changed',e=>{if(e.detail?.tab==='more'||e.detail?.tab==='game')void refresh();});
  window.addEventListener('us-two-session-cleared',()=>{key='';active=false;emit();void refresh();});
+ window.addEventListener('us-two-session-updated',()=>{void refresh();});
+ window.addEventListener('focus',()=>{if(identity())void refresh();});
  window.addEventListener('us-two-quest-game-open',()=>void refresh());
  void refresh();
 }

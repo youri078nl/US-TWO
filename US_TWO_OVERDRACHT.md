@@ -253,3 +253,10 @@
 - Supabase-migratie `fix_adult_consent_rls_member_lookup` toegepast: beide bestaande functies SECURITY DEFINER met reeds ingestelde lege `search_path`, EXECUTE ingetrokken van PUBLIC/anon en expliciet toegekend aan authenticated. Beide functies controleren `auth.uid()` en beperken data tot eigen koppel; bestaande RLS op tabellen blijft actief.
 - SQL-verificatie: beide functies `prosecdef=true`, `authenticated_allowed=true`, `anon_allowed=false`.
 - Geen accounts, spelposities, dates of agenda gewijzigd. Nog niet end-to-end getest met twee ingelogde telefoons. Gebruikerslink: https://youri078nl.github.io/US-TWO/acceptatie/?v=01793
+
+
+## 21 november 2026 — Werkelijke oorzaak Erotiek 18+ opgelost
+- Supabase unified logs toonden op iPhone en Android HTTP 400 op `us_adult_consent_state` en `us_adult_consent_set`; PostgreSQL-log: `column "confirmed_adult" of relation "us_adult_consent" does not exist`.
+- Schema gecontroleerd: tabel had `user_id`, `couple_id`, `enabled`, `updated_at`, maar geen `confirmed_adult`, terwijl beide RPC-functies deze kolom gebruiken.
+- Migratie `add_missing_confirmed_adult_consent_column`: `ALTER TABLE public.us_adult_consent ADD COLUMN IF NOT EXISTS confirmed_adult boolean NOT NULL DEFAULT false;` succesvol uitgevoerd; kolom en default via information_schema bevestigd.
+- Directe SQL-aanroep `us_adult_consent_state()` zonder ingelogde gebruiker geeft terecht `login_required`, dus E2E via echte ingelogde sessies nog niet bewezen. Geen gegevens verwijderd of gereset. Bestaande appversie 0.17.94 kan deze serverfix zonder nieuwe deploy gebruiken.

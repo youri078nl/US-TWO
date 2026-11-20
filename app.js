@@ -14,6 +14,7 @@ const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spu
 let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
 let lastBoardPosition = null; let boardMoveTimer = null;
+let selectedBoardWorld = 'woonkamer';
 
 function toast(message, error=false) {
   const e=$('toast');e.textContent=message;e.classList.toggle('error',error);e.classList.add('visible');
@@ -298,7 +299,7 @@ function renderBoard() {
   const boardCamera = $('board-trail');
   const previousScrollX = boardCamera.scrollLeft;
   const previousScrollY = boardCamera.scrollTop;
-  boardCamera.innerHTML = `<div class="board-map board-world-original" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
+  boardCamera.innerHTML = `<div class="board-map board-world-original" data-world="${selectedBoardWorld}" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
   boardCamera.scrollLeft = previousScrollX;
   boardCamera.scrollTop = previousScrollY;
   if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
@@ -498,6 +499,16 @@ function bind(){
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
+  document.querySelector('.board-world-switch').addEventListener('click', event => {
+    const button = event.target.closest('[data-world]');
+    if (!button) return;
+    const world = button.dataset.world;
+    if (!['woonkamer', 'strand', 'vliegveld', 'bos'].includes(world)) return;
+    selectedBoardWorld = world;
+    document.querySelectorAll('.board-world-switch [data-world]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    const map = document.querySelector('.board-world-original');
+    if (map) map.dataset.world = world;
+  });
   $('board-find-pawn').addEventListener('click', () => {
     const camera = $('board-trail');
     const pawn = camera.querySelector('.board-world-pawn');

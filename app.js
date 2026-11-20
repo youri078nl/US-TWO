@@ -291,7 +291,10 @@ function renderBoard() {
   $('board-position').textContent = String(position);
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
   const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
-  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
+  const worldPath = [[151,562],[250,515],[393,500],[518,499],[611,563],[729,604],[795,546],[912,473],[995,408],[1116,369],[1191,301],[1100,221],[951,192],[805,181],[671,183],[549,197],[419,228],[271,230],[191,319],[138,423]];
+  const worldStep = ((position - 1) % worldPath.length + worldPath.length) % worldPath.length;
+  const [pawnX, pawnY] = worldPath[worldStep];
+  $('board-trail').innerHTML = `<div class="board-map board-world-original" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {

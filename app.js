@@ -14,6 +14,13 @@ const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spu
 let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
 let lastBoardPosition = null; let boardMoveTimer = null;
+function waypointIndex(position, count){
+  if (!Number.isSafeInteger(position) || position < 1 || !Number.isSafeInteger(count) || count < 1) throw new RangeError('Ongeldige spelpositie of route');
+  return (position - 1) % count;
+}
+function movementDelay(fromPosition, toPosition){
+  return Math.max(45, Math.min(240, Math.floor(5000 / (toPosition - fromPosition))));
+}
 const WORLD_OPTIONS = Object.freeze(['woonkamer','strand','vliegveld','bos']);
 const WORLD_STORAGE_KEY = 'us-two-selected-world-v1';
 function readWorldPreference(){try{const value=localStorage.getItem(WORLD_STORAGE_KEY);return WORLD_OPTIONS.includes(value)?value:'woonkamer'}catch{return 'woonkamer'}}
@@ -281,7 +288,7 @@ function renderBoard() {
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
   const aria = `Speelbord met twintig zichtbare routepunten. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
   const worldPath = [[151,562],[250,515],[393,500],[518,499],[611,563],[729,604],[795,546],[912,473],[995,408],[1116,369],[1191,301],[1100,221],[951,192],[805,181],[671,183],[549,197],[419,228],[271,230],[191,319],[138,423]];
-  const worldStep = ((position - 1) % worldPath.length + worldPath.length) % worldPath.length;
+  const worldStep = waypointIndex(position, worldPath.length);
   const [pawnX, pawnY] = worldPath[worldStep];
   const boardCamera = $('board-trail');
   const positionChanged = lastBoardPosition !== position;
@@ -301,18 +308,18 @@ function renderBoard() {
       const destination = position;
       let step = fromPosition;
       // Traverse every earned cell, with an adaptive delay to avoid very long animations.
-      const delay = Math.max(45, Math.min(240, Math.floor(5000 / (destination - fromPosition))));
+      const delay = movementDelay(fromPosition, destination);
       const moveOne = () => {
         if (lastBoardPosition !== destination || !pawnElement.isConnected) return;
         step += 1;
-        const index = ((step - 1) % worldPath.length + worldPath.length) % worldPath.length;
+        const index = waypointIndex(step, worldPath.length);
         const [x, y] = worldPath[index];
         pawnElement.style.left = (x / 1279 * 100).toFixed(4) + '%';
         pawnElement.style.top = (y / 720 * 100).toFixed(4) + '%';
         if (step < destination) boardMoveTimer = setTimeout(moveOne, delay);
         else boardMoveTimer = null;
       };
-      const fromIndex = ((fromPosition - 1) % worldPath.length + worldPath.length) % worldPath.length;
+      const fromIndex = waypointIndex(fromPosition, worldPath.length);
       pawnElement.style.left = (worldPath[fromIndex][0] / 1279 * 100).toFixed(4) + '%';
       pawnElement.style.top = (worldPath[fromIndex][1] / 720 * 100).toFixed(4) + '%';
       boardMoveTimer = setTimeout(moveOne, 100);

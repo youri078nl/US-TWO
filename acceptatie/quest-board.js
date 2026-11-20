@@ -20,12 +20,16 @@
  // Server and client both use 40 earned steps per world (240 across six worlds).
  // Bergbos has a different illustrated route from the original board.
  // Coordinates are measured on the approved 409x626 Bergbos preview.
- const BERGBOS_PATH=[
-  [245,520],[270,513],[299,494],[325,468],[345,438],[350,412],
-  [331,392],[300,377],[263,361],[225,347],[185,334],[145,323],
-  [105,307],[72,286],[55,260],[66,241],[97,229],[134,217],
-  [171,203],[204,186],[215,164],[195,147],[168,133],[150,119],
-  [168,110],[200,104],[231,101],[264,97],[298,93],[331,86]
+ // Six themed maps use the same S-shaped route geometry. All coordinates
+ // are normalized against the 409x626 approved portrait artwork.
+ // Start is the lowest heart tile at the bottom-right, not the large characters.
+ const THEMED_PATH=[
+  [322,519],[338,500],[351,480],[350,460],[335,439],
+  [302,422],[267,410],[231,399],[193,386],[154,374],
+  [115,360],[86,341],[73,322],[83,304],[108,287],
+  [146,275],[185,261],[222,248],[249,230],[242,210],
+  [215,197],[183,187],[149,177],[127,163],[136,148],
+  [165,137],[203,129],[241,120],[281,110],[319,100]
  ].map(([x,y])=>[x*ART_WIDTH/409,y*ART_HEIGHT/626]);
  const CELLS_PER_WORLD=40, DB='us-two-private-pawn-v1',TABLE='images';
  const WORLD_NAMES=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
@@ -87,8 +91,8 @@
   const previousWorld=((Math.floor(step/CELLS_PER_WORLD)-1)%6+6)%6;
   const heldAtPortal=step>0&&local===0&&Number.isInteger(serverWorld)&&serverWorld===previousWorld;
   const art=$('quest-world-stage')||$('quest-board-stage');
-  const hasBergbos=Number(art?.querySelector('.quest-world-art')?.dataset.worldImageApplied)===1;
-  const anchors=hasBergbos&&Number.isInteger(serverWorld)&&serverWorld===0?BERGBOS_PATH:PATH;
+  const hasThemedArt=art?.querySelector('.quest-world-art')?.dataset.worldImageApplied==='themed';
+  const anchors=hasThemedArt?THEMED_PATH:PATH;
   const fraction=(heldAtPortal?CELLS_PER_WORLD:local)*(anchors.length-1)/CELLS_PER_WORLD;
   const a=Math.floor(fraction),b=Math.min(anchors.length-1,a+1),t=fraction-a;
   return [Math.round(anchors[a][0]*(1-t)+anchors[b][0]*t),

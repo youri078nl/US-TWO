@@ -1,6 +1,6 @@
 // Updates: bump CACHE when changing assets. Network first keeps updates fresh.
-const CACHE = 'us-two-web-v0.8.1-board';
-const SHELL = ['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./assets/ustwo-world-original.webp'];
+const CACHE = 'us-two-web-v0.8.2-approved-pawn';
+const SHELL = ['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./assets/ustwo-world-original.webp','./assets/pion_youri_kim_pepsi_small.webp'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('us-two-web-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting()});

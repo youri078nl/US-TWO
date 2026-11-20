@@ -500,3 +500,15 @@ body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #bottom-n
 .quest-board-tile{position:absolute;display:grid;place-items:center;transform:translate(-50%,-50%);width:4.4%;aspect-ratio:1;border-radius:50%;font:800 clamp(8px,1.35vw,14px)/1 system-ui,sans-serif;color:#fff8dd;background:#3d174edb;border:1px solid #ffe2a6;box-shadow:0 0 0 1px #6c2b4a,0 1px 7px #170d29b3;text-shadow:0 1px 2px #190c1b}
 .quest-board-tile.is-completed{background:#256b5fe8;border-color:#c5fff1;color:white}
 .quest-board-tile.is-current{background:#fbe7a0;color:#321126;border:2px solid #ff9a44;box-shadow:0 0 0 3px #fc76b080,0 0 15px #ffe5a6}
+
+/* 0.17.93: the artwork already has hearts. Do not cover them with forty
+   oversized numbered circles; keep the 40 logical cells in the DOM. */
+.quest-board-stage:has(.quest-world-art[data-world-image-applied="themed"]) .quest-board-tiles{
+ display:block;opacity:0;pointer-events:none
+}
+.quest-world-pawn[data-tile="0"]::after{
+ content:"START";position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+ padding:3px 7px;border-radius:12px;background:#301c43;color:#ffe6ad;
+ border:1px solid #e9b47d;font:800 10px/1 system-ui,sans-serif;
+ white-space:nowrap;pointer-events:none
+}

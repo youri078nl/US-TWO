@@ -301,7 +301,7 @@ function renderBoard() {
   if (positionChanged || !boardCamera.querySelector('.board-world-original')) {
   const previousScrollX = boardCamera.scrollLeft;
   const previousScrollY = boardCamera.scrollTop;
-  boardCamera.innerHTML = `<div class="board-map board-world-original" data-world="${selectedBoardWorld}" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
+  boardCamera.innerHTML = `<div class="board-map board-world-original" data-world="${selectedBoardWorld}" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true"><img src="./assets/pion_youri_kim_pepsi_small.webp" alt="" draggable="false"></span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
   boardCamera.scrollLeft = previousScrollX;
   boardCamera.scrollTop = previousScrollY;
   // Re-renders happen every 20 seconds. Keep a running step animation alive if the server position is unchanged.

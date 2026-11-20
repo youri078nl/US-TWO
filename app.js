@@ -474,6 +474,17 @@ function bind(){
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
+  $('board-find-pawn').addEventListener('click', () => {
+    const camera = $('board-trail');
+    const pawn = camera.querySelector('.board-world-pawn');
+    if (!pawn) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    camera.scrollTo({
+      left: Math.max(0, pawn.offsetLeft - camera.clientWidth / 2),
+      top: Math.max(0, pawn.offsetTop - camera.clientHeight / 2),
+      behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+  });
   $('refresh-btn').addEventListener('click',()=>syncAll());
   $('logout-btn').addEventListener('click',async()=>{if(state.session){try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch{}}clearSession();showAuth();toast('Uitgelogd.')});
   $('update-check').addEventListener('click',async()=>{try{if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.getRegistration();await reg?.update();toast('Je hebt de nieuwste versie, of de update wordt klaargezet.')}else toast('Open de website opnieuw voor de nieuwste versie.')}catch{toast('Updatecontrole niet gelukt.',true)}});

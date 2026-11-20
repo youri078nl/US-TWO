@@ -239,3 +239,9 @@
 - CSS overlay verschijnt alleen wanneer de geïmporteerde wereldafbeelding actief is (`data-world-image-applied=themed`). De originele bordweergave blijft ongewijzigd. Dit corrigeert de onbetrouwbare nummers in AI-afbeeldingen zonder ze als spelregels te gebruiken.
 - Gewijzigd: `acceptatie/quest-board.js`, `acceptatie/quest-board.css`, HTML placeholder 40 in plaats van 60; release 0.17.92, cache/version verhoogd.
 - Nog NIET bewezen: pixelprecisie van 40 visuele hartjes ten opzichte van nieuwe achtergronden; daadwerkelijke HD-afbeeldingen op beide telefoons; E2E-test op iPhone/Android; servervoortgang 0 op beide apparaten. Geen 1.0.0 release. Achtergrond is nog steeds de bestaande geïmporteerde afbeelding, geen automatisch gepubliceerde nieuwe illustratie.
+
+
+## 20 november 2026: 0.17.93-clean-road-rc
+- Android screenshot 19:20 toont ernstige visuele fout in 0.17.92: genummerde vakjes 1..40 liggen grotendeels naast het zichtbare hartpad en bedekken de achtergrond. Pion stond rechtsonder.
+- Correctie: `quest-board.js` THEMED_PATH hertekend met 409x626-genormaliseerde coördinaten langs het zichtbare S-pad, stap 0 bij hartportaal. `quest-board.css` maakt de 40 nummerbubbels onzichtbaar, behoudt 40 logische DOM-vakjes en voegt START-badge toe op de pion bij stap 0. `index.html` vernieuwt CSS cachebust van 01779 naar 01793; app/SW 0.17.93.
+- Niet live getest op Android of iPhone; coördinaten zijn benaderd uit screenshot, geen pixelnauwkeurige route-validatie. Geen reset van spelvoortgang. HD assets en cloudsynchronisatie nog niet volledig geverifieerd.

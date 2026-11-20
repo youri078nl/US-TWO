@@ -20,5 +20,5 @@ jobs:
           node-version: '22'
       - name: Check JavaScript syntax
         run: node --check app.js
-      - name: Verify waypoint and movement calculations
-        run: node --test tests/board-movement.test.cjs
+      - name: Verify board movement and date catalog
+        run: node --test tests/*.test.cjs

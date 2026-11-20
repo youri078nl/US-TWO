@@ -14,7 +14,10 @@ const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spu
 let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
 let lastBoardPosition = null; let boardMoveTimer = null;
-let selectedBoardWorld = 'woonkamer';
+const WORLD_OPTIONS = Object.freeze(['woonkamer','strand','vliegveld','bos']);
+const WORLD_STORAGE_KEY = 'us-two-selected-world-v1';
+function readWorldPreference(){try{const value=localStorage.getItem(WORLD_STORAGE_KEY);return WORLD_OPTIONS.includes(value)?value:'woonkamer'}catch{return 'woonkamer'}}
+let selectedBoardWorld = readWorldPreference();
 
 function toast(message, error=false) {
   const e=$('toast');e.textContent=message;e.classList.toggle('error',error);e.classList.add('visible');
@@ -494,8 +497,9 @@ function bind(){
     const button = event.target.closest('[data-world]');
     if (!button) return;
     const world = button.dataset.world;
-    if (!['woonkamer', 'strand', 'vliegveld', 'bos'].includes(world)) return;
+    if (!WORLD_OPTIONS.includes(world)) return;
     selectedBoardWorld = world;
+    try{localStorage.setItem(WORLD_STORAGE_KEY,world)}catch{}
     document.querySelectorAll('.board-world-switch [data-world]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     const map = document.querySelector('.board-world-original');
     if (map) map.dataset.world = world;

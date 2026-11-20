@@ -284,7 +284,8 @@ function openDateChangeEditor(id){
 }
 function renderBoard() {
   const board = state.board || {};
-  const position = Math.max(1, Number(board.position) || 1);
+  const serverPosition = Number(board.position);
+  const position = Number.isSafeInteger(serverPosition) && serverPosition >= 1 ? serverPosition : 1;
   const round = board.round || null;
   const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
   $('board-position').textContent = String(position);
@@ -341,6 +342,11 @@ function renderBoard() {
     });
   }
   }
+  // Keep accessible game state current even when the board image is deliberately not rebuilt.
+  const currentMap = boardCamera.querySelector('.board-world-original');
+  if (currentMap) currentMap.setAttribute('aria-label', aria);
+  const currentCaption = boardCamera.querySelector('.pawns-caption');
+  if (currentCaption) currentCaption.textContent = `Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.`;
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {

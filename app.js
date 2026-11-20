@@ -297,9 +297,11 @@ function renderBoard() {
   if (positionChanged) {
     if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
     lastBoardPosition = position;
-    if (pawnElement && Number.isSafeInteger(fromPosition) && position > fromPosition && position - fromPosition <= 30 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (pawnElement && Number.isSafeInteger(fromPosition) && position > fromPosition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const destination = position;
       let step = fromPosition;
+      // Traverse every earned cell, with an adaptive delay to avoid very long animations.
+      const delay = Math.max(45, Math.min(240, Math.floor(5000 / (destination - fromPosition))));
       const moveOne = () => {
         if (lastBoardPosition !== destination || !pawnElement.isConnected) return;
         step += 1;
@@ -307,7 +309,7 @@ function renderBoard() {
         const [x, y] = worldPath[index];
         pawnElement.style.left = (x / 1279 * 100).toFixed(4) + '%';
         pawnElement.style.top = (y / 720 * 100).toFixed(4) + '%';
-        if (step < destination) boardMoveTimer = setTimeout(moveOne, 240);
+        if (step < destination) boardMoveTimer = setTimeout(moveOne, delay);
         else boardMoveTimer = null;
       };
       const fromIndex = ((fromPosition - 1) % worldPath.length + worldPath.length) % worldPath.length;

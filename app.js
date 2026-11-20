@@ -133,15 +133,15 @@ function renderPair(){
 function renderDateIdeas(){
   const budget=$('idea-budget').value;
   const place=$('idea-place').value;
-  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v})=>(budget==='all'||v[2]<=Number(budget))&&(place==='all'||v[3]==='beide'||v[3]===place));
+  const duration=$('idea-duration').value;
+  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v})=>(budget==='all'||v[2]<=Number(budget))&&(duration==='all'||v[1]<=Number(duration))&&(place==='all'||v[3]==='beide'||v[3]===place));
   if(!filtered.length){$('idea-results').innerHTML='<p class="muted">Geen ideeën gevonden. Kies een ander filter.</p>';return}
-  const count=Math.min(3,filtered.length);
-  const chosen=Array.from({length:count},(_,i)=>filtered[(ideaOffset+i)%filtered.length]);
+  const chosen=filtered;
   const rows=chosen.map(({v,i})=>{
     const cost=v[2]===0?'Gratis':'Budgetindicatie tot €'+v[2];
     return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
   }).join('');
-  $('idea-results').innerHTML=rows+(filtered.length>3?'<button type="button" class="ghost-btn" data-action="more-ideas">Andere ideeën</button>':'');
+  $('idea-results').innerHTML=rows;
 }
 function amsterdamDay(value){
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
@@ -504,6 +504,7 @@ function bind(){
   });
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
+  $('idea-duration').addEventListener('change',renderDateIdeas);
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
   document.querySelector('.board-world-switch').addEventListener('click', event => {
     const button = event.target.closest('[data-world]');

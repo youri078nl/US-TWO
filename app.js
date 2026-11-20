@@ -300,6 +300,17 @@ function renderBoard() {
   boardCamera.innerHTML = `<div class="board-map board-world-original" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
   boardCamera.scrollLeft = previousScrollX;
   boardCamera.scrollTop = previousScrollY;
+  if (!boardCamera.dataset.initialFocus) {
+    boardCamera.dataset.initialFocus = 'true';
+    requestAnimationFrame(() => {
+      const pawn = boardCamera.querySelector('.board-world-pawn');
+      if (pawn) {
+        const map = pawn.parentElement;
+        boardCamera.scrollLeft = Math.max(0, pawn.offsetLeft - boardCamera.clientWidth / 2);
+        boardCamera.scrollTop = Math.max(0, pawn.offsetTop - boardCamera.clientHeight / 2);
+      }
+    });
+  }
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {

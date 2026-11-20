@@ -294,7 +294,12 @@ function renderBoard() {
   const worldPath = [[151,562],[250,515],[393,500],[518,499],[611,563],[729,604],[795,546],[912,473],[995,408],[1116,369],[1191,301],[1100,221],[951,192],[805,181],[671,183],[549,197],[419,228],[271,230],[191,319],[138,423]];
   const worldStep = ((position - 1) % worldPath.length + worldPath.length) % worldPath.length;
   const [pawnX, pawnY] = worldPath[worldStep];
-  $('board-trail').innerHTML = `<div class="board-map board-world-original" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
+  const boardCamera = $('board-trail');
+  const previousScrollX = boardCamera.scrollLeft;
+  const previousScrollY = boardCamera.scrollTop;
+  boardCamera.innerHTML = `<div class="board-map board-world-original" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
+  boardCamera.scrollLeft = previousScrollX;
+  boardCamera.scrollTop = previousScrollY;
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {

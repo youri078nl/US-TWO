@@ -274,25 +274,9 @@ function renderBoard() {
   const position = Math.max(1, Number(board.position) || 1);
   const round = board.round || null;
   const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
-  const first = Math.floor((position - 1) / 12) * 12 + 1;
-  const members = (state.dashboard?.members || []).slice(0, 2);
-  const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
-  const players = playerNames.map((name, i) =>
-    `<span class="board-pawn pawn-${i + 1}" title="${safe(name)}" aria-hidden="true">${safe(name.charAt(0).toLocaleUpperCase('nl-NL'))}</span>`
-  ).join('');
-  const path = Array.from({length: 12}, (_, slot) => {
-    const row = Math.floor(slot / 4);
-    const col = slot % 4;
-    const number = first + row * 4 + (row % 2 ? 3 - col : col);
-    const isCurrent = number === position;
-    const isTarget = number === activeCell;
-    const isSuper = number % 20 === 0;
-    const completed = number < position;
-    return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
-  }).join('');
   $('board-position').textContent = String(position);
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
+  const aria = `Speelbord met twintig zichtbare routepunten. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
   const worldPath = [[151,562],[250,515],[393,500],[518,499],[611,563],[729,604],[795,546],[912,473],[995,408],[1116,369],[1191,301],[1100,221],[951,192],[805,181],[671,183],[549,197],[419,228],[271,230],[191,319],[138,423]];
   const worldStep = ((position - 1) % worldPath.length + worldPath.length) % worldPath.length;
   const [pawnX, pawnY] = worldPath[worldStep];

@@ -245,3 +245,11 @@
 - Android screenshot 19:20 toont ernstige visuele fout in 0.17.92: genummerde vakjes 1..40 liggen grotendeels naast het zichtbare hartpad en bedekken de achtergrond. Pion stond rechtsonder.
 - Correctie: `quest-board.js` THEMED_PATH hertekend met 409x626-genormaliseerde coördinaten langs het zichtbare S-pad, stap 0 bij hartportaal. `quest-board.css` maakt de 40 nummerbubbels onzichtbaar, behoudt 40 logische DOM-vakjes en voegt START-badge toe op de pion bij stap 0. `index.html` vernieuwt CSS cachebust van 01779 naar 01793; app/SW 0.17.93.
 - Niet live getest op Android of iPhone; coördinaten zijn benaderd uit screenshot, geen pixelnauwkeurige route-validatie. Geen reset van spelvoortgang. HD assets en cloudsynchronisatie nog niet volledig geverifieerd.
+
+
+## 2026-11-20 — Erotiek 18+ toestemming backend
+- Gebruiker zag `Toestemming kon niet worden opgehaald` bij Meer → Erotiek (18+).
+- Vastgesteld: `public.us_members` heeft RLS en `authenticated` heeft geen SELECT-recht; `public.us_adult_consent_state` en `public.us_adult_consent_set` waren SECURITY INVOKER en lezen `us_members`, dus ledenlookup faalde.
+- Supabase-migratie `fix_adult_consent_rls_member_lookup` toegepast: beide bestaande functies SECURITY DEFINER met reeds ingestelde lege `search_path`, EXECUTE ingetrokken van PUBLIC/anon en expliciet toegekend aan authenticated. Beide functies controleren `auth.uid()` en beperken data tot eigen koppel; bestaande RLS op tabellen blijft actief.
+- SQL-verificatie: beide functies `prosecdef=true`, `authenticated_allowed=true`, `anon_allowed=false`.
+- Geen accounts, spelposities, dates of agenda gewijzigd. Nog niet end-to-end getest met twee ingelogde telefoons. Gebruikerslink: https://youri078nl.github.io/US-TWO/acceptatie/?v=01793

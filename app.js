@@ -141,7 +141,7 @@ function renderDateIdeas(){
     const cost=v[2]===0?'Gratis':'Budgetindicatie tot €'+v[2];
     return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
   }).join('');
-  $('idea-results').innerHTML=rows;
+  $('idea-results').innerHTML='<p class="muted">'+filtered.length+' dates gevonden</p>'+rows;
 }
 function amsterdamDay(value){
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));

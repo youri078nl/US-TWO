@@ -99,3 +99,8 @@ textarea::placeholder{color:#a89db7}
 .memory-card .buttons button{width:100%}
 #memory-form .primary-btn{width:100%}
 @media(max-width:380px){.calendar-grid{gap:3px}.calendar-day{font-size:12px;min-height:36px}.calendar-toolbar h3{font-size:17px}}
+
+/* Board camera: finger scrolling without changing the server-controlled game position. */
+.board-trail{display:block;overflow-x:auto;overflow-y:auto;max-width:100%;max-height:min(72svh,650px);overscroll-behavior:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin;border-radius:18px}
+.board-trail .board-map{width:max(100%,780px);max-width:none;aspect-ratio:4/3}
+@media(min-width:700px){.board-trail .board-map{width:max(100%,900px)}}

@@ -273,7 +273,7 @@
  }
  function bind(){
   if(!$('quest-world-pawn'))return;
-  move(0);$('quest-world-pawn').hidden=true;
+  buildTiles();move(0);$('quest-world-pawn').hidden=true;
   $('quest-world-art-upload')?.addEventListener('change',upload);
   $('quest-world-replay')?.addEventListener('click',()=>{
    if(!activeKey||!lastMotion||replaying||position!==lastMotion.to)return;

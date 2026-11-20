@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.92-exact-forty-tiles-rc',
+  version: '0.17.93-clean-road-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,

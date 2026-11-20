@@ -31,6 +31,41 @@
   [215,197],[183,187],[149,177],[127,163],[136,148],
   [165,137],[203,129],[241,120],[281,110],[319,100]
  ].map(([x,y])=>[x*ART_WIDTH/409,y*ART_HEIGHT/626]);
+ // Exact logical board: 40 distinct DOM cells. The background is decorative.
+ // Reuse this same function for rendering and for pawn movement.
+ function tilePoint(tile){
+  const n=Math.max(0,Math.min(40,tile));
+  const f=n*(THEMED_PATH.length-1)/40;
+  const a=Math.floor(f),b=Math.min(THEMED_PATH.length-1,a+1),t=f-a;
+  return [THEMED_PATH[a][0]*(1-t)+THEMED_PATH[b][0]*t,
+          THEMED_PATH[a][1]*(1-t)+THEMED_PATH[b][1]*t];
+ }
+ function buildTiles(){
+  const stage=$('quest-board-stage');if(!stage||$('quest-board-tiles'))return;
+  const layer=document.createElement('div');
+  layer.id='quest-board-tiles';layer.className='quest-board-tiles';
+  layer.setAttribute('aria-label','40 speelvakjes, van start tot het wereldportaal');
+  for(let i=1;i<=40;i++){
+   const [x,y]=tilePoint(i);
+   const el=document.createElement('span');
+   el.className='quest-board-tile';el.dataset.tile=String(i);
+   el.style.left=(x/ART_WIDTH*100).toFixed(4)+'%';
+   el.style.top=(y/ART_HEIGHT*100).toFixed(4)+'%';
+   el.textContent=String(i);el.setAttribute('aria-label','Vak '+i);
+   layer.appendChild(el);
+  }
+  const pawn=$('quest-world-pawn');stage.insertBefore(layer,pawn||null);
+ }
+ function updateTiles(step){
+  const layer=$('quest-board-tiles');if(!layer)return;
+  const local=((step%40)+40)%40;
+  const completed=step>0&&local===0?40:local;
+  for(const el of layer.children){
+   const n=Number(el.dataset.tile);
+   el.classList.toggle('is-completed',n<=completed);
+   el.classList.toggle('is-current',n===completed);
+  }
+ }
  const CELLS_PER_WORLD=40, DB='us-two-private-pawn-v1',TABLE='images';
  const WORLD_NAMES=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
  let activeKey='',position=null,worldIndex=null,revision=0,privateUrl='',defaultPromise=null;
@@ -93,6 +128,7 @@
   const art=$('quest-world-stage')||$('quest-board-stage');
   const hasThemedArt=art?.querySelector('.quest-world-art')?.dataset.worldImageApplied==='themed';
   const anchors=hasThemedArt?THEMED_PATH:PATH;
+  if(hasThemedArt)return tilePoint(heldAtPortal?40:local).map(Math.round);
   const fraction=(heldAtPortal?CELLS_PER_WORLD:local)*(anchors.length-1)/CELLS_PER_WORLD;
   const a=Math.floor(fraction),b=Math.min(anchors.length-1,a+1),t=fraction-a;
   return [Math.round(anchors[a][0]*(1-t)+anchors[b][0]*t),
@@ -114,6 +150,7 @@
   el.style.left=(x/ART_WIDTH*100).toFixed(4)+'%';
   el.style.top=(y/ART_HEIGHT*100).toFixed(4)+'%';
   el.dataset.tile=String(step);
+  updateTiles(step);
  }
  function cancelMotion(){
   if(animationTimer!==null){clearTimeout(animationTimer);animationTimer=null;}

@@ -525,7 +525,9 @@ function bind(){
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
-  bind();renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
+  bind();
+  document.querySelectorAll('.board-world-switch [data-world]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.world === selectedBoardWorld)));
+  renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
   try{
     const params=new URLSearchParams(location.hash.slice(1));
     const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');

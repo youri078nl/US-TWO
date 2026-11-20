@@ -25,7 +25,7 @@ async function display(force=false){
  if(!art)return;
  const generation=++displayGeneration;
  const world=worldNumber();
- if(!force&&lastWorld===world&&art.dataset.worldImageApplied===String(world))return;
+ if(!force&&lastWorld===world&&art.dataset.worldImageApplied==='themed')return;
  lastWorld=world;
  const blob=await access('world-'+(world+1)).catch(()=>null);
  if(generation!==displayGeneration)return;
@@ -33,12 +33,13 @@ async function display(force=false){
  if(blob){
   activeUrl=URL.createObjectURL(blob);
   art.src=activeUrl;
-  art.dataset.worldImageApplied=String(world);
+  art.dataset.worldImageApplied='themed';
   window.dispatchEvent(new Event('us-two-world-art-updated'));
   art.alt='US TWO speelwereld '+(world+1)+': '+names[world];
  }else{
   art.src='./assets/us-two-user-board.png';
-  art.dataset.worldImageApplied=String(world);
+  art.dataset.worldImageApplied='original';
+  window.dispatchEvent(new Event('us-two-world-art-updated'));
   art.alt='Origineel US TWO speelbord';
  }
 }

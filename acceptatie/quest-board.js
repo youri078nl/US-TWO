@@ -24,12 +24,14 @@
  // are normalized against the 409x626 approved portrait artwork.
  // Start is the lowest heart tile at the bottom-right, not the large characters.
  const THEMED_PATH=[
-  [322,519],[338,500],[351,480],[350,460],[335,439],
-  [302,422],[267,410],[231,399],[193,386],[154,374],
-  [115,360],[86,341],[73,322],[83,304],[108,287],
-  [146,275],[185,261],[222,248],[249,230],[242,210],
-  [215,197],[183,187],[149,177],[127,163],[136,148],
-  [165,137],[203,129],[241,120],[281,110],[319,100]
+  // Measured along the visible heart road. The start is the bottom heart gate.
+  [257,548],[377,543],[381,519],[377,491],[362,466],
+  [335,450],[300,437],[265,424],[229,410],[193,396],
+  [157,382],[123,370],[88,355],[62,337],[49,317],
+  [57,298],[78,283],[108,270],[142,257],[176,245],
+  [211,233],[245,220],[269,205],[270,190],[253,175],
+  [224,164],[192,154],[162,144],[141,132],[150,119],
+  [180,113],[215,108],[250,104],[284,99],[317,95]
  ].map(([x,y])=>[x*ART_WIDTH/409,y*ART_HEIGHT/626]);
  // Exact logical board: 40 distinct DOM cells. The background is decorative.
  // Reuse this same function for rendering and for pawn movement.

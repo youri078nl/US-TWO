@@ -13,6 +13,7 @@ const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'s
 const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spullen uit huis samen een piepklein dorp."],["Keukenlab voor twee",90,15,"thuis","Verzin een gerecht met ingrediënten die jullie kennen."],["Samen een filmtrailer maken",30,0,"thuis","Bedenk een titel en speel jullie eigen filmtrailer."],["Wandeling met drie vragen",60,0,"buiten","Kies een veilige route en stel elkaar drie gekke vragen."],["Onzinreclame maken",30,0,"thuis","Maak een reclamespot voor een nutteloos voorwerp."],["Tien gratis mini-avonturen",30,0,"beide","Bedenk ieder vijf kleine avonturen die niets kosten."],["Fotomissie: filmposter",60,0,"beide","Maak samen een foto alsof jullie in een film spelen."],["Picknick met een thema",90,15,"buiten","Neem iets lekkers mee naar een fijne plek."],["Muzikale herinneringen",45,0,"thuis","Vertel welk nummer bij een mooie herinnering hoort."],["Kaartspel met nieuwe regels",60,0,"thuis","Bedenk samen verrassende regels voor een bestaand spel."],["Speurtocht door huis",45,0,"thuis","Verstop aanwijzingen voor een kleine speurtocht."],["Samen sterren kijken",60,0,"buiten","Zoek bij geschikt weer een plek om naar de lucht te kijken."]]);
 let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
+let lastBoardPosition = null; let boardMoveTimer = null;
 
 function toast(message, error=false) {
   const e=$('toast');e.textContent=message;e.classList.toggle('error',error);e.classList.add('visible');
@@ -300,6 +301,29 @@ function renderBoard() {
   boardCamera.innerHTML = `<div class="board-map board-world-original" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
   boardCamera.scrollLeft = previousScrollX;
   boardCamera.scrollTop = previousScrollY;
+  if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
+  const pawnElement = boardCamera.querySelector('.board-world-pawn');
+  const fromPosition = lastBoardPosition;
+  lastBoardPosition = position;
+  if (pawnElement && Number.isSafeInteger(fromPosition) && position > fromPosition && position - fromPosition <= 30 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const destination = position;
+    let step = fromPosition;
+    const moveOne = () => {
+      if (lastBoardPosition !== destination || !pawnElement.isConnected) return;
+      step += 1;
+      const index = ((step - 1) % worldPath.length + worldPath.length) % worldPath.length;
+      const [x, y] = worldPath[index];
+      pawnElement.style.left = (x / 1279 * 100).toFixed(4) + '%';
+      pawnElement.style.top = (y / 720 * 100).toFixed(4) + '%';
+      if (step < destination) boardMoveTimer = setTimeout(moveOne, 240);
+      else boardMoveTimer = null;
+    };
+    const fromIndex = ((fromPosition - 1) % worldPath.length + worldPath.length) % worldPath.length;
+    pawnElement.style.left = (worldPath[fromIndex][0] / 1279 * 100).toFixed(4) + '%';
+    pawnElement.style.top = (worldPath[fromIndex][1] / 720 * 100).toFixed(4) + '%';
+    boardMoveTimer = setTimeout(moveOne, 100);
+  }
+
   if (!boardCamera.dataset.initialFocus) {
     boardCamera.dataset.initialFocus = 'true';
     requestAnimationFrame(() => {

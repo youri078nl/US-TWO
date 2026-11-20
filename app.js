@@ -297,6 +297,8 @@ function renderBoard() {
   const worldStep = ((position - 1) % worldPath.length + worldPath.length) % worldPath.length;
   const [pawnX, pawnY] = worldPath[worldStep];
   const boardCamera = $('board-trail');
+  const positionChanged = lastBoardPosition !== position;
+  if (positionChanged || !boardCamera.querySelector('.board-world-original')) {
   const previousScrollX = boardCamera.scrollLeft;
   const previousScrollY = boardCamera.scrollTop;
   boardCamera.innerHTML = `<div class="board-map board-world-original" data-world="${selectedBoardWorld}" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
@@ -305,7 +307,6 @@ function renderBoard() {
   // Re-renders happen every 20 seconds. Keep a running step animation alive if the server position is unchanged.
   const pawnElement = boardCamera.querySelector('.board-world-pawn');
   const fromPosition = lastBoardPosition;
-  const positionChanged = fromPosition !== position;
   if (positionChanged) {
     if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
     lastBoardPosition = position;
@@ -339,6 +340,7 @@ function renderBoard() {
         boardCamera.scrollTop = Math.max(0, pawn.offsetTop - boardCamera.clientHeight / 2);
       }
     });
+  }
   }
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 

@@ -11,6 +11,7 @@ const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;'
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
 const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'});
 const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spullen uit huis samen een piepklein dorp."],["Keukenlab voor twee",90,15,"thuis","Verzin een gerecht met ingrediënten die jullie kennen."],["Samen een filmtrailer maken",30,0,"thuis","Bedenk een titel en speel jullie eigen filmtrailer."],["Wandeling met drie vragen",60,0,"buiten","Kies een veilige route en stel elkaar drie gekke vragen."],["Onzinreclame maken",30,0,"thuis","Maak een reclamespot voor een nutteloos voorwerp."],["Tien gratis mini-avonturen",30,0,"beide","Bedenk ieder vijf kleine avonturen die niets kosten."],["Fotomissie: filmposter",60,0,"beide","Maak samen een foto alsof jullie in een film spelen."],["Picknick met een thema",90,15,"buiten","Neem iets lekkers mee naar een fijne plek."],["Muzikale herinneringen",45,0,"thuis","Vertel welk nummer bij een mooie herinnering hoort."],["Kaartspel met nieuwe regels",60,0,"thuis","Bedenk samen verrassende regels voor een bestaand spel."],["Speurtocht door huis",45,0,"thuis","Verstop aanwijzingen voor een kleine speurtocht."],["Samen sterren kijken",60,0,"buiten","Zoek bij geschikt weer een plek om naar de lucht te kijken."]]);
+const DATE_CATEGORIES = Object.freeze(['creatief','creatief','creatief','avontuur','spel','avontuur','creatief','romantisch','romantisch','spel','spel','romantisch']);
 let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
 let lastBoardPosition = null; let boardMoveTimer = null;
@@ -141,15 +142,17 @@ function renderPair(){
   $('pair-controls').innerHTML=content;
 }
 function renderDateIdeas(){
+  const category=$('idea-category').value;
   const budget=$('idea-budget').value;
   const place=$('idea-place').value;
   const duration=$('idea-duration').value;
-  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v})=>(budget==='all'||v[2]<=Number(budget))&&(duration==='all'||v[1]<=Number(duration))&&(place==='all'||v[3]==='beide'||v[3]===place));
+  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v,i})=>(category==='all'||DATE_CATEGORIES[i]===category)&&(budget==='all'||v[2]<=Number(budget))&&(duration==='all'||v[1]<=Number(duration))&&(place==='all'||v[3]==='beide'||v[3]===place));
   if(!filtered.length){$('idea-results').innerHTML='<p class="muted">Geen ideeën gevonden. Kies een ander filter.</p>';return}
   const chosen=filtered;
   const rows=chosen.map(({v,i})=>{
     const cost=v[2]===0?'Gratis':'Budgetindicatie tot €'+v[2];
-    return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
+    const categoryLabel={creatief:'Creatief',romantisch:'Romantisch',avontuur:'Avontuur',spel:'Spel & plezier'}[DATE_CATEGORIES[i]];
+    return '<article class="idea-card"><div><span class="eyebrow">'+safe(categoryLabel)+' · '+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
   }).join('');
   $('idea-results').innerHTML='<p class="muted">'+filtered.length+' dates gevonden</p>'+rows;
 }
@@ -498,6 +501,7 @@ function bind(){
       toast(visibility==='private'?'Privéherinnering bewaard.':'Herinnering gedeeld met je partner.');
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
+  $('idea-category').addEventListener('change',renderDateIdeas);
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-duration').addEventListener('change',renderDateIdeas);

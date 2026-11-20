@@ -302,27 +302,31 @@ function renderBoard() {
   boardCamera.innerHTML = `<div class="board-map board-world-original" data-world="${selectedBoardWorld}" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true">♥</span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
   boardCamera.scrollLeft = previousScrollX;
   boardCamera.scrollTop = previousScrollY;
-  if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
+  // Re-renders happen every 20 seconds. Keep a running step animation alive if the server position is unchanged.
   const pawnElement = boardCamera.querySelector('.board-world-pawn');
   const fromPosition = lastBoardPosition;
-  lastBoardPosition = position;
-  if (pawnElement && Number.isSafeInteger(fromPosition) && position > fromPosition && position - fromPosition <= 30 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const destination = position;
-    let step = fromPosition;
-    const moveOne = () => {
-      if (lastBoardPosition !== destination || !pawnElement.isConnected) return;
-      step += 1;
-      const index = ((step - 1) % worldPath.length + worldPath.length) % worldPath.length;
-      const [x, y] = worldPath[index];
-      pawnElement.style.left = (x / 1279 * 100).toFixed(4) + '%';
-      pawnElement.style.top = (y / 720 * 100).toFixed(4) + '%';
-      if (step < destination) boardMoveTimer = setTimeout(moveOne, 240);
-      else boardMoveTimer = null;
-    };
-    const fromIndex = ((fromPosition - 1) % worldPath.length + worldPath.length) % worldPath.length;
-    pawnElement.style.left = (worldPath[fromIndex][0] / 1279 * 100).toFixed(4) + '%';
-    pawnElement.style.top = (worldPath[fromIndex][1] / 720 * 100).toFixed(4) + '%';
-    boardMoveTimer = setTimeout(moveOne, 100);
+  const positionChanged = fromPosition !== position;
+  if (positionChanged) {
+    if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
+    lastBoardPosition = position;
+    if (pawnElement && Number.isSafeInteger(fromPosition) && position > fromPosition && position - fromPosition <= 30 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const destination = position;
+      let step = fromPosition;
+      const moveOne = () => {
+        if (lastBoardPosition !== destination || !pawnElement.isConnected) return;
+        step += 1;
+        const index = ((step - 1) % worldPath.length + worldPath.length) % worldPath.length;
+        const [x, y] = worldPath[index];
+        pawnElement.style.left = (x / 1279 * 100).toFixed(4) + '%';
+        pawnElement.style.top = (y / 720 * 100).toFixed(4) + '%';
+        if (step < destination) boardMoveTimer = setTimeout(moveOne, 240);
+        else boardMoveTimer = null;
+      };
+      const fromIndex = ((fromPosition - 1) % worldPath.length + worldPath.length) % worldPath.length;
+      pawnElement.style.left = (worldPath[fromIndex][0] / 1279 * 100).toFixed(4) + '%';
+      pawnElement.style.top = (worldPath[fromIndex][1] / 720 * 100).toFixed(4) + '%';
+      boardMoveTimer = setTimeout(moveOne, 100);
+    }
   }
 
   if (!boardCamera.dataset.initialFocus) {

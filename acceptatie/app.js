@@ -51,6 +51,7 @@ function saveSession(obj) {
   if(state.session?.user?.id&&obj.user?.id&&state.session.user.id!==obj.user.id){secretMissionRequestSeq++;const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Geheime missies laden voor het nieuwe account.';authGeneration++;state.dashboard=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;}
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
+  window.dispatchEvent(new Event('us-two-session-updated'));
 }
 function clearSession(){secretMissionRequestSeq++;const secretPanel=$('us-two-my-secret-missions');if(secretPanel)secretPanel.textContent='Log in om jouw geheime missies te bekijken.';authGeneration++;refreshPending=null;state.dateRequestId=null;state.dateChangeRequestId=null;state.session=null;state.dashboard=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.questCalendar=[];state.lastSyncAt=null;state.syncError=false;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY);window.dispatchEvent(new Event('us-two-session-cleared'))}
 async function freshToken() {
@@ -879,6 +880,7 @@ async function boot(){
           const user=await request('/auth/v1/user',{headers:{Authorization:'Bearer '+state.session.access_token}});
           state.session.user=user;
           localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
+  window.dispatchEvent(new Event('us-two-session-updated'));
         }catch(_error){ /* Login session stays valid; normal sync will report errors. */ }
         if(params.get('type')==='recovery'){
           showRecovery('change');

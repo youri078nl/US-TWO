@@ -1,0 +1,24 @@
+name: US TWO board checks
+on:
+  push:
+    branches: [restore-approved-board-20261120]
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'tests/**'
+      - '.github/workflows/board-checks.yml'
+  workflow_dispatch:
+jobs:
+  board-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Verify board movement and date catalog
+        run: node --test tests/*.test.cjs

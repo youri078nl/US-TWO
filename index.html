@@ -95,17 +95,6 @@
               <button id="date-submit" class="primary-btn" type="submit">Verstuur uitnodiging <span aria-hidden="true">↗</span></button>
             </form>
           </div>
-          <div class="panel inset stack" id="date-ideas">
-            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
-            <div class="idea-filters">
-              <label for="idea-budget">Maximaal budget</label>
-              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
-              <label for="idea-place">Locatie</label>
-              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
-            </div>
-            <div id="idea-results" class="stack" aria-live="polite"></div>
-            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
-          </div>
           <div class="section-heading slim"><h3>Uitnodigingen en plannen</h3></div>
           <div class="panel inset stack hidden" id="date-change-editor" aria-labelledby="date-change-heading">
             <h3 id="date-change-heading">Wijziging voorstellen</h3>
@@ -127,9 +116,26 @@
           <div id="dates-list" class="stack"></div>
         </section>
 
+        <section id="ideas-panel" class="tab-panel hidden" aria-label="Dates kiezen">
+          <div class="section-heading"><div><span class="eyebrow">SAMEN IETS BELEVEN</span><h2>Kies een date</h2></div></div>
+          <div class="panel inset stack" id="date-ideas">
+            <div><span class="eyebrow">GRATIS INSPIRATIE, GEEN AI-ABONNEMENT</span><h3>Wat zullen we samen doen?</h3><p class="muted">Kies een idee, vul daarna zelf datum en tijd in en verstuur pas als je wilt.</p></div>
+            <div class="idea-filters">
+              <label for="idea-category">Categorie</label>
+              <select id="idea-category"><option value="all">Alle categorieën</option><option value="creatief">Creatief</option><option value="romantisch">Romantisch</option><option value="avontuur">Avontuur</option><option value="spel">Spel & plezier</option></select>
+              <label for="idea-budget">Maximaal budget</label>
+              <select id="idea-budget"><option value="all">Maakt niet uit</option><option value="0">Gratis</option><option value="15">€15</option><option value="40">€40</option><option value="75">€75</option></select>
+              <label for="idea-duration">Maximale tijdsduur</label><select id="idea-duration"><option value="all">Maakt niet uit</option><option value="30">30 minuten</option><option value="45">45 minuten</option><option value="60">1 uur</option><option value="90">1,5 uur</option><option value="120">2 uur</option><option value="180">3 uur</option><option value="240">4 uur</option></select><label for="idea-place">Locatie</label>
+              <select id="idea-place"><option value="all">Overal</option><option value="thuis">Thuis</option><option value="buiten">Buiten</option></select>
+            </div>
+            <div id="idea-results" class="stack" aria-live="polite"></div>
+            <p class="muted">Bedragen zijn indicaties, geen actuele prijzen. Niets wordt automatisch geboekt of verstuurd.</p>
+          </div>
+        </section>
+
         <section id="game-panel" class="tab-panel hidden" aria-label="Spelbord">
           <div class="section-heading"><div><span class="eyebrow">JULLIE VERHAAL</span><h2>Het oneindige spel</h2></div></div>
-          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><p id="board-next-note" class="muted center"></p></div>
+          <div class="panel board-hero"><div class="eyebrow">SAMEN, NIET TEGEN ELKAAR</div><div class="board-counter"><span>VAKJE</span><strong id="board-position">1</strong><span id="board-chapter">HOOFDSTUK 1</span></div><div class="board-trail" id="board-trail" aria-label="Spelvoortgang"></div><div class="board-world-switch" role="group" aria-label="Kies een spelwereld"><button type="button" data-world="woonkamer" aria-pressed="true">Woonkamer</button><button type="button" data-world="strand" aria-pressed="false">Strand</button><button type="button" data-world="vliegveld" aria-pressed="false">Vliegveld</button><button type="button" data-world="bos" aria-pressed="false">Bos</button></div><div class="board-controls"><button type="button" id="board-find-pawn" class="secondary-btn">Ga naar onze pion</button></div><p id="board-next-note" class="muted center"></p></div>
           <div id="round-detail" class="panel inset stack"><p class="muted">Spelgegevens laden…</p></div>
         </section>
 
@@ -168,6 +174,7 @@
     </main>
     <nav class="bottom-nav hidden" id="bottom-nav" aria-label="Hoofdnavigatie">
       <button type="button" class="active" data-tab="home"><span class="nav-icon">⌂</span>Vandaag</button>
+      <button type="button" data-tab="ideas"><span class="nav-icon">♡</span>Dates</button>
       <button type="button" data-tab="dates"><span class="nav-icon">▣</span>Agenda</button>
       <button type="button" data-tab="game"><span class="nav-icon">◇</span>Spel</button>
       <button type="button" data-tab="memories"><span class="nav-icon">♡</span>Momenten</button>

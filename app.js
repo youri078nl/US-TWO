@@ -11,8 +11,21 @@ const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;'
 const validUuid = v => /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(v));
 const timeFmt = new Intl.DateTimeFormat('nl-NL',{dateStyle:'medium',timeStyle:'short'});
 const DATE_IDEAS = Object.freeze([["Mini-dorp bouwen",45,0,"thuis","Bouw met spullen uit huis samen een piepklein dorp."],["Keukenlab voor twee",90,15,"thuis","Verzin een gerecht met ingrediënten die jullie kennen."],["Samen een filmtrailer maken",30,0,"thuis","Bedenk een titel en speel jullie eigen filmtrailer."],["Wandeling met drie vragen",60,0,"buiten","Kies een veilige route en stel elkaar drie gekke vragen."],["Onzinreclame maken",30,0,"thuis","Maak een reclamespot voor een nutteloos voorwerp."],["Tien gratis mini-avonturen",30,0,"beide","Bedenk ieder vijf kleine avonturen die niets kosten."],["Fotomissie: filmposter",60,0,"beide","Maak samen een foto alsof jullie in een film spelen."],["Picknick met een thema",90,15,"buiten","Neem iets lekkers mee naar een fijne plek."],["Muzikale herinneringen",45,0,"thuis","Vertel welk nummer bij een mooie herinnering hoort."],["Kaartspel met nieuwe regels",60,0,"thuis","Bedenk samen verrassende regels voor een bestaand spel."],["Speurtocht door huis",45,0,"thuis","Verstop aanwijzingen voor een kleine speurtocht."],["Samen sterren kijken",60,0,"buiten","Zoek bij geschikt weer een plek om naar de lucht te kijken."]]);
+const DATE_CATEGORIES = Object.freeze(['creatief','creatief','creatief','avontuur','spel','avontuur','creatief','romantisch','romantisch','spel','spel','romantisch']);
 let ideaOffset=0;
 let refreshPending = null; let pollBusy = false; let toastTimer = 0; let waitingWorker = null;
+let lastBoardPosition = null; let boardMoveTimer = null;
+function waypointIndex(position, count){
+  if (!Number.isSafeInteger(position) || position < 1 || !Number.isSafeInteger(count) || count < 1) throw new RangeError('Ongeldige spelpositie of route');
+  return (position - 1) % count;
+}
+function movementDelay(fromPosition, toPosition){
+  return Math.max(45, Math.min(240, Math.floor(5000 / (toPosition - fromPosition))));
+}
+const WORLD_OPTIONS = Object.freeze(['woonkamer','strand','vliegveld','bos']);
+const WORLD_STORAGE_KEY = 'us-two-selected-world-v1';
+function readWorldPreference(){try{const value=localStorage.getItem(WORLD_STORAGE_KEY);return WORLD_OPTIONS.includes(value)?value:'woonkamer'}catch{return 'woonkamer'}}
+let selectedBoardWorld = readWorldPreference();
 
 function toast(message, error=false) {
   const e=$('toast');e.textContent=message;e.classList.toggle('error',error);e.classList.add('visible');
@@ -42,7 +55,7 @@ function saveSession(obj) {
   state.session={access_token:obj.access_token,refresh_token:obj.refresh_token,expires_at:Math.floor(Date.now()/1000)+(Number(obj.expires_in)||3600),user:obj.user||state.session?.user||null};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state.session));
 }
-function clearSession(){state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY)}
+function clearSession(){if(boardMoveTimer!==null){clearTimeout(boardMoveTimer);boardMoveTimer=null;}lastBoardPosition=null;const camera=$('board-trail');if(camera)delete camera.dataset.initialFocus;state.session=null;state.dashboard=null;state.board=null;state.memories=[];state.memoriesError=false;state.calendarMonth=null;state.calendarSelected=null;state.pairCode='';state.dateEditId=null;localStorage.removeItem(STORAGE_KEY)}
 async function freshToken() {
   if(!state.session?.refresh_token)throw new Error('Log opnieuw in.');
   if(refreshPending)return refreshPending;
@@ -90,7 +103,7 @@ async function showApp(){
   setTab('home');await syncAll();
 }
 function setTab(tab){
-  if(!['home','pair','dates','game','memories','more'].includes(tab))return;
+  if(!['home','pair','ideas','dates','game','memories','more'].includes(tab))return;
   state.tab=tab;document.querySelectorAll('.tab-panel').forEach(x=>x.classList.add('hidden'));
   $(tab+'-panel').classList.remove('hidden');document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   window.scrollTo({top:0,behavior:'instant'});
@@ -129,17 +142,19 @@ function renderPair(){
   $('pair-controls').innerHTML=content;
 }
 function renderDateIdeas(){
+  const category=$('idea-category').value;
   const budget=$('idea-budget').value;
   const place=$('idea-place').value;
-  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v})=>(budget==='all'||v[2]<=Number(budget))&&(place==='all'||v[3]==='beide'||v[3]===place));
+  const duration=$('idea-duration').value;
+  const filtered=DATE_IDEAS.map((v,i)=>({v,i})).filter(({v,i})=>(category==='all'||DATE_CATEGORIES[i]===category)&&(budget==='all'||v[2]<=Number(budget))&&(duration==='all'||v[1]<=Number(duration))&&(place==='all'||v[3]==='beide'||v[3]===place));
   if(!filtered.length){$('idea-results').innerHTML='<p class="muted">Geen ideeën gevonden. Kies een ander filter.</p>';return}
-  const count=Math.min(3,filtered.length);
-  const chosen=Array.from({length:count},(_,i)=>filtered[(ideaOffset+i)%filtered.length]);
+  const chosen=filtered;
   const rows=chosen.map(({v,i})=>{
     const cost=v[2]===0?'Gratis':'Budgetindicatie tot €'+v[2];
-    return '<article class="idea-card"><div><span class="eyebrow">'+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
+    const categoryLabel={creatief:'Creatief',romantisch:'Romantisch',avontuur:'Avontuur',spel:'Spel & plezier'}[DATE_CATEGORIES[i]];
+    return '<article class="idea-card"><div><span class="eyebrow">'+safe(categoryLabel)+' · '+safe(cost)+' · '+v[1]+' min</span><h4>'+safe(v[0])+'</h4><p class="muted">'+safe(v[4])+'</p></div><button class="secondary-btn" type="button" data-action="choose-idea" data-index="'+i+'">Kies idee</button></article>';
   }).join('');
-  $('idea-results').innerHTML=rows+(filtered.length>3?'<button type="button" class="ghost-btn" data-action="more-ideas">Andere ideeën</button>':'');
+  $('idea-results').innerHTML='<p class="muted">'+filtered.length+' dates gevonden</p>'+rows;
 }
 function amsterdamDay(value){
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
@@ -269,29 +284,69 @@ function openDateChangeEditor(id){
 }
 function renderBoard() {
   const board = state.board || {};
-  const position = Math.max(1, Number(board.position) || 1);
+  const serverPosition = Number(board.position);
+  const position = Number.isSafeInteger(serverPosition) && serverPosition >= 1 ? serverPosition : 1;
   const round = board.round || null;
   const activeCell = round && (round.status === 'preparing' || round.status === 'active') ? Number(round.cell) : null;
-  const first = Math.floor((position - 1) / 12) * 12 + 1;
-  const members = (state.dashboard?.members || []).slice(0, 2);
-  const playerNames = members.map((m, i) => (m.name || (i === 0 ? 'Speler 1' : 'Speler 2')).trim());
-  const players = playerNames.map((name, i) =>
-    `<span class="board-pawn pawn-${i + 1}" title="${safe(name)}" aria-hidden="true">${safe(name.charAt(0).toLocaleUpperCase('nl-NL'))}</span>`
-  ).join('');
-  const path = Array.from({length: 12}, (_, slot) => {
-    const row = Math.floor(slot / 4);
-    const col = slot % 4;
-    const number = first + row * 4 + (row % 2 ? 3 - col : col);
-    const isCurrent = number === position;
-    const isTarget = number === activeCell;
-    const isSuper = number % 20 === 0;
-    const completed = number < position;
-    return `<span class="map-cell${isCurrent ? ' current' : ''}${isTarget && !isCurrent ? ' target' : ''}${isSuper ? ' super' : ''}${completed ? ' travelled' : ''}" title="Vakje ${number}${isSuper ? ': superopdracht' : ''}${isCurrent ? ', jullie staan hier' : ''}${isTarget ? ', actieve missie' : ''}"><span class="cell-number">${isSuper ? '✦' : number}</span>${isCurrent ? `<span class="board-pawns">${players}</span>` : ''}</span>`;
-  }).join('');
   $('board-position').textContent = String(position);
   $('board-chapter').textContent = 'HOOFDSTUK ' + (Number(board.chapter) || 1);
-  const aria = `Spelpad van vakje ${first} tot en met ${first + 11}. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
-  $('board-trail').innerHTML = `<div class="board-map" role="img" aria-label="${aria}"><svg class="board-route" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true"><path d="M 50 50 H 350 Q 390 50 390 100 Q 390 150 350 150 H 50 Q 10 150 10 200 Q 10 250 50 250 H 350" /></svg><div class="board-grid">${path}</div></div><div class="board-legend"><span><i class="legend-dot current"></i>Jullie positie</span><span><i class="legend-dot target"></i>Huidige missie</span><span><i class="legend-dot super"></i>Superopdracht</span></div>${playerNames.length === 2 ? `<p class="pawns-caption">Twee pionnen, één avontuur: ${safe(playerNames[0])} en ${safe(playerNames[1])}.</p>` : ''}`;
+  const aria = `Speelbord met twintig zichtbare routepunten. Jullie staan samen op vakje ${position}.${activeCell ? ' Huidige missie: vakje ' + activeCell + '.' : ''}`;
+  const worldPath = [[151,562],[250,515],[393,500],[518,499],[611,563],[729,604],[795,546],[912,473],[995,408],[1116,369],[1191,301],[1100,221],[951,192],[805,181],[671,183],[549,197],[419,228],[271,230],[191,319],[138,423]];
+  const worldStep = waypointIndex(position, worldPath.length);
+  const [pawnX, pawnY] = worldPath[worldStep];
+  const boardCamera = $('board-trail');
+  const positionChanged = lastBoardPosition !== position;
+  if (positionChanged || !boardCamera.querySelector('.board-world-original')) {
+  const previousScrollX = boardCamera.scrollLeft;
+  const previousScrollY = boardCamera.scrollTop;
+  boardCamera.innerHTML = `<div class="board-map board-world-original" data-world="${selectedBoardWorld}" role="img" aria-label="${aria}"><img class="board-world-art" src="./assets/ustwo-world-original.webp" width="1279" height="720" alt="" draggable="false"><span class="board-world-pawn" style="left:${(pawnX/1279*100).toFixed(4)}%;top:${(pawnY/720*100).toFixed(4)}%" aria-hidden="true"><img src="./assets/pion_youri_kim_pepsi_small.webp" alt="" draggable="false"></span></div><p class="pawns-caption">Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.</p>`;
+  boardCamera.scrollLeft = previousScrollX;
+  boardCamera.scrollTop = previousScrollY;
+  // Re-renders happen every 20 seconds. Keep a running step animation alive if the server position is unchanged.
+  const pawnElement = boardCamera.querySelector('.board-world-pawn');
+  const fromPosition = lastBoardPosition;
+  if (positionChanged) {
+    if (boardMoveTimer !== null) { clearTimeout(boardMoveTimer); boardMoveTimer = null; }
+    lastBoardPosition = position;
+    if (pawnElement && Number.isSafeInteger(fromPosition) && position > fromPosition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const destination = position;
+      let step = fromPosition;
+      // Traverse every earned cell, with an adaptive delay to avoid very long animations.
+      const delay = movementDelay(fromPosition, destination);
+      const moveOne = () => {
+        if (lastBoardPosition !== destination || !pawnElement.isConnected) return;
+        step += 1;
+        const index = waypointIndex(step, worldPath.length);
+        const [x, y] = worldPath[index];
+        pawnElement.style.left = (x / 1279 * 100).toFixed(4) + '%';
+        pawnElement.style.top = (y / 720 * 100).toFixed(4) + '%';
+        if (step < destination) boardMoveTimer = setTimeout(moveOne, delay);
+        else boardMoveTimer = null;
+      };
+      const fromIndex = waypointIndex(fromPosition, worldPath.length);
+      pawnElement.style.left = (worldPath[fromIndex][0] / 1279 * 100).toFixed(4) + '%';
+      pawnElement.style.top = (worldPath[fromIndex][1] / 720 * 100).toFixed(4) + '%';
+      boardMoveTimer = setTimeout(moveOne, 100);
+    }
+  }
+
+  if (!boardCamera.dataset.initialFocus) {
+    boardCamera.dataset.initialFocus = 'true';
+    requestAnimationFrame(() => {
+      const pawn = boardCamera.querySelector('.board-world-pawn');
+      if (pawn) {
+        const map = pawn.parentElement;
+        boardCamera.scrollLeft = Math.max(0, pawn.offsetLeft - boardCamera.clientWidth / 2);
+        boardCamera.scrollTop = Math.max(0, pawn.offsetTop - boardCamera.clientHeight / 2);
+      }
+    });
+  }
+  }
+  // Keep accessible game state current even when the board image is deliberately not rebuilt.
+  const currentMap = boardCamera.querySelector('.board-world-original');
+  if (currentMap) currentMap.setAttribute('aria-label', aria);
+  const currentCaption = boardCamera.querySelector('.pawns-caption');
+  if (currentCaption) currentCaption.textContent = `Gezamenlijke positie: vakje ${position}. De server bepaalt de voortgang.`;
   $('board-next-note').textContent = `Jullie bewegen pas samen vooruit als de opdracht is afgerond. Elk 20e vakje is een superopdracht (volgende: ${Number(board.next_super_cell) || 20}).`;
 
   if (!paired()) {
@@ -408,7 +463,7 @@ function bind(){
   $('name-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('profile-name').value.trim();if(!name)return;setBusy(true);try{await rpc('us_save_profile',{p_name:name});state.profileName=name;await syncAll({quiet:true});toast('Naam opgeslagen.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   $('date-form').addEventListener('submit',async e=>{e.preventDefault();const title=$('date-title').value.trim(),raw=$('date-when').value;const when=new Date(raw);if(!title||!raw||!Number.isFinite(+when)||when<=new Date()){toast('Kies een datum in de toekomst.',true);return}setBusy(true);try{await rpc('us_propose_date',{p_title:title,p_start_at:when.toISOString(),p_duration_minutes:Number($('date-duration').value),p_request_id:crypto.randomUUID()});$('date-form').reset();await syncAll({quiet:true});toast('Uitnodiging verzonden.')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
   document.addEventListener('submit',async e=>{if(e.target?.id!=='join-form')return;e.preventDefault();const code=$('pair-code').value.toUpperCase().replace(/[\s-]/g,'');if(!/^[A-F0-9]{32}$/.test(code)){toast('Een koppelcode bestaat uit 32 letters en cijfers.',true);return}setBusy(true);try{await rpc('us_join_pair',{p_code:code});await syncAll({quiet:true});toast('Jullie zijn gekoppeld!');setTab('home')}catch(err){toast(failText(err),true)}finally{setBusy(false)}});
-  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Idee ingevuld. Kies zelf datum en tijd voordat je verstuurt.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
+  document.addEventListener('click',async e=>{const x=e.target.closest('[data-action]');if(!x)return;const a=x.dataset.action;if(a==='open-pair'){setTab('pair');return}if(a==='open-dates'){setTab('dates');return}if(a==='open-game'){setTab('game');return}if(a==='edit-date'){if(validUuid(x.dataset.id))openDateChangeEditor(x.dataset.id);return}if(a==='calendar-prev'){monthStep(-1);return}if(a==='calendar-next'){monthStep(1);return}if(a==='calendar-today'){state.calendarMonth=amsterdamDay(new Date()).slice(0,7);state.calendarSelected=amsterdamDay(new Date());renderCalendar();return}if(a==='calendar-day'){if(/^\d{4}-\d{2}-\d{2}$/.test(x.dataset.day)){state.calendarSelected=x.dataset.day;renderCalendar();}return}if(a==='more-ideas'){ideaOffset+=3;renderDateIdeas();return}if(a==='choose-idea'){const item=DATE_IDEAS[Number(x.dataset.index)];if(!item)return;$('date-title').value=item[0];$('date-duration').value=String(item[1]);setTab('dates');$('date-title').scrollIntoView({behavior:'smooth',block:'center'});toast('Date gekozen. Plan de datum en tijd in jullie gedeelde agenda.');return}if(a==='copy-code'){try{await navigator.clipboard.writeText(state.pairCode);toast('Koppelcode gekopieerd.')}catch{toast('Selecteer en kopieer de code handmatig.',true)}return}runAction(a,{id:x.dataset.id,revision:x.dataset.revision})});
   $('date-change-cancel').addEventListener('click',()=>{state.dateEditId=null;$('date-change-editor').classList.add('hidden')});
   $('date-change-form').addEventListener('submit',async e=>{
     e.preventDefault();
@@ -452,9 +507,33 @@ function bind(){
       toast(visibility==='private'?'Privéherinnering bewaard.':'Herinnering gedeeld met je partner.');
     }catch(err){toast(failText(err),true)}finally{setBusy(false)}
   });
+  $('idea-category').addEventListener('change',renderDateIdeas);
   $('idea-budget').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
   $('idea-place').addEventListener('change',()=>{ideaOffset=0;renderDateIdeas()});
+  $('idea-duration').addEventListener('change',renderDateIdeas);
   $('bottom-nav').addEventListener('click',e=>{const x=e.target.closest('[data-tab]');if(x)setTab(x.dataset.tab)});
+  document.querySelector('.board-world-switch').addEventListener('click', event => {
+    const button = event.target.closest('[data-world]');
+    if (!button) return;
+    const world = button.dataset.world;
+    if (!WORLD_OPTIONS.includes(world)) return;
+    selectedBoardWorld = world;
+    try{localStorage.setItem(WORLD_STORAGE_KEY,world)}catch{}
+    document.querySelectorAll('.board-world-switch [data-world]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    const map = document.querySelector('.board-world-original');
+    if (map) map.dataset.world = world;
+  });
+  $('board-find-pawn').addEventListener('click', () => {
+    const camera = $('board-trail');
+    const pawn = camera.querySelector('.board-world-pawn');
+    if (!pawn) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    camera.scrollTo({
+      left: Math.max(0, pawn.offsetLeft - camera.clientWidth / 2),
+      top: Math.max(0, pawn.offsetTop - camera.clientHeight / 2),
+      behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+  });
   $('refresh-btn').addEventListener('click',()=>syncAll());
   $('logout-btn').addEventListener('click',async()=>{if(state.session){try{await request('/auth/v1/logout',{method:'POST',headers:{Authorization:'Bearer '+state.session.access_token}})}catch{}}clearSession();showAuth();toast('Uitgelogd.')});
   $('update-check').addEventListener('click',async()=>{try{if('serviceWorker'in navigator){const reg=await navigator.serviceWorker.getRegistration();await reg?.update();toast('Je hebt de nieuwste versie, of de update wordt klaargezet.')}else toast('Open de website opnieuw voor de nieuwste versie.')}catch{toast('Updatecontrole niet gelukt.',true)}});
@@ -465,7 +544,9 @@ function bind(){
 }
 function changeMode(mode){state.mode=mode;const signup=mode==='signup';$('login-tab').classList.toggle('selected',!signup);$('signup-tab').classList.toggle('selected',signup);$('auth-submit').textContent=signup?'Account aanmaken':'Inloggen';$('auth-password').autocomplete=signup?'new-password':'current-password';$('auth-feedback').textContent='';$('auth-feedback').classList.remove('error')}
 async function boot(){
-  bind();renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
+  bind();
+  document.querySelectorAll('.board-world-switch [data-world]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.world === selectedBoardWorld)));
+  renderDateIdeas();$('memory-date').value=amsterdamDay(new Date());$('memory-date').max=amsterdamDay(new Date());$('app-version').textContent=CONFIG.version;connection(navigator.onLine);
   try{
     const params=new URLSearchParams(location.hash.slice(1));
     const isCallback=params.has('access_token')||params.has('error')||params.has('error_code');

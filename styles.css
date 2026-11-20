@@ -99,3 +99,31 @@ textarea::placeholder{color:#a89db7}
 .memory-card .buttons button{width:100%}
 #memory-form .primary-btn{width:100%}
 @media(max-width:380px){.calendar-grid{gap:3px}.calendar-day{font-size:12px;min-height:36px}.calendar-toolbar h3{font-size:17px}}
+
+/* Board camera: finger scrolling without changing the server-controlled game position. */
+.board-trail{display:block;overflow-x:auto;overflow-y:auto;max-width:100%;max-height:min(72svh,650px);overscroll-behavior:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin;border-radius:18px}
+.board-trail .board-map{width:max(100%,780px);max-width:none;aspect-ratio:4/3}
+@media(min-width:700px){.board-trail .board-map{width:max(100%,900px)}}
+
+/* Restored original 1279x720 illustration. The viewport pans; gameplay stays server-driven. */
+.board-trail .board-map.board-world-original{width:max(100%,1000px);aspect-ratio:1279/720;border-radius:12px;overflow:hidden;background:#171023}
+.board-world-art{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:fill;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.board-world-pawn{position:absolute;z-index:3;transform:translate(-50%,-75%);display:grid;place-items:center;width:clamp(36px,5%,70px);aspect-ratio:1;border:2px solid #ffe8b4;border-radius:50%;background:#6a294b;color:#ffcf83;font-size:clamp(23px,3vw,42px);line-height:1;box-shadow:0 3px 12px #140817aa;pointer-events:none}
+
+.board-controls{display:flex;justify-content:center;margin:12px 0 3px}.board-controls button{min-height:44px}
+
+.board-world-switch{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:12px 0 2px}
+.board-world-switch button{min-width:0;min-height:44px;padding:7px 3px;border-radius:11px;border:1px solid #705a83;background:#30243c;color:#e7d8ef;font-size:clamp(10px,2.5vw,13px);font-weight:700}
+.board-world-switch button[aria-pressed="true"]{background:#e5b7ac;color:#241523;border-color:#ffdbcc}
+.board-world-original[data-world="strand"] .board-world-art{filter:sepia(.24) saturate(1.4) brightness(1.14)}
+.board-world-original[data-world="vliegveld"] .board-world-art{filter:grayscale(.45) hue-rotate(165deg) brightness(1.05)}
+.board-world-original[data-world="bos"] .board-world-art{filter:sepia(.2) hue-rotate(65deg) saturate(1.35) brightness(.88)}
+
+/* Six tabs fit small Android and iPhone screens without horizontal overflow. */
+.bottom-nav{gap:0;padding-left:4px;padding-right:4px}
+.bottom-nav button{min-width:0;max-width:105px;padding-left:2px;padding-right:2px;font-size:clamp(9px,2.6vw,11px)}
+@media(max-width:380px){.bottom-nav .nav-icon{font-size:22px}}
+
+/* Approved 2D character pawn: keep artwork proportions and transparency. */
+.board-world-pawn{width:clamp(58px,8%,110px);height:auto;aspect-ratio:56/66;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;transform:translate(-50%,-82%)}
+.board-world-pawn img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.65))}

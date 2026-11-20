@@ -492,3 +492,11 @@ margin:0!important;padding:0!important;border:0!important;border-radius:0!import
 z-index:90!important;display:block!important;
 }
 body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #bottom-nav{z-index:100!important}
+
+/* 0.17.92: Exact 40 logical cells, rendered above themed artwork.
+   Artwork never determines scoring or the number of steps. */
+.quest-board-tiles{position:absolute;inset:0;z-index:1;pointer-events:none;display:none}
+.quest-board-stage:has(.quest-world-art[data-world-image-applied="themed"]) .quest-board-tiles{display:block}
+.quest-board-tile{position:absolute;display:grid;place-items:center;transform:translate(-50%,-50%);width:4.4%;aspect-ratio:1;border-radius:50%;font:800 clamp(8px,1.35vw,14px)/1 system-ui,sans-serif;color:#fff8dd;background:#3d174edb;border:1px solid #ffe2a6;box-shadow:0 0 0 1px #6c2b4a,0 1px 7px #170d29b3;text-shadow:0 1px 2px #190c1b}
+.quest-board-tile.is-completed{background:#256b5fe8;border-color:#c5fff1;color:white}
+.quest-board-tile.is-current{background:#fbe7a0;color:#321126;border:2px solid #ff9a44;box-shadow:0 0 0 3px #fc76b080,0 0 15px #ffe5a6}

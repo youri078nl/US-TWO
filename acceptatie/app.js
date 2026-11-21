@@ -5,7 +5,7 @@ const CONFIG = Object.freeze({
   refreshMs: 20000,
 });
 const $ = (id) => document.getElementById(id);
-const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [], lastSyncAt: null, syncError: false };
+const state = { session: null, dashboard: null, mode: 'login', tab: 'home', working: false, dateRequestId: null, dateChangeRequestId: null, pairCode: '', profileName: '', online: true, dateEditId: null, dateCompletions: [], memories: [], memoriesError: false, calendarMonth: null, calendarSelected: null, questCalendar: [], lastSyncAt: null, syncError: false };
 // Keep preview and production credentials separate on the same GitHub Pages origin.
 const STORAGE_KEY = 'us-two-web-session-v2:' + new URL('./',location.href).pathname;
 const safe = (text) => String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -210,10 +210,10 @@ async function syncAll({quiet=false}={}) {
   const generation=authGeneration;
   pollBusy=true;
   try{
-    const [d,memories]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null)]);
+    const [d,memories,completions]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null),request('/rest/v1/us_date_completions?select=date_id,first_confirmed_by,completed_at,awarded_steps',{headers:{Authorization:'Bearer '+state.session.access_token}}).catch(()=>[])]);
     // A response from the previous account must never repopulate the screen after logout.
     if(!account||generation!==authGeneration||state.session?.user?.id!==account)return false;
-    state.dashboard=d;state.lastSyncAt=Date.now();state.syncError=false;
+    state.dashboard=d;state.dateCompletions=Array.isArray(completions)?completions:[];state.lastSyncAt=Date.now();state.syncError=false;
     if(Array.isArray(memories)){state.memories=memories;state.memoriesError=false}else{state.memories=[];state.memoriesError=true;}
     renderAll();connection(true);showIncomingInvite();return true;
   }catch(e){
@@ -554,6 +554,14 @@ function renderDates(){
     if(upcoming&&(d.status==='accepted'||(d.status==='proposed'&&own))){
       actions+=`<details class="cancel-confirm"><summary>Afspraak annuleren</summary><p class="muted">Deze actie trekt de afspraak in voor jullie allebei. Dit kan niet ongedaan gemaakt worden.</p><button type="button" class="ghost-btn" data-action="date-cancel" data-id="${safe(d.id)}" data-revision="${Number(d.revision)}">Ja, afspraak annuleren</button></details>`;
     }
+    if(d.status==='accepted'&&!upcoming&&!pending){
+      const done=state.dateCompletions.find(x=>x.date_id===d.id);
+      actions+=done?.completed_at?
+        '<p class="muted">✓ Date afgerond · '+Number(done.awarded_steps)+' stappen verdiend</p>':
+        done?.first_confirmed_by===me?
+        '<p class="muted">Jij hebt de date afgerond. Wachten op bevestiging van je partner.</p>':
+        '<button type="button" class="primary-btn" data-action="date-complete" data-id="'+safe(d.id)+'">'+(done?'Bevestig ook dat de date voltooid is':'Date voltooid ✓')+'</button>';
+    }
     const calendarAction=Number.isFinite(new Date(d.start_at).getTime())?`<button type="button" class="ghost-btn" data-action="date-show-calendar" data-id="${safe(d.id)}">Bekijk in kalender</button>`:"";
     return `<article class="card" id="agenda-date-${safe(d.id)}" tabindex="-1">${status}<h3>${safe(d.title)}</h3><p class="meta">${timeFmt.format(new Date(d.start_at))} · ${Number(d.duration_minutes)} min</p>${actions}${calendarAction}</article>`;
   }).join('');
@@ -584,6 +592,7 @@ async function runAction(action,extra={}){
     'mem-share':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'shared',p_expected_revision:Number(extra.revision)}),
     'mem-private':()=>rpc('us_memory_visibility',{p_memory_id:id,p_visibility:'private',p_expected_revision:Number(extra.revision)}),
     'mem-delete':()=>rpc('us_memory_delete',{p_memory_id:id,p_expected_revision:Number(extra.revision)}),
+    'date-complete':()=>rpc('us_complete_planned_date',{p_date_id:id}),
     'date-cancel':()=>rpc('us_cancel_date',{p_date_id:id,p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'change-accept':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'accept',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
     'change-decline':()=>rpc('us_respond_date_change',{p_change_id:id,p_action:'decline',p_expected_revision:Number(extra.revision),p_request_id:crypto.randomUUID()}),
@@ -592,11 +601,11 @@ async function runAction(action,extra={}){
     'create-code':async()=>{const v=await rpc('us_create_pair');state.pairCode=v.code;return v;},
   };
   if(!operations[action])return;
-  if((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action.startsWith('mem-'))&&!validUuid(id))return;
+  if((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action==='date-complete'||action.startsWith('mem-'))&&!validUuid(id))return;
   setBusy(true);
   try{await operations[action]();
     const refreshed=await syncAll({quiet:true});
-    const result=action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Wijziging opgeslagen op de server.';
+    const result=action==='date-complete'?'Datebevestiging opgeslagen. Na bevestiging door jullie allebei ontvang je 2 stappen.':action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Wijziging opgeslagen op de server.';
     toast(refreshed?result:result+' Het overzicht wordt later vernieuwd.',!refreshed);
   }catch(e){toast(failText(e),true)}finally{setBusy(false)}
 }

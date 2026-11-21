@@ -210,7 +210,7 @@ async function syncAll({quiet=false}={}) {
   const generation=authGeneration;
   pollBusy=true;
   try{
-    const [d,memories,completions]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null),request('/rest/v1/us_date_completions?select=date_id,first_confirmed_by,completed_at,awarded_steps',{headers:{Authorization:'Bearer '+state.session.access_token}}).catch(()=>[])]);
+    const [d,memories,completions]=await Promise.all([rpc('us_dashboard'),rpc('us_memory_list').catch(()=>null),rpc('us_date_completion_list').catch(()=>[])]);
     // A response from the previous account must never repopulate the screen after logout.
     if(!account||generation!==authGeneration||state.session?.user?.id!==account)return false;
     state.dashboard=d;state.dateCompletions=Array.isArray(completions)?completions:[];state.lastSyncAt=Date.now();state.syncError=false;

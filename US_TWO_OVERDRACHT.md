@@ -274,3 +274,9 @@
 - Pionroute `THEMED_PATH` eerste 120px sprong opgesplitst in meerdere ankerpunten, om de eerste beweging te verbeteren; exacte visuele kalibratie op zes kaarten is nog niet bevestigd.
 - 0.17.97 cachebust en service-worker versie gepubliceerd. SQL controleerde helper aanwezig en authenticated EXECUTE. Cloudbucket was bij controle nog leeg, dus synchronisatie op twee echte apparaten nog NIET bewezen. De gebruiker moet Android met lokaal geïmporteerde kaarten openen, daarna Kim haar app; status Meer → Wereldkaarten toont Cloudkaarten X/6 of fout.
 - Bestaande accounts, kaarten in lokale IndexedDB, agenda en spelvoortgang niet gewist.
+
+
+## 21 november 2026 — bordpositie gecorrigeerd
+- User vroeg pion op vakje 4. SQL toont eigen koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6`: `us_quest_games.position=4` maar `us_board_progress.position=1`.
+- Alleen voor dit koppel `us_board_progress.position` van 1 naar 4 gewijzigd (revision 2→3), geen wijziging aan `us_quest_games` of andere koppels. SQL RETURNING bevestigt 4.
+- Open probleem: twee voortgangsmodellen lopen onafhankelijk; consolideer server-authoritatieve stand zodat volgende datebeloningen en bordacties niet opnieuw divergentie veroorzaken. Pion visueel nog niet op echte telefoon bevestigd.

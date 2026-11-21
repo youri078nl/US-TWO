@@ -96,11 +96,11 @@ async function syncWorldArt(force=false){
  const status=$('quest-world-images-status');
  const headers={apikey:SYNC_KEY,Authorization:'Bearer '+session.access_token};
  try{
-  const memberRes=await fetch(SYNC_URL+'/rest/v1/us_members?select=couple_id&user_id=eq.'+encodeURIComponent(session.user.id),{headers,cache:'no-store'});
-  if(!memberRes.ok)throw new Error('Koppeling ophalen mislukt ('+memberRes.status+')');
-  const memberships=await memberRes.json();
-  const pair=memberships?.[0]?.couple_id;
-  if(!pair){if(status)status.textContent='Geen gekoppeld koppel gevonden.';return;}
+  // The dashboard already contains the authenticated couple ID. us_members
+  // is deliberately not readable from the browser, so querying it returns 403.
+  const identity=window.USTwoQuestPilotBridge?.identity?.();
+  const pair=identity?.paired&&identity.userId===session.user.id?identity.coupleId:null;
+  if(!pair){if(status)status.textContent='Kaartsynchronisatie wacht op de gekoppelde accounts.';return;}
   let uploaded=0,downloaded=0,available=0;
   for(let i=1;i<=6;i++){
    const key='world-'+i;

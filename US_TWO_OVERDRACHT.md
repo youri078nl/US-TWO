@@ -280,3 +280,10 @@
 - User vroeg pion op vakje 4. SQL toont eigen koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6`: `us_quest_games.position=4` maar `us_board_progress.position=1`.
 - Alleen voor dit koppel `us_board_progress.position` van 1 naar 4 gewijzigd (revision 2→3), geen wijziging aan `us_quest_games` of andere koppels. SQL RETURNING bevestigt 4.
 - Open probleem: twee voortgangsmodellen lopen onafhankelijk; consolideer server-authoritatieve stand zodat volgende datebeloningen en bordacties niet opnieuw divergentie veroorzaken. Pion visueel nog niet op echte telefoon bevestigd.
+
+
+## 22 november 2026 — databasevoortgang gekoppeld
+- Migratie `sync_board_progress_on_quest_rewards` toegevoegd: AFTER UPDATE OF position op `us_quest_games` synchroniseert `us_board_progress` voor hetzelfde koppel transactioneel; positie minimaal 1 en revision alleen bij werkelijke verandering.
+- SQL-rollbacktest uitgevoerd op koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6`: tijdelijke quest 4→6 resulteerde in board 4→6, ROLLBACK herstelt beide. Geen echte stappen uitgedeeld.
+- Openstaand: omgekeerde route `us_board_complete` wijzigt nog alleen `us_board_progress`; voor echte eenheid beide mechanismen op één autoritatief spelmodel consolideren. Er bestaat een oude `us_board_rounds`-ronde `364c4b15-3735-4050-af42-e14bc7ca9db7`, cell_no 2, status preparing, terwijl echte positie 4 is. Niet automatisch verwijderd of afgesloten; oude ronde kan `board_position_conflict` geven. Verifieer functionele gameplay vóór 1.0.0.
+- Overige blockers: synchronisatie wereldkaarten op twee telefoons niet bevestigd, visuele pionroute niet op beide apparaten gecontroleerd, end-to-end datebeloning niet bevestigd.

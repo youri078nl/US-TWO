@@ -287,3 +287,9 @@
 - SQL-rollbacktest uitgevoerd op koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6`: tijdelijke quest 4→6 resulteerde in board 4→6, ROLLBACK herstelt beide. Geen echte stappen uitgedeeld.
 - Openstaand: omgekeerde route `us_board_complete` wijzigt nog alleen `us_board_progress`; voor echte eenheid beide mechanismen op één autoritatief spelmodel consolideren. Er bestaat een oude `us_board_rounds`-ronde `364c4b15-3735-4050-af42-e14bc7ca9db7`, cell_no 2, status preparing, terwijl echte positie 4 is. Niet automatisch verwijderd of afgesloten; oude ronde kan `board_position_conflict` geven. Verifieer functionele gameplay vóór 1.0.0.
 - Overige blockers: synchronisatie wereldkaarten op twee telefoons niet bevestigd, visuele pionroute niet op beide apparaten gecontroleerd, end-to-end datebeloning niet bevestigd.
+
+
+## 22 november 2026 — tweerichtingsynchronisatie van voortgang
+- Migratie `unify_legacy_board_completion_with_quest_position` succesvol: `public.us_board_complete(uuid)` werkt na afgeronde oude bordronde ook `us_quest_games.position` en revision bij, binnen dezelfde transactie. De bestaande trigger `us_sync_board_from_quest_trg` zorgt andersom voor synchronisatie bij quest- en datebeloningen. De trigger heeft een `WHERE ... IS DISTINCT FROM`-guard tegen terugkerende updates.
+- SQL-verificatie bevestigde dat de nieuwe UPDATE daadwerkelijk in de functie aanwezig is. De volledige oude ronde met twee echte accounts is NIET end-to-end getest. Een bestaande legacy ronde op cel 2 terwijl positie 4 is kan nog conflict veroorzaken; niet zomaar gegevens verwijderen.
+- Release 1.0.0 NIET bereikt. Prioriteit: oude vastgelopen ronde veilig migreren, echte sync op twee telefoons, wereldkaarten delen, pion visueel juist positioneren, date-voltooiing E2E, PWA-installatie en finale tests. Geen misleidende 100%-claim.

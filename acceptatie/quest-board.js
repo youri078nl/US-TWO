@@ -25,7 +25,7 @@
  // Start is the lowest heart tile at the bottom-right, not the large characters.
  const THEMED_PATH=[
   // Measured along the visible heart road. The start is the bottom heart gate.
-  [257,548],[377,543],[381,519],[377,491],[362,466],
+  [257,548],[280,552],[305,556],[330,556],[355,551],[377,543],[381,519],[377,491],[362,466],
   [335,450],[300,437],[265,424],[229,410],[193,396],
   [157,382],[123,370],[88,355],[62,337],[49,317],
   [57,298],[78,283],[108,270],[142,257],[176,245],

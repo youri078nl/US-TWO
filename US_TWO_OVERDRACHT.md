@@ -308,3 +308,9 @@
 - Version/cache 0.17.99 in `index.html`, `app.js`, `service-worker.js`. JavaScript syntax `new Function(app.js)` OK. Geen twee-toestel E2E-test uitgevoerd.
 - Oude legacy ronde cel 2: beide spelers ready, één speler startbevestiging, andere niet; `preparing` sinds 13 november. Omdat deze ronde een begonnen afspraak betreft, niet zonder toestemming overschrijven of verwijderen. Bij huidige positie 4 kan deze ronde niet normaal voltooid worden; vergt herstelprocedure.
 - 1.0.0 nog niet claimen. Open: bord-/pionvisueel goedkeuren, oude ronde herstellen, twee-toestel dateflow en PWA-installatie, cloudbeeld gelijkheid verifiëren.
+
+
+## 22 november 2026 — blokkade opgeheven
+- Specifieke vastgelopen oude bordronde `364c4b15-3735-4050-af42-e14bc7ca9db7` voor koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6` was preparing op cel 2 terwijl beide spelposities 4 zijn. Na controle van de oude twee-spelerstatus veilig status `skipped` en finished_at gezet; ronde en player records blijven bewaard, geen stappen uitgekeerd.
+- SQL verificatie: `us_quest_games.position=4`, `us_board_progress.position=4`, `blocking_rounds=0`.
+- Actuele frontend 0.17.99. Niet release 1.0.0 noemen zonder twee-apparaten E2E en visuele bevestiging van goedgekeurde kaart/pion. Alle zes cloudkaarten aanwezig; bestaande lokale kaarten worden niet overschreven.

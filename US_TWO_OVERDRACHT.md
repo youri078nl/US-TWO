@@ -301,3 +301,10 @@
 - Let op: sync downloadt cloudkaarten alleen als lokale IndexedDB-kaart ontbreekt; op Kim's toestel kan een bestaande lokale kaart dus blijven staan. Gebruiker gaf aan dat Kim's oude kaart goed is en Youri's nieuwe kaart/pion fout; vervang Kim's lokale kaart niet automatisch zonder bevestiging welke kaart de goedgekeurde referentie is.
 - Oude bordronde `364c4b15-3735-4050-af42-e14bc7ca9db7` cel 2 heeft beide spelers ready en is nog preparing; niet verwijderd om geen begonnen opdracht kwijt te raken. Huidige quest/board posities zijn beide 4.
 - 1.0.0 nog niet gereed: referentiekaart/pion visueel kalibreren, legacy ronde veilig afhandelen, end-to-end twee toestellen en PWA-installatie testen.
+
+
+## 22 november 2026 — release 0.17.99
+- `acceptatie/app.js` date completion feedback aangepast: na RPC `us_complete_planned_date` wordt status `completed` met werkelijk verdiende stappen getoond; bij `awaiting_partner` verschijnt expliciete melding dat de tweede speler moet bevestigen. Voorkomt onjuiste toast 'na bevestiging ontvang je 2 stappen' bij reeds afgeronde date.
+- Version/cache 0.17.99 in `index.html`, `app.js`, `service-worker.js`. JavaScript syntax `new Function(app.js)` OK. Geen twee-toestel E2E-test uitgevoerd.
+- Oude legacy ronde cel 2: beide spelers ready, één speler startbevestiging, andere niet; `preparing` sinds 13 november. Omdat deze ronde een begonnen afspraak betreft, niet zonder toestemming overschrijven of verwijderen. Bij huidige positie 4 kan deze ronde niet normaal voltooid worden; vergt herstelprocedure.
+- 1.0.0 nog niet claimen. Open: bord-/pionvisueel goedkeuren, oude ronde herstellen, twee-toestel dateflow en PWA-installatie, cloudbeeld gelijkheid verifiëren.

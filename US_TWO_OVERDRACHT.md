@@ -293,3 +293,11 @@
 - Migratie `unify_legacy_board_completion_with_quest_position` succesvol: `public.us_board_complete(uuid)` werkt na afgeronde oude bordronde ook `us_quest_games.position` en revision bij, binnen dezelfde transactie. De bestaande trigger `us_sync_board_from_quest_trg` zorgt andersom voor synchronisatie bij quest- en datebeloningen. De trigger heeft een `WHERE ... IS DISTINCT FROM`-guard tegen terugkerende updates.
 - SQL-verificatie bevestigde dat de nieuwe UPDATE daadwerkelijk in de functie aanwezig is. De volledige oude ronde met twee echte accounts is NIET end-to-end getest. Een bestaande legacy ronde op cel 2 terwijl positie 4 is kan nog conflict veroorzaken; niet zomaar gegevens verwijderen.
 - Release 1.0.0 NIET bereikt. Prioriteit: oude vastgelopen ronde veilig migreren, echte sync op twee telefoons, wereldkaarten delen, pion visueel juist positioneren, date-voltooiing E2E, PWA-installatie en finale tests. Geen misleidende 100%-claim.
+
+
+## 22 november 2026 — release 0.17.98
+- GitHub Pages acceptatie frontend `0.17.98-world-sync-control-rc`, cachebust 01798. `acceptatie/index.html` toont nu expliciete knop `Wereldkaarten nu synchroniseren` in Meer; `quest-world-images.js` bindt deze aan `syncWorldArt(true)`.
+- Syntax `quest-world-images.js` met JavaScript-parser gecontroleerd OK. Supabase Storage gecontroleerd: exact 6 objecten in bucket `us-two-world-art`, alle zes onder koppel `98344694-5ab1-4f03-8dcf-5b1f9504a5d6`. Dit bewijst dat upload van alle zes is gelukt, NIET dat Kim dezelfde afbeelding ziet.
+- Let op: sync downloadt cloudkaarten alleen als lokale IndexedDB-kaart ontbreekt; op Kim's toestel kan een bestaande lokale kaart dus blijven staan. Gebruiker gaf aan dat Kim's oude kaart goed is en Youri's nieuwe kaart/pion fout; vervang Kim's lokale kaart niet automatisch zonder bevestiging welke kaart de goedgekeurde referentie is.
+- Oude bordronde `364c4b15-3735-4050-af42-e14bc7ca9db7` cel 2 heeft beide spelers ready en is nog preparing; niet verwijderd om geen begonnen opdracht kwijt te raken. Huidige quest/board posities zijn beide 4.
+- 1.0.0 nog niet gereed: referentiekaart/pion visueel kalibreren, legacy ronde veilig afhandelen, end-to-end twee toestellen en PWA-installatie testen.

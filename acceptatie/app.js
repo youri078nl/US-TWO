@@ -603,9 +603,12 @@ async function runAction(action,extra={}){
   if(!operations[action])return;
   if((action.startsWith('respond-')||action.startsWith('change-')||action==='date-cancel'||action==='date-complete'||action.startsWith('mem-'))&&!validUuid(id))return;
   setBusy(true);
-  try{await operations[action]();
+  try{const operationResult=await operations[action]();
     const refreshed=await syncAll({quiet:true});
-    const result=action==='date-complete'?'Datebevestiging opgeslagen. Na bevestiging door jullie allebei ontvang je 2 stappen.':action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Wijziging opgeslagen op de server.';
+    const completionMessage=operationResult?.status==='completed'
+      ?'Date afgerond! '+Number(operationResult.steps||0)+' stappen toegekend aan jullie gedeelde spel.'
+      :'Jouw bevestiging is opgeslagen. Kim of Youri moet de date ook nog bevestigen.';
+    const result=action==='date-complete'?completionMessage:action==='create-code'?'Koppelcode gemaakt.':action==='date-cancel'?'Afspraak geannuleerd.':'Wijziging opgeslagen op de server.';
     toast(refreshed?result:result+' Het overzicht wordt later vernieuwd.',!refreshed);
   }catch(e){toast(failText(e),true)}finally{setBusy(false)}
 }

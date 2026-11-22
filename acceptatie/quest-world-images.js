@@ -139,6 +139,7 @@ function init(){
  const upload=$('quest-world-images-upload');
  const status=$('quest-world-images-status');
  if(status)status.textContent='Importfunctie gereed. Kies zes JPG-bestanden.';
+ $('quest-world-images-sync')?.addEventListener('click',()=>syncWorldArt(true));
  upload?.addEventListener('change',e=>{
   const files=[...e.target.files];
   if(status)status.textContent=files.length+' bestanden ontvangen. Opslaan…';

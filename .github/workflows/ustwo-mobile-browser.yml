@@ -1,0 +1,20 @@
+name: US TWO mobile browser acceptance
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'acceptatie/**'
+      - '.github/workflows/ustwo-mobile-browser.yml'
+  workflow_dispatch:
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.51.1
+      - run: npx playwright install --with-deps chromium webkit
+      - run: node --test acceptatie/tests/mobile-browser.cjs

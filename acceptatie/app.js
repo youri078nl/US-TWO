@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.18.0-shared-board-rc',
+  version: '1.0.0-rc.1',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -906,7 +906,7 @@ async function boot(){
       const stored=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
       if(stored?.access_token&&stored?.refresh_token){
         state.session=stored;
-        if(stored.expires_at<Date.now()/1000+80)await freshToken();
+        if(stored.expires_at<Date.now()/1000+80){try{await freshToken();}catch(e){if(!state.session||e.status===400||e.status===401)throw e;}}
         await showApp();
       }else showAuth();
     }

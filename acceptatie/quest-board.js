@@ -72,7 +72,7 @@
  const CELLS_PER_WORLD=40, DB='us-two-private-pawn-v1',TABLE='images';
  const WORLD_NAMES=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
  let activeKey='',position=null,worldIndex=null,revision=0,privateUrl='',defaultPromise=null;
- let animationTimer=null,lastMotion=null,replaying=false;
+ let animationTimer=null,lastMotion=null,replaying=false,renderedStep=null,renderedWorld=null,lastServerRevision=-1;
  const artChanged=()=>window.dispatchEvent(new Event('us-two-pawn-art-changed'));
  function storage(){
   return new Promise((resolve,reject)=>{
@@ -139,10 +139,14 @@
  }
  function renderWorld(step,serverWorld){
   const world=Number.isInteger(serverWorld)?serverWorld:Math.floor(step/CELLS_PER_WORLD)%6;
-  $('quest-world-heading').textContent='Wereld '+(world+1)+' · '+(WORLD_NAMES[world]||'Samen op pad');
+  const heading=$('quest-world-heading'),labelText='Wereld '+(world+1)+' · '+(WORLD_NAMES[world]||'Samen op pad');
+  if(heading.textContent!==labelText)heading.textContent=labelText;
+  const stage=$('quest-board-stage');if(stage&&stage.dataset.worldIndex!==String(world)){stage.dataset.worldIndex=String(world);window.dispatchEvent(new Event('us-two-board-world'));}
   $('quest-world-cell').textContent='Vakje '+step+' ♡';
   const badge=$('quest-board-live-position');if(badge)badge.textContent='Vakje '+step+' · W'+(world+1);
-  const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
+  const rawLocal=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
+  const previous=((Math.floor(step/CELLS_PER_WORLD)-1)%6+6)%6;
+  const local=step>0&&rawLocal===0&&world===previous?CELLS_PER_WORLD:rawLocal;
   const progress=$('quest-world-progress-fill');
   if(progress)progress.style.width=(local/CELLS_PER_WORLD*100).toFixed(2)+'%';
   const label=$('quest-world-progress-label');
@@ -150,6 +154,7 @@
  }
  function move(step,serverWorld=null){
   const el=$('quest-world-pawn');if(!el)return;
+  renderedStep=step;renderedWorld=serverWorld;
   const [x,y]=point(step,serverWorld);el.hidden=false;
   el.style.left=(x/ART_WIDTH*100).toFixed(4)+'%';
   el.style.top=(y/ART_HEIGHT*100).toFixed(4)+'%';
@@ -174,8 +179,10 @@
   cancelMotion();replaying=true;replayControls();
   if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
    move(to,newWorld);renderWorld(to,newWorld);
-   progress(from,to,to-from);replaying=false;replayControls();return;
+   progress(from,to,to-from);replaying=false;replayControls();window.dispatchEvent(new Event('us-two-board-focus'));return;
   }
+  // Skip a huge catch-up animation, and never display a different world with the old map.
+  if(to-from>40){move(to,newWorld);renderWorld(to,newWorld);progress(to,to,0);replaying=false;replayControls();window.dispatchEvent(new Event('us-two-board-focus'));return;}
   const firstWorld=Number.isInteger(oldWorld)?oldWorld:Math.floor(from/CELLS_PER_WORLD)%6;
   move(from,firstWorld);renderWorld(from,firstWorld);progress(from,to,0);
   let step=0;
@@ -209,17 +216,10 @@
     if(status)status.textContent='De originele 2D-pion kon niet worden geladen. Controleer je verbinding.';
    }
   }
-  try{
-   const file=await stored(key);
-   if(token!==revision||key!==activeKey)return;
-   if(file instanceof Blob&&file.size>=100&&file.size<=10_000_000&&['image/png','image/webp'].includes(file.type)){
-    privateUrl=URL.createObjectURL(file);showImage(privateUrl);
-    if(status)status.textContent='Je gekozen originele pion is privé op dit toestel opgeslagen.';
-   }
-  }catch(_error){if(token===revision&&status)status.textContent='Goedgekeurde pion actief. Privé-opslag tijdelijk niet beschikbaar.';}
+  // Local replacement artwork is retained on disk, but no longer overrides the shared approved pawn.
  }
  function clear(){
-  ++revision;cancelMotion();activeKey='';position=null;worldIndex=null;lastMotion=null;
+  ++revision;cancelMotion();activeKey='';position=null;worldIndex=null;lastMotion=null;renderedStep=null;renderedWorld=null;lastServerRevision=-1;
   clearPrivate();const pawn=$('quest-world-pawn');if(pawn)pawn.hidden=true;
   const marker=$('quest-shared-cell-marker');if(marker)marker.hidden=true;
   const art=$('quest-world-pawn-art');if(art){art.hidden=true;art.removeAttribute('src');}
@@ -236,10 +236,13 @@
    clear();return;
   }
   if(key!==activeKey){
-   cancelMotion();activeKey=key;position=null;worldIndex=null;lastMotion=null;
+   cancelMotion();activeKey=key;position=null;worldIndex=null;lastMotion=null;lastServerRevision=-1;
    loadImage(key);
   }
-  $('quest-world-art-upload').disabled=false;
+  $('quest-world-art-upload').disabled=true;
+  const serverRevision=Number(state.revision);
+  if(Number.isSafeInteger(serverRevision)&&serverRevision<lastServerRevision)return;
+  if(Number.isSafeInteger(serverRevision))lastServerRevision=serverRevision;
   const next=state.position,old=position,oldWorld=worldIndex;
   const newWorld=Number.isInteger(state.world_index)?
    state.world_index:Math.floor(next/CELLS_PER_WORLD)%6;
@@ -288,7 +291,7 @@
    if(!activeKey||!lastMotion||replaying||position!==lastMotion.to)return;
    animate(lastMotion.from,lastMotion.to,null,worldIndex);
   });
-  window.addEventListener('us-two-world-art-updated',()=>{if(position!==null&&!replaying){move(position,worldIndex);window.dispatchEvent(new Event('us-two-board-focus'));}});
+  window.addEventListener('us-two-world-art-updated',()=>{if(renderedStep!==null){move(renderedStep,renderedWorld);if(!replaying)window.dispatchEvent(new Event('us-two-board-focus'));}});
   window.addEventListener('us-two-session-cleared',clear);
   replayControls();
  }

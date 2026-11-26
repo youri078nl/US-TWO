@@ -42,7 +42,7 @@
   paint();
  }
  function onDown(event){
-  if(event.button!==0)return;
+  if(event.button!==0||event.target?.closest?.('.quest-board-map-controls,.quest-board-location-overlay,#quest-board-loading'))return;
   suppressLocationClick=false;
   if(drag)return;
   drag={id:event.pointerId,startX:event.clientX,startY:event.clientY,
@@ -86,6 +86,7 @@
   $('quest-board-zoom-in')?.addEventListener('click',()=>changeZoom(zoom+.3));
   $('quest-board-zoom-out')?.addEventListener('click',()=>changeZoom(zoom-.3));
   $('quest-board-center')?.addEventListener('click',centerPawn);
+  $('quest-board-retry')?.addEventListener('click',()=>window.dispatchEvent(new Event('us-two-board-retry')));
   for(const button of el.querySelectorAll('button[data-location]')){
    button.addEventListener('click',()=>{
     // A location is a FILTER, never an extra pawn move or reward.

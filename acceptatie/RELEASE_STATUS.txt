@@ -1,3 +1,6 @@
+US TWO 1.0.0-rc.1 | 2026-11-26
+Final bundled acceptance release. Canonical pair-scoped cloud art, in-memory rendering when browser storage is unavailable, safe cached cloud-art fallback, fixed animation world mapping and stale revision guard, original shared pawn, four visible date location shortcuts, retry on board, 5-second active game reads, consistent versioned offline shell. No DB changes or progress reset. Verified previous 0.18.0 CI and Pages success. 258 card files and 240+18 catalog entries observed. New CI checks pending; physical Android/iPhone visual and end-to-end acceptance remains required before labeling final 1.0.0. Main app URL https://youri078nl.github.io/US-TWO/acceptatie/.
+
 Follow-up 0.18.0: corrected pre-existing incomplete DOM test mock, added shared path/portal tests, fixed end-of-move focus and stale status badge. CI pending; physical devices unverified.
 
 US TWO 0.18.0-shared-board-rc | 2026-11-26

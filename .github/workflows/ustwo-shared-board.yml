@@ -16,4 +16,4 @@ jobs:
           node-version: '22'
       - run: |
           for f in acceptatie/*.js; do node --check "$f"; done
-          node --test acceptatie/tests/board-pointer.test.cjs acceptatie/tests/board-path.test.cjs
+          node --test acceptatie/tests/*.test.cjs

@@ -522,3 +522,11 @@ body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #bottom-n
 #quest-shared-cell-marker{position:absolute;z-index:4;transform:translate(-50%,-50%);display:grid;place-items:center;width:clamp(18px,4.6%,30px);aspect-ratio:1;border-radius:50%;border:2px solid #fff0b6;background:#326c5d;color:white;font-size:11px;font-weight:800;pointer-events:none;box-shadow:0 0 8px #ffe2a9}
 #quest-shared-cell-marker[hidden]{display:none!important}
 #quest-board-live-position{position:absolute;right:8px;top:9px;z-index:10;padding:8px 10px;border:1px solid #e0ba87;border-radius:12px;background:#21172dee;color:#ffe7b8;font-size:12px;font-weight:800;pointer-events:none}
+
+/* 1.0 release: controls remain reachable on both phone formats. */
+#quest-board-loading{pointer-events:auto;display:none;align-content:center;justify-items:center;gap:14px}
+#quest-board-loading button{min-height:44px;padding:8px 16px;cursor:pointer}
+.quest-board-location-overlay{position:absolute;left:8px;right:8px;bottom:8px;z-index:9;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;pointer-events:none}
+#quest-pilot .quest-board-location-overlay button{pointer-events:auto;min-height:42px;padding:6px 4px;margin:0;font-size:12px;background:#21172dee;border:1px solid #cfa876;border-radius:12px;color:#ffe6bd}
+#quest-board-stage:has(.quest-world-art[data-world-image-applied="themed"]) #quest-board-hitmap,#quest-board-stage:has(.quest-world-art[data-world-image-applied="themed"]) .quest-board-hitmap{display:none}
+#quest-board-loading:has(button:focus-visible){outline:2px solid #ffe4a8;outline-offset:-2px}

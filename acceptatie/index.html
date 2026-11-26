@@ -12,8 +12,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-  <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./quest-board.css?v=01800">
+  <link rel="stylesheet" href="./styles.css?v=100rc1">
+  <link rel="stylesheet" href="./quest-board.css?v=100rc1">
   <title>US TWO | Samen op avontuur</title>
 
 </head>
@@ -233,8 +233,9 @@
                     <button type="button" id="quest-location-forest" class="quest-location-hit quest-location-forest" data-location="forest" aria-label="Bos: bekijk bos- en natuurdates">🌲 Bos</button>
                   </div>
                   </div>
-                  <div id="quest-board-loading" role="status">Jullie gedeelde speelbord wordt geladen. Controleer de verbinding als dit blijft staan.</div>
+                  <div id="quest-board-loading" role="status"><span id="quest-board-loading-text">Jullie gedeelde speelbord wordt geladen.</span><button type="button" id="quest-board-retry">Opnieuw laden</button></div>
                   <span id="quest-board-live-position" role="status">Spelstand laden…</span>
+                  <div class="quest-board-location-overlay" aria-label="Kies een dateplek"><button type="button" data-quick-location="living">🏠 Woonkamer</button><button type="button" data-quick-location="beach">🏖 Strand</button><button type="button" data-quick-location="airport">✈ Vliegveld</button><button type="button" data-quick-location="forest">🌲 Bos</button></div>
                   <div class="quest-board-map-controls" role="group" aria-label="Speelbord bedienen">
                     <button type="button" id="quest-board-zoom-in" aria-label="Speelbord inzoomen">+</button>
                     <button type="button" id="quest-board-zoom-out" aria-label="Speelbord uitzoomen">−</button>
@@ -254,7 +255,7 @@
               
               <details class="quest-board-art-options">
                 <summary>2D-pion en bewegingen beheren</summary>
-                <p class="muted">De goedgekeurde Youri-, Kim- en Pepsi-pionnen staan standaard op het bord. Een zelf gekozen origineel blijft alleen op dit toestel.</p>
+                <p class="muted">De goedgekeurde Youri-, Kim- en Pepsi-pionnen staan standaard op het bord. Beide telefoons gebruiken dezelfde goedgekeurde pion. Eerder lokaal opgeslagen afbeeldingen blijven bewaard.</p>
                 <label for="quest-world-art-upload">Eigen originele pion (PNG/WebP)</label>
                 <input id="quest-world-art-upload" type="file" accept="image/png,image/webp" disabled>
                 <p id="quest-world-art-status" class="muted" role="status" aria-live="polite">Goedgekeurde figuren worden automatisch gebruikt.</p>
@@ -547,25 +548,25 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="update-bar" class="update-bar hidden" role="status"><span>Een nieuwe versie van US TWO staat klaar.</span><button id="apply-update" type="button">Bijwerken</button></div>
-  <script src="./us-two-offline.js" defer></script>
-   <script type="module" src="./app.js?v=01800"></script>
-   <script src="./quest-catalog.js" defer></script>
-   <script src="./quest-board.js?v=01800" defer></script>
-   <script src="./quest-board-interactions.js?v=01800" defer></script>
-   <script src="./quest-pose-archive.js" defer></script>
-   <script src="./quest-poses.js" defer></script>
-   <script src="./quest-cinematics.js" defer></script>
-   <script src="./quest-calendar-ics.js" defer></script>
-   <script src="./quest-card-data.js" defer></script>
-   <script src="./quest-card-archive.js" defer></script>
-   <script src="./quest-card-gallery.js" defer></script>
-   <script src="./quest-full-deck.js" defer></script>
-   <script src="./quest-sounds.js" defer></script>
-   <script src="./quest-pilot.js?v=01800" defer></script>
-   <script src="./quest-adult-consent.js?v=01800" defer></script>
-   <script src="./quest-questions.js" defer></script>
-   <script src="./quest-date-browser.js" defer></script>
+  <script src="./us-two-offline.js?v=100rc1" defer></script>
+   <script type="module" src="./app.js?v=100rc1"></script>
+   <script src="./quest-catalog.js?v=100rc1" defer></script>
+   <script src="./quest-board.js?v=100rc1" defer></script>
+   <script src="./quest-board-interactions.js?v=100rc1" defer></script>
+   <script src="./quest-pose-archive.js?v=100rc1" defer></script>
+   <script src="./quest-poses.js?v=100rc1" defer></script>
+   <script src="./quest-cinematics.js?v=100rc1" defer></script>
+   <script src="./quest-calendar-ics.js?v=100rc1" defer></script>
+   <script src="./quest-card-data.js?v=100rc1" defer></script>
+   <script src="./quest-card-archive.js?v=100rc1" defer></script>
+   <script src="./quest-card-gallery.js?v=100rc1" defer></script>
+   <script src="./quest-full-deck.js?v=100rc1" defer></script>
+   <script src="./quest-sounds.js?v=100rc1" defer></script>
+   <script src="./quest-pilot.js?v=100rc1" defer></script>
+   <script src="./quest-adult-consent.js?v=100rc1" defer></script>
+   <script src="./quest-questions.js?v=100rc1" defer></script>
+   <script src="./quest-date-browser.js?v=100rc1" defer></script>
 
-<script src="./quest-world-images.js?v=01800" defer></script>
+<script src="./quest-world-images.js?v=100rc1" defer></script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+name: US TWO shared board validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'acceptatie/**'
+      - '.github/workflows/ustwo-shared-board.yml'
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          for f in acceptatie/*.js; do node --check "$f"; done
+          node --test acceptatie/tests/board-pointer.test.cjs

@@ -275,7 +275,7 @@
       text('quest-pilot-schedule-status','De planning is niet betrouwbaar opgehaald. Ververs opnieuw.');
       text('quest-pilot-agenda-schedule','De gezamenlijke datum kon niet betrouwbaar worden opgehaald. Ververs opnieuw.');
       window.USTwoQuestCalendar?.clear();
-      window.USTwoQuestBoard?.clear();
+      // A temporary read failure must not reset the last confirmed pawn position.
       window.USTwoCinematics?.clear();
       // The server may be offline: show durable local queue state without another network call.
       try{

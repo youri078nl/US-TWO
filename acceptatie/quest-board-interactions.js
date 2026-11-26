@@ -98,6 +98,10 @@
    });
   }
   window.addEventListener('resize',paint);
+  window.addEventListener('us-two-world-art-updated',paint);
+  window.addEventListener('us-two-board-focus',()=>requestAnimationFrame(()=>{if(viewport()?.clientWidth)centerPawn();}));
+  let wasVisible=false;
+  if(typeof ResizeObserver==='function')new ResizeObserver(()=>{const visible=el.clientWidth>0&&el.clientHeight>0;if(visible&&!wasVisible)centerPawn();else if(visible)paint();wasVisible=visible;}).observe(el);
   window.addEventListener('us-two-session-cleared',reset);
   reset();
  }

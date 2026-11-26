@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  version: '0.17.99-date-feedback-rc',
+  version: '0.18.0-shared-board-rc',
   url: 'https://vuigivzwkxelsisbjjlk.supabase.co',
   publishableKey: 'sb_publishable_BVJP4ggWOXgt8SXVTXof8Q_yGcoqmX7',
   refreshMs: 20000,
@@ -912,9 +912,10 @@ async function boot(){
     }
   }catch(e){if(state.session){clearSession();showAuth()}toast(failText(e),true)}
   if('serviceWorker'in navigator&&location.protocol==='https:') {
-    navigator.serviceWorker.register('./service-worker.js').then(reg=>{
+    navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(reg=>{
       const update=worker=>{waitingWorker=worker;$('update-bar').classList.remove('hidden')};
       if(reg.waiting&&navigator.serviceWorker.controller)update(reg.waiting);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{});});
       reg.addEventListener('updatefound',()=>{const next=reg.installing;next?.addEventListener('statechange',()=>{if(next.state==='installed'&&navigator.serviceWorker.controller)update(next)})});
       let refreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!refreshing){refreshing=true;location.reload()}});
     }).catch(()=>{});

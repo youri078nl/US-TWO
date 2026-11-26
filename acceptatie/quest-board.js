@@ -140,6 +140,7 @@
   const world=Number.isInteger(serverWorld)?serverWorld:Math.floor(step/CELLS_PER_WORLD)%6;
   $('quest-world-heading').textContent='Wereld '+(world+1)+' · '+(WORLD_NAMES[world]||'Samen op pad');
   $('quest-world-cell').textContent='Vakje '+step+' ♡';
+  const badge=$('quest-board-live-position');if(badge)badge.textContent='Vakje '+step+' · W'+(world+1);
   const local=((step%CELLS_PER_WORLD)+CELLS_PER_WORLD)%CELLS_PER_WORLD;
   const progress=$('quest-world-progress-fill');
   if(progress)progress.style.width=(local/CELLS_PER_WORLD*100).toFixed(2)+'%';
@@ -153,6 +154,7 @@
   el.style.top=(y/ART_HEIGHT*100).toFixed(4)+'%';
   el.dataset.tile=String(step);
   updateTiles(step);
+  const marker=$('quest-shared-cell-marker');if(marker){marker.style.left=el.style.left;marker.style.top=el.style.top;marker.textContent=String(step);marker.hidden=false;}
  }
  function cancelMotion(){
   if(animationTimer!==null){clearTimeout(animationTimer);animationTimer=null;}
@@ -218,10 +220,12 @@
  function clear(){
   ++revision;cancelMotion();activeKey='';position=null;worldIndex=null;lastMotion=null;
   clearPrivate();const pawn=$('quest-world-pawn');if(pawn)pawn.hidden=true;
+  const marker=$('quest-shared-cell-marker');if(marker)marker.hidden=true;
   const art=$('quest-world-pawn-art');if(art){art.hidden=true;art.removeAttribute('src');}
   if($('quest-world-art-upload'))$('quest-world-art-upload').disabled=true;
   if($('quest-world-position'))$('quest-world-position').textContent='Geen gekoppelde serverstand geladen.';
   if($('quest-world-step-caption'))$('quest-world-step-caption').textContent='Log in om jullie vakje te zien.';
+  const badge=$('quest-board-live-position');if(badge)badge.textContent='Spelstand laden…';
   replayControls();artChanged();
  }
  function update(state,identity){
@@ -262,6 +266,8 @@
    animate(old,next,oldWorld,newWorld);
   }
   replayControls();
+  window.dispatchEvent(new Event('us-two-board-state'));
+  if(old===null||next!==old)window.dispatchEvent(new Event('us-two-board-focus'));
  }
  async function upload(){
   const input=$('quest-world-art-upload'),key=activeKey,file=input?.files?.[0];
@@ -275,13 +281,13 @@
  }
  function bind(){
   if(!$('quest-world-pawn'))return;
-  buildTiles();move(0);$('quest-world-pawn').hidden=true;
+  buildTiles();$('quest-world-pawn').hidden=true;
   $('quest-world-art-upload')?.addEventListener('change',upload);
   $('quest-world-replay')?.addEventListener('click',()=>{
    if(!activeKey||!lastMotion||replaying||position!==lastMotion.to)return;
    animate(lastMotion.from,lastMotion.to,null,worldIndex);
   });
-  window.addEventListener('us-two-world-art-updated',()=>{if(position!==null)move(position,worldIndex);});
+  window.addEventListener('us-two-world-art-updated',()=>{if(position!==null&&!replaying){move(position,worldIndex);window.dispatchEvent(new Event('us-two-board-focus'));}});
   window.addEventListener('us-two-session-cleared',clear);
   replayControls();
  }

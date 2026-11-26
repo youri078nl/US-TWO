@@ -512,3 +512,13 @@ body:has(#bottom-nav [data-tab="game"][data-game-view="board"].active) #bottom-n
  border:1px solid #e9b47d;font:800 10px/1 system-ui,sans-serif;
  white-space:nowrap;pointer-events:none
 }
+
+/* 0.18.0: the image and all overlay layers share exactly the same rectangle. */
+#quest-board-stage .quest-world-art{object-fit:fill!important;object-position:center}
+#quest-world-pawn.quest-world-pawn{transform:translate(-50%,-100%)}
+#quest-board-stage[data-art-pending="true"]{visibility:hidden}
+#quest-board-loading{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:25px;color:#ffe3b0;pointer-events:none;z-index:8}
+#quest-world-viewport:has(#quest-board-stage[data-art-pending="true"]) #quest-board-loading{display:grid}
+#quest-shared-cell-marker{position:absolute;z-index:4;transform:translate(-50%,-50%);display:grid;place-items:center;width:clamp(18px,4.6%,30px);aspect-ratio:1;border-radius:50%;border:2px solid #fff0b6;background:#326c5d;color:white;font-size:11px;font-weight:800;pointer-events:none;box-shadow:0 0 8px #ffe2a9}
+#quest-shared-cell-marker[hidden]{display:none!important}
+#quest-board-live-position{position:absolute;right:8px;top:9px;z-index:10;padding:8px 10px;border:1px solid #e0ba87;border-radius:12px;background:#21172dee;color:#ffe7b8;font-size:12px;font-weight:800;pointer-events:none}

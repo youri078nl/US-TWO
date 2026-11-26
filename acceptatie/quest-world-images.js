@@ -4,7 +4,12 @@
 const names=['Bergbos','Moulin Rouge','Middeleeuwen','Vakantie','Fantasie','Snoepland'];
 const dbName='us-two-approved-worlds-v1',storeName='worlds';
 const $=id=>document.getElementById(id);
-let activeUrl='',lastWorld=-1,initialized=false,displayGeneration=0;
+let activeUrl='',lastWorld=-1,initialized=false,displayGeneration=0,shownKey='',syncPair='',syncEpoch=0;
+const verified=new Set();
+function pairId(){const s=authSession(),id=window.USTwoQuestPilotBridge?.identity?.();return id?.paired&&id.userId===s?.user?.id?id.coupleId:null;}
+function keyFor(pair,n){return pair+'/world-'+n;}
+function pending(on){const stage=$('quest-board-stage');if(stage)stage.dataset.artPending=String(on);}
+function clearArt(){syncEpoch++;displayGeneration++;shownKey='';lastWorld=-1;syncPair='';lastSyncAttempt=0;verified.clear();if(activeUrl)URL.revokeObjectURL(activeUrl);activeUrl='';const art=document.querySelector('#quest-board-stage .quest-world-art');if(art){art.src='./assets/us-two-user-board.png';art.dataset.worldImageApplied='original';}pending(true);}
 function openDb(){return new Promise((resolve,reject)=>{
  const req=indexedDB.open(dbName,1);
  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(storeName))req.result.createObjectStore(storeName);};
@@ -22,26 +27,25 @@ function worldNumber(){
 }
 async function display(force=false){
  const art=document.querySelector('#quest-board-stage .quest-world-art');
- if(!art)return;
+ const pair=pairId(),world=worldNumber(),key=pair?keyFor(pair,world+1):'';
+ if(!art||!pair){pending(true);return;}
+ if(!force&&shownKey===key)return;
  const generation=++displayGeneration;
- const world=worldNumber();
- if(!force&&lastWorld===world&&art.dataset.worldImageApplied==='themed')return;
- lastWorld=world;
- const blob=await access('world-'+(world+1)).catch(()=>null);
- if(generation!==displayGeneration)return;
- if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl='';}
- if(blob){
-  activeUrl=URL.createObjectURL(blob);
-  art.src=activeUrl;
-  art.dataset.worldImageApplied='themed';
-  window.dispatchEvent(new Event('us-two-world-art-updated'));
-  art.alt='US TWO speelwereld '+(world+1)+': '+names[world];
- }else{
-  art.src='./assets/us-two-user-board.png';
-  art.dataset.worldImageApplied='original';
-  window.dispatchEvent(new Event('us-two-world-art-updated'));
-  art.alt='Origineel US TWO speelbord';
- }
+ if(shownKey!==key)pending(true);
+ // Never read the old per-device, unscoped images as an authoritative board.
+ const blob=await access(key).catch(()=>null);
+ if(generation!==displayGeneration||pairId()!==pair||worldNumber()!==world)return;
+ if(!blob||!verified.has(key)){pending(true);return;}
+ const url=URL.createObjectURL(blob),image=new Image();image.src=url;
+ try{await image.decode();}catch(_e){URL.revokeObjectURL(url);return;}
+ if(generation!==displayGeneration||pairId()!==pair||worldNumber()!==world){URL.revokeObjectURL(url);return;}
+ const old=activeUrl;activeUrl=url;shownKey=key;lastWorld=world;
+ art.src=url;art.dataset.worldImageApplied='themed';
+ art.alt='US TWO speelwereld '+(world+1)+': '+names[world];
+ $('quest-board-stage').style.aspectRatio=image.naturalWidth+' / '+image.naturalHeight;
+ pending(false);
+ if(old)URL.revokeObjectURL(old);
+ window.dispatchEvent(new Event('us-two-world-art-updated'));
 }
 async function importFiles(files){
  const status=$('quest-world-images-status');
@@ -71,10 +75,9 @@ async function importFiles(files){
   return;
  }
  try{
-  for(const [i,file] of picked)await access('world-'+i,file);
-  lastWorld=-1;await display(true);
-  lastSyncAttempt=0;syncWorldArt(true);
-  if(status)status.textContent='Alle zes wereldkaarten opgeslagen. Open Bord om de kaart te bekijken.';
+  const pair=pairId();if(!pair)throw Error('Koppel eerst jullie accounts.');
+  for(const [i,file] of picked)await access('import/'+keyFor(pair,i),file);
+  lastSyncAttempt=0;await syncWorldArt(true);
  }catch(e){if(status)status.textContent='Opslaan mislukt: '+(e?.message||'onbekende fout');}
 }
 const SYNC_URL='https://vuigivzwkxelsisbjjlk.supabase.co';
@@ -89,50 +92,42 @@ function authSession(){
  }catch{return null;}
 }
 async function syncWorldArt(force=false){
- if(syncing||(!force&&Date.now()-lastSyncAttempt<12000))return;
- const session=authSession();
- if(!session?.user?.id)return;
+ const pair=pairId(),session=authSession();
+ if(!pair||!session?.access_token)return;
+ if(syncPair!==pair){clearArt();syncPair=pair;}
+ if(syncing||(!force&&Date.now()-lastSyncAttempt<60000))return;
  syncing=true;lastSyncAttempt=Date.now();
+ const epoch=syncEpoch,valid=()=>epoch===syncEpoch&&pairId()===pair;
  const status=$('quest-world-images-status');
  const headers={apikey:SYNC_KEY,Authorization:'Bearer '+session.access_token};
  try{
-  // The dashboard already contains the authenticated couple ID. us_members
-  // is deliberately not readable from the browser, so querying it returns 403.
-  const identity=window.USTwoQuestPilotBridge?.identity?.();
-  const pair=identity?.paired&&identity.userId===session.user.id?identity.coupleId:null;
-  if(!pair){if(status)status.textContent='Kaartsynchronisatie wacht op de gekoppelde accounts.';return;}
-  let uploaded=0,downloaded=0,available=0;
-  for(let i=1;i<=6;i++){
-   const key='world-'+i;
-   const path=pair+'/wereld-'+i+'.jpg';
-   const url=SYNC_URL+'/storage/v1/object/us-two-world-art/'+path;
-   const remote=await fetch(url,{headers,cache:'no-store'});
-   if(remote.ok){
-    available++;
-    // The shared copy is authoritative: never overwrite it on another device.
-    const blob=await access(key).catch(()=>null);
-    if(!blob){
-     const downloadedBlob=await remote.blob();
-     if(!downloadedBlob.type.startsWith('image/')||downloadedBlob.size>6*1024*1024)throw new Error('Wereld '+i+' is geen geldige afbeelding.');
-     await access(key,downloadedBlob);downloaded++;
-    }
-   }else if(remote.status===404||remote.status===400){
-    const blob=await access(key).catch(()=>null);
-    if(!blob)continue;
-    const res=await fetch(url,{method:'POST',headers:{...headers,'Content-Type':blob.type||'image/jpeg','x-upsert':'false'},body:blob});
-    if(!res.ok){
-     // Another device might have uploaded it in the meantime.
-     if(res.status===409)continue;
-     throw new Error('Upload wereld '+i+' mislukt ('+res.status+')');
-    }
-    available++;uploaded++;
-   }else throw new Error('Cloudkaart '+i+' niet bereikbaar ('+remote.status+')');
+  const current=worldNumber()+1,order=[current,...[1,2,3,4,5,6].filter(n=>n!==current)];
+  let available=0;
+  for(const n of order){
+   if(!valid())return;
+   const key=keyFor(pair,n),url=SYNC_URL+'/storage/v1/object/us-two-world-art/'+pair+'/wereld-'+n+'.jpg';
+   // Revalidate the active board first; shared objects win over every old local copy.
+   let remote=await fetch(url,{headers,cache:'no-store'});
+   if(!valid())return;
+   if(remote.status===404||remote.status===400){
+    const file=await access('import/'+key).catch(()=>null);
+    if(!file)continue;
+    const uploaded=await fetch(url,{method:'POST',headers:{...headers,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});
+    if(!uploaded.ok&&uploaded.status!==409)throw Error('Upload wereld '+n+' mislukt ('+uploaded.status+')');
+    remote=await fetch(url,{headers,cache:'no-store'});
+   }
+   if(!remote.ok)throw Error('Cloudkaart '+n+' niet bereikbaar ('+remote.status+')');
+   const blob=await remote.blob();
+   if(!blob.type.startsWith('image/')||blob.size<100||blob.size>6*1024*1024)throw Error('Ongeldige wereldkaart '+n);
+   if(!valid())return;
+   await access(key,blob);
+   if(!valid())return;
+   verified.add(key);available++;
+   if(n===worldNumber()+1&&shownKey!==key)await display(true);
   }
-  if(downloaded)await display(true);
-  if(status)status.textContent='Cloudkaarten: '+available+'/6 beschikbaar. '+(uploaded?'Geüpload: '+uploaded+'. ':'')+(downloaded?'Gedownload: '+downloaded+'.':'')+(available===6?' Beide telefoons kunnen ze gebruiken.':' Open eerst Android met de geïmporteerde kaarten.');
- }catch(e){
-  if(status)status.textContent='Kaartsynchronisatie mislukt: '+(e?.message||'onbekende fout');
- }finally{syncing=false;}
+  if(valid()&&status)status.textContent='Gedeelde cloudkaarten: '+available+'/6.';
+ }catch(e){if(valid()&&status)status.textContent='Kaart synchroniseren: '+(e?.message||'onbekende fout');}
+ finally{syncing=false;if(pairId()&&pairId()!==pair)syncWorldArt(true);}
 }
 function init(){
  if(initialized)return;initialized=true;
@@ -148,11 +143,13 @@ function init(){
  setTimeout(()=>syncWorldArt(true),1800);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncWorldArt(true);});
  window.addEventListener('us-two-session-updated',()=>syncWorldArt(true));
- setInterval(()=>syncWorldArt(),30000);
+ window.addEventListener('us-two-session-cleared',clearArt);
+ window.addEventListener('us-two-board-state',()=>{display();syncWorldArt();});
+ setInterval(()=>syncWorldArt(),60000);
  const heading=$('quest-world-heading');
  if(heading)new MutationObserver(()=>display()).observe(heading,{childList:true,characterData:true,subtree:true});
  display();
- document.querySelectorAll('#bottom-nav [data-tab="game"], [data-tab="game"]').forEach(el=>el.addEventListener('click',()=>setTimeout(()=>display(true),120)));
+ document.querySelectorAll('#bottom-nav [data-tab="game"], [data-tab="game"]').forEach(el=>el.addEventListener('click',()=>setTimeout(()=>{display();syncWorldArt();},120)));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

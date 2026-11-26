@@ -1,3 +1,6 @@
+US TWO 0.18.0-shared-board-rc | 2026-11-26
+Fix: shared cloud maps replace stale local artwork, scoped by couple. Image uses its natural ratio with pawn/tile overlay in the same stage. Visible position marker, focus on board open and progress, update checks on resume. No database changes. Source review only until CI/device acceptance. Current shared position was 6; six cloud maps existed. Publish via GitHub Pages /acceptatie/. Previous releases below.
+
 US TWO 0.17.55-date-specific-art-rc | 2026-11-19
 Done: mapped approved date art by normalized exact date title for Ruimtestenen uit de keuken and Ontwerp een nieuwe feestdag in acceptatie/quest-date-browser.js (commits 9e7d5a1, 059beaf). Added workflow .github/workflows/publish-date-artwork.yml (4b8e31d) to validate and publish two JPEG files from root US_TWO_DATE_KAARTEN_GITHUB.zip. Version/cache updated 9292840 / eacfc06. The ZIP is prepared as ChatGPT attachment but NOT yet uploaded to GitHub; workflow has NOT run; custom images are NOT live. Existing artwork is fallback until files publish. No phone/browser validation of 0.17.55. Next: upload ZIP to repo root and verify workflow succeeds, then test two named dates on Android/iPhone. Provisional progress 95%, release 1.0.0 blocked.
 

@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="./icon-192.png">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./quest-board.css?v=01799">
+  <link rel="stylesheet" href="./quest-board.css?v=01800">
   <title>US TWO | Samen op avontuur</title>
 
 </head>
@@ -207,10 +207,11 @@
                   <span id="quest-world-progress-label">0 van 40 stappen</span>
                 </div>
                 <div class="quest-world-viewport" id="quest-world-viewport" role="group" aria-label="Sleepbaar speelbord met aanklikbare locaties">
-                  <div id="quest-board-stage" class="quest-board-stage">
+                  <div id="quest-board-stage" class="quest-board-stage" data-art-pending="true">
                   <picture class="quest-board-art-picture">
                     <img class="quest-world-art" src="./assets/us-two-user-board.png" width="941" height="1672" alt="Het originele US TWO-liefdeseiland: lichtpaden, vliegveld, bioscoop en woonkamer, met een gouden portaal" loading="eager" fetchpriority="high" decoding="async">
                   </picture>
+                  <span id="quest-shared-cell-marker" hidden aria-hidden="true"></span>
                   <div id="quest-world-pawn" class="quest-world-pawn" aria-label="Eén gezamenlijke pion voor Youri, Kim en Pepsi" hidden>
                     <div id="quest-world-actor" class="quest-world-actor">
                       <img id="quest-world-approved-couple" class="quest-world-approved-couple" src="./assets/approved-youri-kim.webp" alt="" aria-hidden="true">
@@ -232,6 +233,8 @@
                     <button type="button" id="quest-location-forest" class="quest-location-hit quest-location-forest" data-location="forest" aria-label="Bos: bekijk bos- en natuurdates">🌲 Bos</button>
                   </div>
                   </div>
+                  <div id="quest-board-loading" role="status">Jullie gedeelde speelbord wordt geladen. Controleer de verbinding als dit blijft staan.</div>
+                  <span id="quest-board-live-position" role="status">Spelstand laden…</span>
                   <div class="quest-board-map-controls" role="group" aria-label="Speelbord bedienen">
                     <button type="button" id="quest-board-zoom-in" aria-label="Speelbord inzoomen">+</button>
                     <button type="button" id="quest-board-zoom-out" aria-label="Speelbord uitzoomen">−</button>
@@ -545,10 +548,10 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="update-bar" class="update-bar hidden" role="status"><span>Een nieuwe versie van US TWO staat klaar.</span><button id="apply-update" type="button">Bijwerken</button></div>
   <script src="./us-two-offline.js" defer></script>
-   <script type="module" src="./app.js?v=01799"></script>
+   <script type="module" src="./app.js?v=01800"></script>
    <script src="./quest-catalog.js" defer></script>
-   <script src="./quest-board.js?v=01799" defer></script>
-   <script src="./quest-board-interactions.js" defer></script>
+   <script src="./quest-board.js?v=01800" defer></script>
+   <script src="./quest-board-interactions.js?v=01800" defer></script>
    <script src="./quest-pose-archive.js" defer></script>
    <script src="./quest-poses.js" defer></script>
    <script src="./quest-cinematics.js" defer></script>
@@ -558,11 +561,11 @@
    <script src="./quest-card-gallery.js" defer></script>
    <script src="./quest-full-deck.js" defer></script>
    <script src="./quest-sounds.js" defer></script>
-   <script src="./quest-pilot.js" defer></script>
-   <script src="./quest-adult-consent.js?v=01799" defer></script>
+   <script src="./quest-pilot.js?v=01800" defer></script>
+   <script src="./quest-adult-consent.js?v=01800" defer></script>
    <script src="./quest-questions.js" defer></script>
    <script src="./quest-date-browser.js" defer></script>
 
-<script src="./quest-world-images.js?v=01799" defer></script>
+<script src="./quest-world-images.js?v=01800" defer></script>
 </body>
 </html>

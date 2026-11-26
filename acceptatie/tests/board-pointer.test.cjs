@@ -19,7 +19,8 @@ function setup() {
   const elements = {'quest-world-viewport':viewport,'quest-board-stage':stage,'quest-world-pawn':pawn,'quest-board-zoom-level':new Element(),'quest-board-zoom-in':new Element(),'quest-board-zoom-out':new Element(),'quest-board-center':new Element()};
   const opened = [];
   const win = { USTwoDateBrowser:{openLocation:(v)=>opened.push(v)}, addEventListener(){} };
-  const doc = {readyState:'complete',getElementById:id=>elements[id]||null};
+  const quickButton=new Element();quickButton.dataset.quickLocation='living';
+  const doc = {readyState:'complete',getElementById:id=>elements[id]||null,querySelectorAll:selector=>selector==='[data-quick-location]'?[quickButton]:[]};
   const code = fs.readFileSync(path.join(__dirname,'..','quest-board-interactions.js'),'utf8');
   vm.runInNewContext(code,{window:win,document:doc,Math,Number,Object});
   function emit(el,type,extra={}) {
@@ -30,7 +31,7 @@ function setup() {
     if(!event.stopped)for(const h of (viewport.handlers[type]||[]).filter(x=>!x.capture))h.fn(event);
     return event;
   }
-  return {emit,button,viewport,opened,win};
+  return {emit,button,quickButton,viewport,opened,win};
 }
 test('ordinary tap on a location opens that location',()=>{
   const s=setup();
@@ -55,4 +56,10 @@ test('tiny finger jitter remains a tap',()=>{
   s.emit(s.button,'pointerup',{clientX:103});
   s.emit(s.button,'click');
   assert.deepEqual(s.opened,['forest']);
+});
+
+test('quick location button also opens the date filter',()=>{
+  const s=setup();
+  for(const h of s.quickButton.handlers.click||[])h.fn({});
+  assert.deepEqual(s.opened,['living']);
 });

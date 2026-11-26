@@ -276,6 +276,7 @@
       text('quest-pilot-agenda-schedule','De gezamenlijke datum kon niet betrouwbaar worden opgehaald. Ververs opnieuw.');
       window.USTwoQuestCalendar?.clear();
       // A temporary read failure must not reset the last confirmed pawn position.
+      const badge=$('quest-board-live-position');if(badge&&!badge.textContent.includes('laatst'))badge.textContent+=' · laatst bekend';
       window.USTwoCinematics?.clear();
       // The server may be offline: show durable local queue state without another network call.
       try{

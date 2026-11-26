@@ -58,10 +58,11 @@
   }
   const pawn=$('quest-world-pawn');stage.insertBefore(layer,pawn||null);
  }
- function updateTiles(step){
+ function updateTiles(step,serverWorld){
   const layer=$('quest-board-tiles');if(!layer)return;
   const local=((step%40)+40)%40;
-  const completed=step>0&&local===0?40:local;
+  const previousWorld=((Math.floor(step/40)-1)%6+6)%6;
+  const completed=step>0&&local===0&&serverWorld===previousWorld?40:local;
   for(const el of layer.children){
    const n=Number(el.dataset.tile);
    el.classList.toggle('is-completed',n<=completed);
@@ -153,7 +154,7 @@
   el.style.left=(x/ART_WIDTH*100).toFixed(4)+'%';
   el.style.top=(y/ART_HEIGHT*100).toFixed(4)+'%';
   el.dataset.tile=String(step);
-  updateTiles(step);
+  updateTiles(step,serverWorld);
   const marker=$('quest-shared-cell-marker');if(marker){marker.style.left=el.style.left;marker.style.top=el.style.top;marker.textContent=String(step);marker.hidden=false;}
  }
  function cancelMotion(){
@@ -187,7 +188,7 @@
    const shownWorld=at===to?newWorld:Math.floor(at/CELLS_PER_WORLD)%6;
    move(at,shownWorld);renderWorld(at,shownWorld);progress(from,to,step);
    if(step<to-from)animationTimer=setTimeout(tick,interval);
-   else{animationTimer=null;replaying=false;replayControls();}
+   else{animationTimer=null;replaying=false;replayControls();window.dispatchEvent(new Event('us-two-board-focus'));}
   };
   animationTimer=setTimeout(tick,160);
  }

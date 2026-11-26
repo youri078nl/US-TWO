@@ -127,7 +127,7 @@ async function syncWorldArt(force=false){
   }
   if(valid()&&status)status.textContent='Gedeelde cloudkaarten: '+available+'/6.';
  }catch(e){if(valid()&&status)status.textContent='Kaart synchroniseren: '+(e?.message||'onbekende fout');}
- finally{syncing=false;if(pairId()&&pairId()!==pair)syncWorldArt(true);}
+ finally{syncing=false;if(pairId()&&(pairId()!==pair||epoch!==syncEpoch))syncWorldArt(true);}
 }
 function init(){
  if(initialized)return;initialized=true;

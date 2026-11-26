@@ -1,3 +1,5 @@
+Follow-up 0.18.0: corrected pre-existing incomplete DOM test mock, added shared path/portal tests, fixed end-of-move focus and stale status badge. CI pending; physical devices unverified.
+
 US TWO 0.18.0-shared-board-rc | 2026-11-26
 Fix: shared cloud maps replace stale local artwork, scoped by couple. Image uses its natural ratio with pawn/tile overlay in the same stage. Visible position marker, focus on board open and progress, update checks on resume. No database changes. Source review only until CI/device acceptance. Current shared position was 6; six cloud maps existed. Publish via GitHub Pages /acceptatie/. Previous releases below.
 
